@@ -82,8 +82,16 @@ define KernelPackage/crypto-blake2b
   TITLE:=Support for BLAKE2b cryptographic hash function (RFC 7693)
   DEPENDS:=+kmod-crypto-hash
   KCONFIG:=CONFIG_CRYPTO_BLAKE2B
+  # Linux 7.x: blake2b.ko + lib/crypto/libblake2b.ko (was blake2b_generic.ko)
+ifneq ($(wildcard $(LINUX_DIR)/lib/crypto/libblake2b.ko),)
+  FILES:= \
+	$(LINUX_DIR)/lib/crypto/libblake2b.ko \
+	$(LINUX_DIR)/crypto/blake2b.ko
+  AUTOLOAD:=$(call AutoLoad,09,libblake2b blake2b)
+else
   FILES:=$(LINUX_DIR)/crypto/blake2b_generic.ko
   AUTOLOAD:=$(call AutoLoad,09,blake2b_generic)
+endif
   $(call AddDepends/crypto)
 endef
 
