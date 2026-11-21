@@ -1,0 +1,29 @@
+From: MilkFlint4 <builder@milkflint4>
+Subject: [PATCH] net: dsa: stub DSA_TAG_PROTO_MXL862_8021Q for 7.3 PPE offload
+
+OpenWrt's mtk_ppe MxL862xx offload (795-09) references
+DSA_TAG_PROTO_MXL862_8021Q, which exists on the 6.18 pending series via
+the separate tag_8021q MxL862 driver. Upstream 7.3 only exposes the
+native DSA_TAG_PROTO_MXL862 tagger so far.
+
+Add the protocol id as a stub so 795-09 / 967-41 compile. The actual
+802.1Q tagger remains deferred; BE14000 does not use MxL862.
+
+--- a/include/net/dsa.h
++++ b/include/net/dsa.h
+@@ -57,6 +57,7 @@
+ #define DSA_TAG_PROTO_YT921X_VALUE		30
+ #define DSA_TAG_PROTO_MXL_GSW1XX_VALUE		31
+ #define DSA_TAG_PROTO_MXL862_VALUE		32
++#define DSA_TAG_PROTO_MXL862_8021Q_VALUE	38
+ #define DSA_TAG_PROTO_NETC_VALUE		33
+ #define DSA_TAG_PROTO_KSZ8463_VALUE		34
+ #define DSA_TAG_PROTO_MT7628_VALUE		35
+@@ -95,6 +96,7 @@ enum dsa_tag_protocol {
+ 	DSA_TAG_PROTO_YT921X		= DSA_TAG_PROTO_YT921X_VALUE,
+ 	DSA_TAG_PROTO_MXL_GSW1XX	= DSA_TAG_PROTO_MXL_GSW1XX_VALUE,
+ 	DSA_TAG_PROTO_MXL862		= DSA_TAG_PROTO_MXL862_VALUE,
++	DSA_TAG_PROTO_MXL862_8021Q	= DSA_TAG_PROTO_MXL862_8021Q_VALUE,
+ 	DSA_TAG_PROTO_NETC		= DSA_TAG_PROTO_NETC_VALUE,
+ 	DSA_TAG_PROTO_KSZ8463		= DSA_TAG_PROTO_KSZ8463_VALUE,
+ 	DSA_TAG_PROTO_MT7628		= DSA_TAG_PROTO_MT7628_VALUE,
