@@ -1,9 +1,10 @@
 #!/bin/sh
 # The network ports MilkFlint's scripts need, by role rather than by name,
-# so they work on any MT7986 board (ui feature "tuning"):
+# so they work across boards (ui feature "tuning"):
 #   ports rss   the frame engine's MAC that isn't the switch's, whose RSS
-#               table packet steering sets: eth1 (the WAN) on the GL-MT6000,
-#               wan on the EX5601/T-56; eth1 if there's none
+#               table packet steering sets: eth1 (WAN) on the GL-MT6000,
+#               wan on the EX5601/T-56, eth2 (WAN) on the GL-BE14000;
+#               eth1 if there's none
 #   ports wan   the board's WAN port (/etc/board.json), else the wan
 #               interface's device without a VLAN, else eth1
 # SYSFS and BOARD_JSON point elsewhere for tests.
@@ -19,7 +20,12 @@ rss() {
 			;;
 		esac
 	done
-	echo eth1
+	# Flint 4 (BE14000) WAN is eth2; Flint 2 / others default to eth1
+	if [ -e "$SYSFS/class/net/eth2" ]; then
+		echo eth2
+	else
+		echo eth1
+	fi
 }
 
 wan() {
@@ -27,7 +33,13 @@ wan() {
 	[ -n "$dev" ] || dev=$(uci -q get network.wan.device)
 	dev=${dev%%.*}
 	case "$dev" in
-	'' | @* | *[!A-Za-z0-9_-]*) echo eth1 ;;
+	'' | @* | *[!A-Za-z0-9_-]*)
+		if [ -e "$SYSFS/class/net/eth2" ]; then
+			echo eth2
+		else
+			echo eth1
+		fi
+		;;
 	*) echo "$dev" ;;
 	esac
 }

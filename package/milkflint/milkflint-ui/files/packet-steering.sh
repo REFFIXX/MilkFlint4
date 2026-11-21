@@ -53,8 +53,9 @@ NAPI_CPUS=1
 # doesn't have is refused, as in a 2-CPU VM)
 ncpu=$(grep -c ^processor /proc/cpuinfo)
 WORK_CPUS=$(printf %x $((((1 << ncpu) - 1) & ~1)))
-# the RSS table is the frame engine's, shared by its two MACs; it's set on
-# the one that isn't the switch's (eth1 on the GL-MT6000, wan on the EX5601)
+# the RSS table is the frame engine's, shared by its MACs; it's set on
+# the one that isn't the switch's (eth1 on the GL-MT6000, wan on the EX5601,
+# eth2 on the GL-BE14000 / Flint 4)
 RSS_DEV=$(/usr/libexec/milkflint/ports rss 2> /dev/null)
 [ -n "$RSS_DEV" ] || RSS_DEV=eth1
 

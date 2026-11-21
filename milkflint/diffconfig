@@ -1,76 +1,45 @@
-# MilkFlint's build configuration for the GL.iNet GL-MT6000 (Flint 2):
+# MilkFlint4 build configuration for the GL.iNet GL-BE14000 (Flint 4):
 #   cp milkflint/diffconfig .config && make defconfig
 CONFIG_TARGET_mediatek=y
 CONFIG_TARGET_mediatek_filogic=y
-# One build, several boards of the MT7986: the GL-MT6000 (Flint 2), and the
-# Zyxel EX5601-T0 (also sold as EX5601-T1 and Telenor's T-56) in both of
-# OpenWrt's flash layouts, Zyxel's bootloader ("stock") and OpenWrt's U-Boot
-# ("ubootmod"), experimental: built, not tested on the hardware here. Each
-# board's image has its own root filesystem with its own packages.
-CONFIG_TARGET_MULTI_PROFILE=y
-CONFIG_TARGET_PER_DEVICE_ROOTFS=y
-CONFIG_TARGET_DEVICE_mediatek_filogic_DEVICE_glinet_gl-mt6000=y
-CONFIG_TARGET_DEVICE_mediatek_filogic_DEVICE_zyxel_ex5601-t0-stock=y
-CONFIG_TARGET_DEVICE_mediatek_filogic_DEVICE_zyxel_ex5601-t0-ubootmod=y
+CONFIG_TARGET_mediatek_filogic_DEVICE_glinet_gl-be14000=y
 
-# The firmware is MilkFlint, with its own version number on top of the
-# OpenWrt release ("MilkFlint 0.85a (OpenWrt 25.12.6)" in the banner and
+# The firmware is MilkFlint4, with its own version number on top of the
+# OpenWrt release ("MilkFlint4 0.1a (OpenWrt 25.12.6)" in the banner and
 # os-release). Images are named
-# milkflint-<version>-<revision>-mediatek-filogic-<board>-* (glinet_gl-mt6000,
-# zyxel_ex5601-t0-stock, zyxel_ex5601-t0-ubootmod).
-# Packages still come from OpenWrt's repository for that release.
+# milkflint4-<version>-<revision>-mediatek-filogic-glinet_gl-be14000-*.
 CONFIG_IMAGEOPT=y
 CONFIG_VERSIONOPT=y
-CONFIG_VERSION_DIST="MilkFlint"
-CONFIG_VERSION_NUMBER="0.85a"
+CONFIG_VERSION_DIST="MilkFlint4"
+CONFIG_VERSION_NUMBER="0.1a"
 CONFIG_VERSION_CODE_FILENAMES=y
-CONFIG_VERSION_MANUFACTURER="MilkFlint"
-CONFIG_VERSION_MANUFACTURER_URL="https://github.com/OddBlueDog/openwrt"
-CONFIG_VERSION_HOME_URL="https://github.com/OddBlueDog/openwrt"
-CONFIG_VERSION_BUG_URL="https://github.com/OddBlueDog/openwrt/issues"
-CONFIG_VERSION_SUPPORT_URL="https://github.com/OddBlueDog/openwrt/issues"
-CONFIG_VERSION_FIRMWARE_URL="https://github.com/OddBlueDog/openwrt/releases"
+CONFIG_VERSION_MANUFACTURER="MilkFlint4"
+CONFIG_VERSION_MANUFACTURER_URL="https://github.com/REFFIXX/MilkFlint4"
+CONFIG_VERSION_HOME_URL="https://github.com/REFFIXX/MilkFlint4"
+CONFIG_VERSION_BUG_URL="https://github.com/REFFIXX/MilkFlint4/issues"
+CONFIG_VERSION_SUPPORT_URL="https://github.com/REFFIXX/MilkFlint4/issues"
+CONFIG_VERSION_FIRMWARE_URL="https://github.com/REFFIXX/MilkFlint4/releases"
 
-# The kernel compiled for the SoC's cores (Cortex-A53), as the packages
-# already are (CONFIG_TARGET_OPTIMIZATION's -mcpu=cortex-a53). "Kernel extra
-# CFLAGS" is one of OpenWrt's developer options, so it needs CONFIG_DEVEL.
+# The kernel compiled for the SoC's cores (Cortex-A73 on MT7988), as the
+# packages already are. "Kernel extra CFLAGS" is one of OpenWrt's developer
+# options, so it needs CONFIG_DEVEL.
 CONFIG_DEVEL=y
-CONFIG_KERNEL_CFLAGS="-mcpu=cortex-a53"
+CONFIG_KERNEL_CFLAGS="-mcpu=cortex-a73.cortex-a53"
 CONFIG_KERNEL_BUILD_USER="builder"
-CONFIG_KERNEL_BUILD_DOMAIN="milkflint"
-# Kernel modules come from MilkFlint's own feed, since OpenWrt's don't fit
-# this kernel: every kmod is built, and each image lists its kernel's folder
-# there
-CONFIG_ALL_KMODS=y
-CONFIG_VERSION_KMODS_REPO="https://milkflint-packages.pages.dev"
-# except the MT7921/MT7925 and MT7996 (Wi-Fi 7) cards' drivers: our mt76
-# fork's code for them needs a newer mac80211 than ours, and mt76 builds all
-# its drivers together, so they'd fail the Flint 2's mt7915e with them
-# CONFIG_PACKAGE_kmod-mt7996e is not set
-# CONFIG_PACKAGE_kmod-mt7996-firmware is not set
-# CONFIG_PACKAGE_kmod-mt7996-233-firmware is not set
-# CONFIG_PACKAGE_kmod-mt7996-firmware-common is not set
-# CONFIG_PACKAGE_kmod-mt7992-firmware is not set
-# CONFIG_PACKAGE_kmod-mt7992-23-firmware is not set
-# CONFIG_PACKAGE_kmod-mt7990-firmware is not set
-# CONFIG_PACKAGE_kmod-mt792x-common is not set
-# CONFIG_PACKAGE_kmod-mt792x-usb is not set
-# CONFIG_PACKAGE_kmod-mt7921-common is not set
-# CONFIG_PACKAGE_kmod-mt7921-firmware is not set
-# CONFIG_PACKAGE_kmod-mt7921e is not set
-# CONFIG_PACKAGE_kmod-mt7921s is not set
-# CONFIG_PACKAGE_kmod-mt7921u is not set
-# CONFIG_PACKAGE_kmod-mt7922-firmware is not set
-# CONFIG_PACKAGE_kmod-mt7925-common is not set
-# CONFIG_PACKAGE_kmod-mt7925-firmware is not set
-# CONFIG_PACKAGE_kmod-mt7925e is not set
-# CONFIG_PACKAGE_kmod-mt7925u is not set
+CONFIG_KERNEL_BUILD_DOMAIN="milkflint4"
+# Build only what the image needs for a first Flint 4 bring-up (skip the
+# full kmod feed build; enable CONFIG_ALL_KMODS later for package feeds).
+# CONFIG_ALL_KMODS is not set
+# CONFIG_VERSION_KMODS_REPO is not set
+
+# Flint 4 Wi-Fi 7 (mt7996). MilkFlint for Flint 2 disabled these because its
+# mt76 fork targeted mt7915; MilkFlint4 needs them for the BE14000.
+CONFIG_PACKAGE_kmod-mt7996e=y
+CONFIG_PACKAGE_kmod-mt7996-firmware=y
+CONFIG_PACKAGE_kmod-mt7996-233-firmware=y
+CONFIG_PACKAGE_kmod-mt7996-firmware-common=y
 
 CONFIG_PACKAGE_luci=y
-# HTTPS for this web interface and LuCI, as in OpenWrt's own images: luci-ssl
-# adds px5g, which makes the router's own (self-signed) certificate the first
-# time uhttpd starts. Without it uhttpd has no certificate, so nothing answers
-# on port 443 and LuCI's "Redirect to HTTPS" does nothing.
 CONFIG_PACKAGE_luci-ssl=y
 
 # MilkFlint's web interface at the router's address; LuCI stays under
@@ -79,27 +48,16 @@ CONFIG_PACKAGE_milkflint-ui=y
 CONFIG_PACKAGE_milkflint-rtprio=y
 CONFIG_PACKAGE_sqm-scripts=y
 CONFIG_PACKAGE_luci-app-sqm=y
-# Pages that need extra packages: DNS (encrypted DNS through AdGuard's
-# dnsproxy), UPnP, Data Statistics
 CONFIG_PACKAGE_dnsproxy=y
-# AdGuard Home (the AdGuard Home page): in the image, off until it's turned on
 CONFIG_PACKAGE_adguardhome=y
 CONFIG_PACKAGE_milkflint-bcrypt=y
-# banIP (the banIP page): in the image, off until it's turned on
 CONFIG_PACKAGE_banip=y
 CONFIG_PACKAGE_miniupnpd-nftables=y
 CONFIG_PACKAGE_nlbwmon=y
-# The VPN pages (Remote access, VPN client)
 CONFIG_PACKAGE_kmod-wireguard=y
 CONFIG_PACKAGE_wireguard-tools=y
 CONFIG_PACKAGE_luci-proto-wireguard=y
-# Access point mode's faster bridging (Operating Mode page): the bridge
-# fast path (source/patches/0037) and bridge conntrack
 CONFIG_PACKAGE_kmod-nft-bridge-offload=y
-# USB mobile broadband modems in QMI mode (Quectel and most other 4G/5G
-# modules): the QMI network driver, the modem's serial ports for AT commands,
-# netifd's qmi protocol (uqmi) and LuCI's page for it. Kernel modules can't come
-# from OpenWrt's package repository: it only has them for OpenWrt's own kernel.
 CONFIG_PACKAGE_kmod-usb-net-qmi-wwan=y
 CONFIG_PACKAGE_kmod-usb-serial-option=y
 CONFIG_PACKAGE_uqmi=y

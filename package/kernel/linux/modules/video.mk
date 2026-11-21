@@ -264,6 +264,22 @@ endef
 $(eval $(call KernelPackage,fb-tft))
 
 
+define KernelPackage/fb-tft-st7789p3
+  SUBMENU:=$(VIDEO_MENU)
+  TITLE:=FB driver for the ST7789P3 LCD Controller
+  DEPENDS:=+kmod-fb-tft +kmod-backlight-pwm
+  KCONFIG:=CONFIG_FB_TFT_ST7789P3
+  FILES:=$(LINUX_DIR)/drivers/staging/fbtft/fb_st7789p3.ko
+  AUTOLOAD:=$(call AutoLoad,09,fb_st7789p3)
+endef
+
+define KernelPackage/fb-tft-st7789p3/description
+  FB driver for the Sitronix ST7789P3 LCD Controller (GL.iNet BE14000 panel)
+endef
+
+$(eval $(call KernelPackage,fb-tft-st7789p3))
+
+
 define KernelPackage/fb-tft-ili9486
   SUBMENU:=$(VIDEO_MENU)
   TITLE:=FB driver for the ILI9486 LCD Controller

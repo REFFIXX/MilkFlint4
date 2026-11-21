@@ -1748,6 +1748,26 @@ define Device/glinet_gl-mt3600be
 endef
 TARGET_DEVICES += glinet_gl-mt3600be
 
+define Device/glinet_gl-be14000
+  DEVICE_VENDOR := GL.iNet
+  DEVICE_MODEL := GL-BE14000
+  DEVICE_DTS := mt7988a-glinet-gl-be14000
+  DEVICE_DTS_DIR := ../dts
+  BOARD_NAME := glinet,gl-be14000
+  SUPPORTED_DEVICES += glinet,gl-be14000
+  DEVICE_PACKAGES := e2fsprogs f2fsck mkf2fs blkid blockdev losetup \
+	kmod-fs-ext4 kmod-fs-f2fs kmod-fs-vfat kmod-i2c-gpio kmod-mmc \
+	kmod-nls-cp437 kmod-nls-iso8859-1 kmod-hwmon-pwmfan \
+	kmod-mt7996-firmware kmod-mt7996-233-firmware mt7988-wo-firmware \
+	kmod-phy-motorcomm kmod-dsa-yt92xx kmod-sfp kmod-usb3 \
+	kmod-fb-tft-st7789p3 kmod-input-touchscreen-cst353x kmod-input-evdev \
+	bridger
+  IMAGES += factory.bin
+  IMAGE/factory.bin := append-kernel | pad-to 32M | append-rootfs
+  IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
+endef
+TARGET_DEVICES += glinet_gl-be14000
+
 define Device/glinet_gl-mt6000
   DEVICE_VENDOR := GL.iNet
   DEVICE_MODEL := GL-MT6000
