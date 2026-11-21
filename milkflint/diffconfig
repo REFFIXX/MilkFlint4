@@ -81,3 +81,4 @@ CONFIG_DISPLAY_SUPPORT=y
 
 # Out-of-tree PF_RING is not 6.18-ready (dev_get_flags); keep ALL_KMODS otherwise.
 # CONFIG_PACKAGE_kmod-pf-ring is not set
+# When building: make IGNORE_ERRORS="n m" world  # ALL_KMODS packaging gaps on 6.18
