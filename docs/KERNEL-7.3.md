@@ -59,3 +59,7 @@ Linux **7.3.5** already includes MediaTek **hardware RSS** in `mtk_eth_soc`
 out-of-tree `990-*` RSS patch series is **quarantined** on this branch as
 redundant. Remaining work is board defaults + any MilkFlint UX knobs that
 are not upstream, plus YT922x DSA (refreshed) and RTL8261x cold-boot retry.
+
+## Config
+Kernel configure runs `olddefconfig` after merging OpenWrt config fragments so incomplete `config-7.3` does not trip interactive syncconfig on NEW symbols.
+

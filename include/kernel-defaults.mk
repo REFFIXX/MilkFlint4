@@ -125,6 +125,8 @@ define Kernel/Configure/Default
 		cp $(LINUX_DIR)/.config.set $(LINUX_DIR)/.config; \
 		cp $(LINUX_DIR)/.config.set $(LINUX_DIR)/.config.prev; \
 	}
+	# MilkFlint 7.3: accept new Kconfig defaults without interactive syncconfig
+	$(_SINGLE)$(KERNEL_MAKE) olddefconfig
 	$(_SINGLE) [ -d $(LINUX_DIR)/user_headers ] || $(KERNEL_MAKE) $(if $(findstring uml,$(BOARD)),ARCH=$(ARCH)) INSTALL_HDR_PATH=$(LINUX_DIR)/user_headers headers_install
 	{ grep '=[ym]' $(LINUX_DIR)/.config.set | LC_ALL=C sort; \
 	  find $(GENERIC_BACKPORT_DIR) $(GENERIC_PATCH_DIR) $(GENERIC_HACK_DIR) $(GENERIC_FILES_DIR) \
