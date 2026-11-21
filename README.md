@@ -6,20 +6,22 @@
 
 <p align="center">
   <strong>OpenWrt for the GL.iNet Flint 4 (GL-BE14000)</strong><br>
-  MediaTek MT7988A · <strong>kernel 6.18</strong> · Wi‑Fi 7 · 10G WAN · 2.5G LAN · SFP+ · front panel<br>
+  MediaTek MT7988A · <strong>kernel 7.3.5 (experimental)</strong> · Wi‑Fi 7 · 10G WAN · 2.5G LAN · SFP+ · front panel<br>
   MilkFlint’s everyday UI, tuned for Flint 4 hardware
 </p>
 
 <p align="center">
-  <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/badge/version-0.3a-b45309" alt="Version 0.3a"></a>
-  <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/badge/kernel-6.18-1a7f4b" alt="Kernel 6.18"></a>
+  <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/badge/version-0.4a--k7-b45309" alt="Version 0.4a-k7"></a>
+  <a href="https://github.com/REFFIXX/MilkFlint4/tree/cursor/flint4-kernel-7.3-ec1a"><img src="https://img.shields.io/badge/kernel-7.3.5-8b1a1a" alt="Kernel 7.3.5"></a>
   <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/badge/target-mediatek%2Ffilogic-0f766e" alt="Target"></a>
-  <a href="https://openwrt.org"><img src="https://img.shields.io/badge/base-OpenWrt%20main-1a7f4b" alt="OpenWrt"></a>
+  <a href="https://openwrt.org"><img src="https://img.shields.io/badge/base-OpenWrt%20main%20%2B%207.3-1a7f4b" alt="OpenWrt"></a>
 </p>
 
 ---
 
-**MilkFlint4 0.3a** runs **OpenWrt main / kernel 6.18** on the Flint 4 — full **RTL8261C/D** 10G PHY, hardware **RSS** on `wan`, default Wi‑Fi country **US** (6 GHz LPI + WPA3), and **`CONFIG_ALL_KMODS`** so extras match this image’s vermagic (do not pull snapshot `kmod-*` from downloads.openwrt.org).
+> **Experimental kernel 7.3 track** — OpenWrt main still builds Filogic on **6.18**. This branch bumps MilkFlint4 to **Linux 7.3.5** ourselves to pick up MediaTek **mt76 / mtk_eth** work from the 7.x cycle (MT7996 NPU offload path, MLO fixes, RSS/LRO-era ethernet). Stable flashing remains **0.3a / 6.18** until this boots clean. See [`docs/KERNEL-7.3.md`](docs/KERNEL-7.3.md).
+
+**MilkFlint4 0.4a-k7** = MilkFlint4 0.3a userspace (RSS defaults, US country, ALL_KMODS, max-perf tweaks) on **kernel 7.3.5**.
 
 MilkFlint4 is MilkFlint, rebuilt for the **Flint 4**: the same dashboard, guest Wi‑Fi, AdGuard Home, banIP, Smart Queue (CAKE), WireGuard, themes, and Performance Tuning — wired to MT7988 / MT7996 / YT9224 instead of the Flint 2’s MT7986 stack.
 

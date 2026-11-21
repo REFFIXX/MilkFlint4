@@ -1,0 +1,52 @@
+# MilkFlint4 experimental: Linux 7.3 on Flint 4 (GL-BE14000)
+
+**Status:** experimental branch `cursor/flint4-kernel-7.3-ec1a`  
+**Base:** MilkFlint4 0.3a (kernel 6.18) + first-party bump to **Linux 7.3.5**  
+**OpenWrt main:** still `KERNEL_PATCHVER:=6.18` for `mediatek` — we are intentionally ahead.
+
+## Why 7.x
+
+OpenWrt ships MediaTek Filogic on longterm **6.18** and backports selected **v7.0 / v7.1** commits into `patches-6.18`. Upstream Linux has already moved on:
+
+| Area | Why it matters on Flint 4 |
+|---|---|
+| **mt76 / MT7996** | Linux **7.1** networking pull: NPU offload path for MT7996, MLO per-link beacon monitoring, external EEPROM for MT799x, large fix storm |
+| **mtk_eth_soc** | Hardware **RSS + LRO** series for MT798x (net-next / 7.x era) — may replace our out-of-tree `990-*` MilkFlint RSS patches once verified present |
+| **Realtek 10G PHY** | 6.18 already got RTL8261C/D C45+PCS; 7.3 keeps that stack current |
+| **Generic net** | 7.1+: hardware queue leasing / AF_XDP leasing, cleaner IPv6 built-in, driver churn |
+
+NPU offload landed around Airoha EN7581 + MT7996; MT7988 may not expose the same NPU binding. We still want 7.3 for the rest of the mt76/mtk_eth wins and to stop living on a backport treadmill.
+
+## What we did ourselves (no waiting for OpenWrt)
+
+1. `target/linux/generic/kernel-7.3` → **7.3.5** + official tarball hash  
+2. `config-7.3` seeded from `config-6.18` (needs `oldconfig` refresh)  
+3. `backport-7.3` starts **empty** (6.18 “future” backports are already upstream)  
+4. `pending-7.3` / `hack-7.3` copied from 6.18 for refresh  
+5. `mediatek/patches-7.3` copied from 6.18; dropped `*-v6.19-*` … `*-v7.3-*` already-in-tree patches  
+6. Kept MilkFlint **990-*** RSS series + **991** RTL8261x cold-boot retry for re-port  
+7. Board defaults (US country, SQM, WAN mitigations, max-perf sysctl) stay — userspace is kernel-agnostic  
+
+## Build (worktree)
+
+```sh
+cd /path/to/milkflint4-k7
+cp milkflint/diffconfig .config   # or existing 0.3a config
+make defconfig
+make target/linux/{clean,prepare} V=s   # first fight: patch refresh
+make -j$(nproc) world V=s
+```
+
+## Success criteria
+
+- [ ] `make target/linux/prepare` applies clean on filogic  
+- [ ] Kernel + modules build for `glinet_gl-be14000`  
+- [ ] WAN 10G + tri-band Wi‑Fi bring-up  
+- [ ] Drop redundant `990-*` if upstream RSS/LRO covers MT7988  
+- [ ] Document vermagic / ALL_KMODS same as 0.3a  
+- [ ] Optional: MilkFlint4 **0.4a-k7** release tag (not main until proven)
+
+## Non-goals (yet)
+
+- Replacing the **0.3a / 6.18** release track on `main`  
+- Official openwrt.org kmods (vermagic will never match)  

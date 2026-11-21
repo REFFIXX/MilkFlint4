@@ -1,0 +1,5 @@
+MilkFlint4 experimental Linux 7.3 track.
+
+OpenWrt's backport-6.18 tree is mostly "pull future commits into 6.18".
+On 7.3 those commits are already upstream, so this directory starts empty.
+Add only 7.4+/7.5+ cherry-picks that we need early for Flint 4.

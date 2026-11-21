@@ -1,0 +1,78 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MilkFlint4 <milkflint4@local>
+Date: Sat, 21 Nov 2026 12:20:00 +0000
+Subject: [PATCH] net: phy: realtek: rtl8261x retry empty PMA abilities
+
+OpenWrt #26691: retry empty PMA ability reads after early firmware load
+and soft-reset; fail probe instead of attaching a blank PHY.
+
+---
+--- a/drivers/net/phy/realtek/realtek_main.c	2026-11-21 12:20:29.497579226 +0000
++++ b/drivers/net/phy/realtek/realtek_main.c	2026-11-21 12:20:29.545573099 +0000
+@@ -452,17 +452,58 @@
+ 	return 0;
+ }
+ 
++static int rtl8261x_fw_load(struct phy_device *phydev);
++
+ static int rtl8261x_get_features(struct phy_device *phydev)
+ {
+-	int ret;
++	struct rtl8261x_priv *priv = phydev->priv;
++	int ret, tries;
++	bool has_speed = false;
++
++	/* config_init() normally loads FW; get_features runs first. */
++	if (priv && priv->fw_name && !priv->fw_loaded) {
++		ret = rtl8261x_fw_load(phydev);
++		if (ret)
++			phydev_warn(phydev, "early firmware load failed: %d\n",
++				    ret);
++	}
++
++	for (tries = 0; tries < 5; tries++) {
++		linkmode_zero(phydev->supported);
++		ret = genphy_c45_pma_read_abilities(phydev);
++		if (ret)
++			return ret;
++
++		has_speed =
++			linkmode_test_bit(ETHTOOL_LINK_MODE_10baseT_Full_BIT,
++					  phydev->supported) ||
++			linkmode_test_bit(ETHTOOL_LINK_MODE_100baseT_Full_BIT,
++					  phydev->supported) ||
++			linkmode_test_bit(ETHTOOL_LINK_MODE_1000baseT_Full_BIT,
++					  phydev->supported) ||
++			linkmode_test_bit(ETHTOOL_LINK_MODE_2500baseT_Full_BIT,
++					  phydev->supported) ||
++			linkmode_test_bit(ETHTOOL_LINK_MODE_5000baseT_Full_BIT,
++					  phydev->supported) ||
++			linkmode_test_bit(ETHTOOL_LINK_MODE_10000baseT_Full_BIT,
++					  phydev->supported);
++		if (has_speed)
++			break;
++
++		phydev_warn(phydev,
++			    "empty PMA abilities (try %d/5), soft-reset\n",
++			    tries + 1);
++		genphy_soft_reset(phydev);
++		msleep(200);
++	}
++
++	if (!has_speed) {
++		phydev_err(phydev,
++			   "PMA abilities still empty after retries\n");
++		return -EINVAL;
++	}
+ 
+-	ret = genphy_c45_pma_read_abilities(phydev);
+-	if (ret)
+-		return ret;
+-	/*
+-	 * Supplement Multi-Gig speeds that may not be automatically detected
+-	 * RTL8261X supports 2.5G/5G in addition to standard 10G
+-	 */
++	/* Supplement Multi-Gig speeds that may not be auto-detected. */
+ 	linkmode_set_bit(ETHTOOL_LINK_MODE_2500baseT_Full_BIT,
+ 			 phydev->supported);
+ 	linkmode_set_bit(ETHTOOL_LINK_MODE_5000baseT_Full_BIT,
