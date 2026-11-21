@@ -78,3 +78,6 @@ CONFIG_PACKAGE_uqmi=y
 CONFIG_PACKAGE_luci-proto-qmi=y
 
 CONFIG_DISPLAY_SUPPORT=y
+
+# Out-of-tree PF_RING is not 6.18-ready (dev_get_flags); keep ALL_KMODS otherwise.
+# CONFIG_PACKAGE_kmod-pf-ring is not set
