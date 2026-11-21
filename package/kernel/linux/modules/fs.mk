@@ -104,6 +104,10 @@ define KernelPackage/fs-smbfs-common
 	CONFIG_SMBFS
   FILES:= \
 	$(LINUX_DIR)/fs/smb/common/cifs_md4.ko
+  # Linux 7.x: ksmbd/cifs pull smb_compress.ko from common/
+ifneq ($(wildcard $(LINUX_DIR)/fs/smb/common/smb_compress.ko),)
+  FILES+=$(LINUX_DIR)/fs/smb/common/smb_compress.ko
+endif
 endef
 
 define KernelPackage/fs-smbfs-common/description
