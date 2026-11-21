@@ -174,7 +174,8 @@
 		};
 
 		cpu_trip_active_low: active-low {
-			temperature = <60000>;
+			/* 45°C: 10G PHY can misbehave in the high 40s without airflow */
+			temperature = <45000>;
 			hysteresis = <2000>;
 			type = "active";
 		};
@@ -679,7 +680,7 @@
 		spi-cpha;
 
 		dc-gpios = <&pio 62 GPIO_ACTIVE_HIGH>;
-		reset-gpios = <&pio 68 GPIO_ACTIVE_HIGH>;
+		reset-gpios = <&pio 68 GPIO_ACTIVE_LOW>;
 		te-gpios = <&pio 35 GPIO_ACTIVE_HIGH>;
 		write-only;
 
