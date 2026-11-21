@@ -1,0 +1,84 @@
+#!/bin/sh
+# Flint 4 (GL-BE14000) SQM / CAKE defaults: MT7988 has four A73 cores and
+# (with MilkFlint RSS eth patches) four RX rings on eth2. Prefer multi-queue
+# CAKE earlier than MilkFlint's generic 500 Mbit threshold, keep download
+# no-split-gso ready for multi-gig lines, and pin fairness opts for a busy
+# home / lab gateway.
+
+[ "$(board_name)" = glinet,gl-be14000 ] || exit 0
+
+. /lib/functions.sh
+
+# Keep Performance Tuning's multi-queue CAKE preference on: the UI will not
+# auto-disable cake_mq just because a queue is under 500 Mbit/s. Four cores
+# + RSS make cake_mq cheap enough for 100–500 Mbit fibre as well.
+if [ -z "$(uci -q get milkflint.defaults.flint4_cake_mq)" ]; then
+	uci -q get milkflint.cake >/dev/null || uci set milkflint.cake=cake
+	uci set milkflint.cake.multi_queue=1
+	for queue in $(uci -q show sqm | sed -n "s/^sqm\.\([^.=]*\)=queue$/\1/p"); do
+		case "$(uci -q get "sqm.$queue.interface")" in br-guest* | wg_out) continue ;; esac
+		uci set "sqm.$queue.use_mq=1"
+		# Egress on mtk_soc_eth is still one busy TX queue per MAC;
+		# keep single CAKE there, multi-queue on the ingress ifb.
+		dev=$(uci -q get "sqm.$queue.interface")
+		[ "$(basename "$(readlink "/sys/class/net/$dev/device/driver" 2>/dev/null)" 2>/dev/null)" = mtk_soc_eth ] &&
+			uci set "sqm.$queue.use_mq_egress=0"
+	done
+	uci -q commit sqm
+	uci -q batch <<-UCI
+		set milkflint.defaults=defaults
+		set milkflint.defaults.flint4_cake_mq='1'
+		commit milkflint
+	UCI
+fi
+
+# Multi-gig WAN: GRO/GSO whole packets into CAKE (no-split-gso) once a
+# download is set at ≥100 Mbit/s. Saves CPU on 2.5G/10G lines; harmless on
+# slower profiles the UI may write later.
+if [ -z "$(uci -q get milkflint.defaults.flint4_sqm_gso)" ]; then
+	for queue in $(uci -q show sqm | sed -n "s/^sqm\.\([^.=]*\)=queue$/\1/p"); do
+		case "$(uci -q get "sqm.$queue.interface")" in eth2 | sfp) ;; *) continue ;; esac
+		dl=$(uci -q get "sqm.$queue.download")
+		[ -n "$dl" ] && [ "$dl" -ge 100000 ] 2>/dev/null || continue
+		opts=$(uci -q get "sqm.$queue.iqdisc_opts")
+		case " $opts " in *" no-split-gso "*) continue ;; esac
+		uci set "sqm.$queue.iqdisc_opts=${opts:+$opts }no-split-gso"
+		uci set "sqm.$queue.qdisc_advanced=1"
+		uci set "sqm.$queue.qdisc_really_really_advanced=1"
+	done
+	uci -q commit sqm
+	uci -q batch <<-UCI
+		set milkflint.defaults=defaults
+		set milkflint.defaults.flint4_sqm_gso='1'
+		commit milkflint
+	UCI
+fi
+
+# Per-host fairness on the WAN shaper when options are still empty: many
+# clients behind a 2.5G/10G uplink benefit from dual-dsthost on download and
+# dual-srchost on upload. Leave queues that already set nat/nonat alone.
+if [ -z "$(uci -q get milkflint.defaults.flint4_cake_host)" ]; then
+	for queue in $(uci -q show sqm | sed -n "s/^sqm\.\([^.=]*\)=queue$/\1/p"); do
+		case "$(uci -q get "sqm.$queue.interface")" in eth2 | sfp) ;; *) continue ;; esac
+		iopts=$(uci -q get "sqm.$queue.iqdisc_opts")
+		eopts=$(uci -q get "sqm.$queue.eqdisc_opts")
+		case " $iopts " in *" nat "* | *" nonat "* | *" dual-dsthost "* | *" triple-isolate "*) ;; *)
+			uci set "sqm.$queue.iqdisc_opts=${iopts:+$iopts }nat dual-dsthost"
+			uci set "sqm.$queue.qdisc_advanced=1"
+			uci set "sqm.$queue.qdisc_really_really_advanced=1"
+		;; esac
+		case " $eopts " in *" nat "* | *" nonat "* | *" dual-srchost "* | *" triple-isolate "*) ;; *)
+			uci set "sqm.$queue.eqdisc_opts=${eopts:+$eopts }nat dual-srchost"
+			uci set "sqm.$queue.qdisc_advanced=1"
+			uci set "sqm.$queue.qdisc_really_really_advanced=1"
+		;; esac
+	done
+	uci -q commit sqm
+	uci -q batch <<-UCI
+		set milkflint.defaults=defaults
+		set milkflint.defaults.flint4_cake_host='1'
+		commit milkflint
+	UCI
+fi
+
+exit 0
