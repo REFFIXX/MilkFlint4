@@ -117,3 +117,5 @@ DROP 740-net-pcs-mtk_lynxi-add-mt7987-support.patch (auto; needs refresh for 7.3
 REFRESH mediatek/843-dts-mt7988a-add-cpufreq-calibration-efuse (from 186)
 RESTORE pending-7.3/450-block-allow-setting-partition-of_node (required by 451)
 KEEP-BROKEN 450/451 partition of_node (7.3 uses find_partition_fwnode + seq_buf API; series needs rewrite)
+REFRESH pending-7.3/490 ubi_attach_mtd_dev 7-arg
+ADD hack-7.3/646 xt_connmark IP headers for 645

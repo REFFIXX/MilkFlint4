@@ -1,0 +1,18 @@
+From: MilkFlint4 <builder@milkflint4>
+Subject: [PATCH] netfilter: xt_connmark: include IP headers for DSCP helpers
+
+Needed by 645 set-dscpmark on kernels where ipv4_get_dsfield is not
+visible via existing includes.
+
+--- a/net/netfilter/xt_connmark.c
++++ b/net/netfilter/xt_connmark.c
+@@ -12,6 +12,9 @@
+ 
+ #include <linux/module.h>
+ #include <linux/skbuff.h>
++#include <linux/ip.h>
++#include <linux/ipv6.h>
++#include <net/ipv6.h>
+ #include <net/netfilter/nf_conntrack.h>
+ #include <net/netfilter/nf_conntrack_ecache.h>
+ #include <linux/netfilter/x_tables.h>
