@@ -318,6 +318,8 @@ export function meaning(f: TuningForm, data: TuningData | undefined): string {
     f.l4s,
     f.retries,
     f.voAggr,
+    f.muruMimoUl,
+    f.muruOfdmaUl,
   ]);
 }
 
@@ -497,6 +499,8 @@ export function changedSettings(f: TuningForm, data: Pick<TuningData, 'firewall'
     ['expert', 'Wi-Fi radio’s total', aqlTotalValue(f.aqlTotal, f.aqlTotalCustom) !== undefined],
     ['expert', 'Sends per frame', f.retries !== defaults.retries],
     ['expert', 'Voice queue aggregation', f.voAggr !== defaults.voAggr],
+    ['expert', 'Uplink MU-MIMO', f.muruMimoUl !== defaults.muruMimoUl],
+    ['expert', 'Uplink OFDMA', f.muruOfdmaUl !== defaults.muruOfdmaUl],
   ];
   return all.filter(([, , changed]) => changed).map(([tier, label]) => ({ tier, label }));
 }

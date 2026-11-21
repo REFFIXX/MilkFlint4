@@ -16,6 +16,8 @@ test('the image is told by its name', () => {
   assert.equal(imageKind(SNAPSHOT), 'openwrt');
   assert.equal(imageKind(GLINET), 'glinet');
   assert.equal(imageKind('gl-mt6000-4.6.8.bin'), 'glinet');
+  assert.equal(imageKind('openwrt-be14000-4.8.0-0101-1.bin'), 'glinet');
+  assert.equal(imageKind('milkflint4-0.3a-mediatek-filogic-glinet_gl-be14000-squashfs-sysupgrade.bin'), 'milkflint');
   assert.equal(imageKind('firmware.bin'), 'unknown');
   assert.equal(imageKind('immortalwrt-24.10.0-mediatek-filogic-glinet_gl-mt6000-squashfs-sysupgrade.bin'), 'unknown');
 });

@@ -34,7 +34,7 @@ test('nothing set is the image’s defaults, and writes nothing', () => {
   assert.deepEqual(knobOptions(k), {
     steering: { wifi_all: undefined, rings_rt: undefined, rx_delay: undefined },
     cake: { ecn_drop: undefined, l4s: undefined },
-    wifi: { retries: undefined, vo_aggr: undefined },
+    wifi: { retries: undefined, vo_aggr: undefined, muru_mimo_ul: undefined, muru_ofdma_ul: undefined },
   });
 });
 
@@ -47,13 +47,25 @@ test('each setting read back as set', () => {
       'cake.ecn_drop': '0',
       'cake.l4s': '0',
       'wifi.retries': '7',
+      'wifi.muru_mimo_ul': '1',
+      'wifi.muru_ofdma_ul': '1',
     }),
   );
-  assert.deepEqual(k, { wifiAll: false, ringsRt: false, rxDelay: '80', ecnDrop: '0', l4s: '0', retries: '7', voAggr: '' });
+  assert.deepEqual(k, {
+    wifiAll: false,
+    ringsRt: false,
+    rxDelay: '80',
+    ecnDrop: '0',
+    l4s: '0',
+    retries: '7',
+    voAggr: '',
+    muruMimoUl: '1',
+    muruOfdmaUl: '1',
+  });
   assert.deepEqual(knobOptions(k), {
     steering: { wifi_all: '0', rings_rt: '0', rx_delay: '80' },
     cake: { ecn_drop: '0', l4s: '0' },
-    wifi: { retries: '7', vo_aggr: undefined },
+    wifi: { retries: '7', vo_aggr: undefined, muru_mimo_ul: '1', muru_ofdma_ul: '1' },
   });
 });
 

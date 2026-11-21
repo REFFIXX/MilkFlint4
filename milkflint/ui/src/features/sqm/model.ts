@@ -232,7 +232,7 @@ export function sqmData({ sqm, firewall, milkflint, wanDevice, wanProto, devices
   // PPPoE's session device is there only while it's connected
   const pppoe = wanProto !== 'pppoe' ? undefined : isPppoeDevice(wanDevice) ? wanDevice : pppoeDevice('wan');
   const wan = pppoe ?? wanDevice;
-  const device = str(queue, 'interface') ?? wan ?? 'eth1';
+  const device = str(queue, 'interface') ?? wan ?? 'wan';
   const link = presetOf(queue, device);
 
   const form: SqmForm = {

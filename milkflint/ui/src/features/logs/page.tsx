@@ -50,7 +50,7 @@ const placeholders: Record<LogKind, string> = {
   debug: 'Filter, e.g. snapshot, cake or RESTART',
   dns: 'Filter, e.g. slow, a device or a site',
   banip: 'Filter, e.g. failed, a list or err',
-  crash: 'Filter, e.g. Oops, KFENCE or mt7915',
+  crash: 'Filter, e.g. Oops, KFENCE or mt7996',
 };
 
 const DIAGNOSTICS = `${href('tuning')}/diagnostics`;
