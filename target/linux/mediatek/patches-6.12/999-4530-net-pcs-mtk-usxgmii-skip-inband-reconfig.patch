@@ -1,0 +1,33 @@
+From: MilkFlint4 <noreply@milkflint4.local>
+Subject: [PATCH] net: pcs: mtk-usxgmii: skip link-up reconfig for in-band USXGMII
+
+Re-running pcs_config from pcs_link_up drops the carrier of a link that
+just came up. On the GL-BE14000 10G WAN (in-band USXGMII to the C45 PHY)
+that flaps the port every one to two seconds for as long as it is up.
+
+Keep the RX re-tune for 10GBASE-R and fixed-mode trunks; skip it when
+the interface is USXGMII (in-band AN already settled).
+
+Based on the OpenWrt / community fix reported against Flint 4 builds
+(openwrt#26690 and related forum reports).
+
+Signed-off-by: MilkFlint4 <noreply@milkflint4.local>
+---
+--- /tmp/pcs-mtk-usxgmii.c.orig	2026-11-21 08:16:23.818398204 +0000
++++ b/drivers/net/pcs/pcs-mtk-usxgmii.c	2026-11-21 08:16:23.838398193 +0000
+@@ -325,9 +325,13 @@
+ 				    phy_interface_t interface,
+ 				    int speed, int duplex)
+ {
+-	/* Reconfiguring USXGMII to ensure the quality of the RX signal
+-	 * after the line side link up.
++	/* Reconfigure after link-up for modes that need an RX re-tune.
++	 * In-band USXGMII already finished AN; reconfiging it drops the
++	 * carrier and flaps forever on boards such as the GL-BE14000.
+ 	 */
++	if (interface == PHY_INTERFACE_MODE_USXGMII)
++		return;
++
+ 	mtk_usxgmii_pcs_config(pcs, neg_mode, interface, NULL, false);
+ }
+ 

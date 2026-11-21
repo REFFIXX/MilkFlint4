@@ -48,7 +48,8 @@ export function keepChoice({
 }): KeepChoice {
   const kind = imageKind(image);
   if (allowBackup === false) return { keep: false, allowed: false, kind, reason: 'This image can’t keep the current settings.' };
-  const fromMilkFlint = running?.trim().toLowerCase() === 'milkflint';
+  const dist = running?.trim().toLowerCase() ?? '';
+  const fromMilkFlint = dist === 'milkflint' || dist === 'milkflint4';
   if (!fromMilkFlint) {
     return {
       keep: false,
@@ -57,12 +58,12 @@ export function keepChoice({
       reason:
         running === undefined
           ? 'Couldn’t read which firmware the router runs now, so settings are erased unless you turn this on.'
-          : `The router runs ${running} now, not MilkFlint: start the new firmware with factory settings.`,
+          : `The router runs ${running} now, not MilkFlint4: start the new firmware with factory settings.`,
     };
   }
   switch (kind) {
     case 'milkflint':
-      return { keep: true, allowed: true, kind, reason: 'A MilkFlint image: upgrading from MilkFlint keeps your settings.' };
+      return { keep: true, allowed: true, kind, reason: 'A MilkFlint4 image: upgrading from MilkFlint4 keeps your settings.' };
     case 'openwrt':
       return {
         keep: false,

@@ -15,7 +15,7 @@ const STONE =
   'M39.1 6.6 51.9 17.4Q55 20 55.5 24L57.5 40Q58 44 55.2 46.8L44.8 57.2Q42 60 38 60H23Q19 60 16.5 56.9L8.5 47.1Q6 44 6.8 40.1L10.2 22.9Q11 19 14.4 16.9L32.6 6.1Q36 4 39.1 6.6Z';
 const MILK = 'M0 37C11 30.5 21 30.5 32 35.5S52 41 64 34V64H0Z';
 
-/** MilkFlint's mark: a flint, chipped to a point, half full of milk (docs/logo.svg). */
+/** MilkFlint4's mark: a flint, chipped to a point, half full of milk (docs/logo.svg). */
 export function Logo({ className, ...props }: ComponentProps<'svg'>): ReactElement {
   const clip = useId();
   return (
@@ -35,14 +35,14 @@ export function Logo({ className, ...props }: ComponentProps<'svg'>): ReactEleme
  * (the one it comes with), which would say the name twice.
  */
 export function Brand({ board }: { board: Board | undefined }): ReactElement {
-  const product = board?.release?.distribution ?? 'MilkFlint';
+  const product = board?.release?.distribution ?? 'MilkFlint4';
   const named = board !== undefined && board.hostname.toLowerCase() !== product.toLowerCase() ? board.hostname : undefined;
   return (
     <a href={href('dashboard')} className="flex min-w-0 items-center gap-3 rounded-lg">
       <Logo className="size-8 shrink-0" />
       <span className="min-w-0">
-        <span className="block truncate text-sm font-semibold">MilkFlint</span>
-        <span className="block truncate text-xs text-sidebar-muted-foreground">{named ?? board?.model ?? 'Router'}</span>
+        <span className="block truncate text-sm font-semibold">MilkFlint4</span>
+        <span className="block truncate text-xs text-sidebar-muted-foreground">{named ?? board?.model ?? 'Flint 4'}</span>
       </span>
     </a>
   );
@@ -259,7 +259,7 @@ export function Sidebar({
           </button>
         </div>
         <ThemeToggle />
-        <p className="px-1 text-xs text-sidebar-muted-foreground">{firmwareName(board?.release) ?? 'MilkFlint'}</p>
+        <p className="px-1 text-xs text-sidebar-muted-foreground">{firmwareName(board?.release) ?? 'MilkFlint4'}</p>
       </div>
     </div>
   );

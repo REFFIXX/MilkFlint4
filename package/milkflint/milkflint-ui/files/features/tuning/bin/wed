@@ -6,10 +6,11 @@
 # itself, Wi-Fi included: its packets no longer reach a CPU, so they pass by
 # everything the router does to packets in software. It needs the firewall's
 # flow offloading, software and hardware (flow_offloading, flow_offloading_hw),
-# and the Wi-Fi driver loaded with wed_enable=Y, which mt7915e reads only as
-# it loads. The driver isn't loaded again on a running router: the SoC's WED
-# doesn't come apart and together again cleanly, so the driver takes the
-# setting when the router next starts.
+# and the Wi-Fi driver loaded with wed_enable=Y, which mt7915e / mt7996e
+# reads only as it loads. The driver isn't loaded again on a running router:
+# the SoC's WED doesn't come apart and together again cleanly, so the driver
+# takes the setting when the router next starts. Flint 4 (MT7996) uses
+# mt7996e; Flint 2 (MT7986) uses mt7915e.
 #
 # One rule everywhere: while WED is on it wins, until it's turned off. What
 # can't work beside it is turned off and remembered, and put back as it was
@@ -47,9 +48,24 @@
 
 R=${WED_ROOT:-}
 CONF=$R/etc/modules.conf
-PARAM=$R/sys/module/mt7915e/parameters/wed_enable
 LOCK=$R/var/run/milkflint-wed-flowtable.lock
-LINE='options mt7915e wed_enable=Y'
+
+# Prefer the module that is (or will be) on this board.
+wed_module() {
+	if [ -d "$R/sys/module/mt7996e" ] || grep -q '^mt7996e\b' /proc/modules 2>/dev/null; then
+		echo mt7996e
+	elif [ -d "$R/sys/module/mt7915e" ] || grep -q '^mt7915e\b' /proc/modules 2>/dev/null; then
+		echo mt7915e
+	elif [ -e /lib/modules/*/mt7996e.ko* ] || [ -e "$R/lib/modules"/*/mt7996e.ko* ]; then
+		echo mt7996e
+	else
+		echo mt7915e
+	fi
+}
+
+WED_MOD=$(wed_module)
+PARAM=$R/sys/module/$WED_MOD/parameters/wed_enable
+LINE="options $WED_MOD wed_enable=Y"
 
 log() {
 	logger -t milkflint-wed "$*"
@@ -168,11 +184,13 @@ guard() {
 	reload_config
 }
 
-# /etc/modules.conf without the driver's WED option, wherever it was written
+# /etc/modules.conf without either Wi-Fi driver's WED option
 without_option() {
 	[ -f "$CONF" ] || return 0
 	sed -e '/^[[:space:]]*options[[:space:]][[:space:]]*mt7915e[[:space:]]/s/[[:space:]][[:space:]]*wed_enable=[^[:space:]]*//g' \
-		-e '/^[[:space:]]*options[[:space:]][[:space:]]*mt7915e[[:space:]]*$/d' "$CONF"
+		-e '/^[[:space:]]*options[[:space:]][[:space:]]*mt7996e[[:space:]]/s/[[:space:]][[:space:]]*wed_enable=[^[:space:]]*//g' \
+		-e '/^[[:space:]]*options[[:space:]][[:space:]]*mt7915e[[:space:]]*$/d' \
+		-e '/^[[:space:]]*options[[:space:]][[:space:]]*mt7996e[[:space:]]*$/d' "$CONF"
 }
 
 conf() {

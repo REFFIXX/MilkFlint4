@@ -1,4 +1,4 @@
-// Signing in: MilkFlint's mark and name, the admin password, and what a new
+// Signing in: MilkFlint4's mark and name, the admin password, and what a new
 // or reset router asks for (nothing: it has no password until one is set,
 // so anyone on a cable can sign in meanwhile).
 import { ArrowRightIcon, KeyRoundIcon, LoaderCircleIcon } from 'lucide-react';
@@ -44,8 +44,8 @@ export function LoginPage({ reason }: { reason: 'expired' | 'logged-out' | undef
         <div className="flex items-center gap-3">
           <Logo className="size-10 shrink-0" />
           <div className="flex min-w-0 flex-col">
-            <span className="text-lg leading-tight font-semibold">MilkFlint</span>
-            <span className="text-sm text-muted-foreground">Router settings</span>
+            <span className="text-lg leading-tight font-semibold">MilkFlint4</span>
+            <span className="text-sm text-muted-foreground">Flint 4 · Router settings</span>
           </div>
         </div>
         <form

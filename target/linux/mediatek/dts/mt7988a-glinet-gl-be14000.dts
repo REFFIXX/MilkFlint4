@@ -229,7 +229,11 @@
 		};
 
 		cpu_trip_active_low: active-low {
-			temperature = <60000>;
+			/* Start the fan earlier: the 10G PHY runs hotter than
+			 * the SoC, and a quiet board in the high forties can
+			 * misbehave on WAN until airflow starts (Flint 4).
+			 */
+			temperature = <45000>;
 			hysteresis = <2000>;
 			type = "active";
 		};
@@ -714,6 +718,7 @@
 	phy-mode = "usxgmii";
 	phy-connection-type = "usxgmii";
 	phy-handle = <&phy0>;
+	managed = "in-band-status";
 	nvmem-cells = <&macaddr_ethernet 0>;
 	nvmem-cell-names = "mac-address";
 	status = "okay";
@@ -731,6 +736,10 @@
 		reset-deassert-us = <200000>;
 		interrupt-parent = <&pio>;
 		interrupts = <3 IRQ_TYPE_LEVEL_LOW>;
+		/* Board MDI swap for YT8824 ports; vendor U-Boot writes this,
+		 * OpenWrt must too so lan1–lan4 work with any bootloader.
+		 */
+		motorcomm,mdi-swap = <0x0780>;
 
 		mdio {
 			#address-cells = <1>;

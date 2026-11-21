@@ -1,62 +1,72 @@
-<img src="milkflint/logo.svg" width="96" alt="MilkFlint4 logo: a four-facet flint, half full of milk">
+<p align="center">
+  <img src="milkflint/logo.svg" width="128" alt="MilkFlint4: a four-facet flint, half full of milk">
+</p>
 
-# MilkFlint4
+<h1 align="center">MilkFlint4</h1>
 
-OpenWrt for the **GL.iNet Flint 4 (GL-BE14000)** — MediaTek MT7988A, Wi-Fi 7,
-10G WAN, 2.5G LAN, SFP+, and the front panel — with MilkFlint’s everyday UI
-(LuCI under Advanced), multi-queue CAKE, AdGuard Home, banIP, and WireGuard.
+<p align="center">
+  <strong>OpenWrt for the GL.iNet Flint 4 (GL-BE14000)</strong><br>
+  MediaTek MT7988A · Wi‑Fi 7 · 10G WAN · 2.5G LAN · SFP+ · front panel<br>
+  MilkFlint’s everyday UI, tuned for Flint 4 hardware
+</p>
 
-Built on OpenWrt 25.12. Experimental alpha: keep a stock recovery image before
-you flash.
+<p align="center">
+  <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/github/v/release/REFFIXX/MilkFlint4?label=release&color=b45309" alt="Release"></a>
+  <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/badge/target-mediatek%2Ffilogic-0f766e" alt="Target"></a>
+  <a href="https://openwrt.org"><img src="https://img.shields.io/badge/base-OpenWrt%2025.12-1a7f4b" alt="OpenWrt"></a>
+</p>
 
-## Install
+---
 
-Flash only:
+MilkFlint4 is MilkFlint, rebuilt for the **Flint 4**: the same dashboard, guest Wi‑Fi, AdGuard Home, banIP, Smart Queue (CAKE), WireGuard, themes, and Performance Tuning — wired to MT7988 / MT7996 / YT9224 instead of the Flint 2’s MT7986 stack.
 
-```
+Experimental alpha. Keep a stock GL.iNet recovery image before you flash.
+
+## Install (sysupgrade)
+
+Flash only this file from [Releases](https://github.com/REFFIXX/MilkFlint4/releases):
+
+```text
 milkflint4-*-glinet_gl-be14000-squashfs-sysupgrade.bin
 ```
 
-from [Releases](https://github.com/REFFIXX/MilkFlint4/releases) when builds are
-published.
+That is the normal OpenWrt upgrade path. **Do not use the factory image** with GL.iNet’s upgrade UI or U‑Boot web recovery — they expect vendor metadata. Leave the stock bootloader alone.
 
-**Don’t keep settings** (`sysupgrade -n`). **Don’t use the factory image** —
-GL.iNet’s upgrade UI and U-Boot recovery reject it (no OpenWrt metadata). Never
-flash random preloader / bl31-uboot files unless you mean to replace the
-bootloader.
+### From GL.iNet stock firmware
 
-### From GL.iNet stock
-
-Wired LAN. Admin/SSH at `192.168.8.1`:
+1. Plug a PC into any LAN port. Admin/SSH is at `192.168.8.1`.
+2. Copy the sysupgrade image, then flash with settings erased:
 
 ```sh
 scp -O milkflint4-*-glinet_gl-be14000-squashfs-sysupgrade.bin root@192.168.8.1:/tmp/
 ssh root@192.168.8.1
-cat /tmp/sysinfo/board_name    # glinet,gl-be14000
+cat /tmp/sysinfo/board_name    # must print: glinet,gl-be14000
 sysupgrade -T /tmp/milkflint4-*-glinet_gl-be14000-squashfs-sysupgrade.bin
 sysupgrade -n /tmp/milkflint4-*-glinet_gl-be14000-squashfs-sysupgrade.bin
 ```
 
-SSH drops mid-flash — wait 3–5 minutes. Or use **System → Upgrade → Local
-Upgrade** with Keep Settings off.
+SSH drops mid-flash — wait **3–5 minutes**. Or use **System → Upgrade → Local Upgrade** with Keep Settings **off**.
 
 ### From OpenWrt / MilkFlint4
 
-LuCI → **System → Backup / Flash Firmware**, Keep settings off, or
-`sysupgrade -n` from a shell.
+LuCI → **System → Backup / Flash Firmware**, Keep settings off on the first MilkFlint4 flash, or:
+
+```sh
+sysupgrade -n /tmp/milkflint4-*-glinet_gl-be14000-squashfs-sysupgrade.bin
+```
+
+Later MilkFlint4 → MilkFlint4 upgrades can keep settings.
 
 ### First boot
 
 1. LAN cable into any `lan1`–`lan8` port  
-2. Open `http://192.168.1.1` — empty password; set one under Admin Password  
-3. Turn Wi-Fi on and set your country  
+2. Open `http://192.168.1.1` — empty password; set one under **Admin Password**  
+3. Turn Wi‑Fi on and set a **country** that allows 6 GHz if you want the 6 GHz radio (e.g. `DE`)  
+4. Optional: **Performance Tuning → Hardware offloading (WED)** is on by default on Flint 4; enable firewall hardware flow offloading when you want Wi‑Fi ↔ WAN to leave the CPU  
 
-### Back to stock
+### Back to stock GL.iNet
 
-Hold **Reset** while powering on until the panel countdown, set PC to
-`192.168.1.2/24`, open `http://192.168.1.1`, upload GL.iNet firmware from
-[dl.gl-inet.com](https://dl.gl-inet.com/). That recovery only takes vendor
-images.
+Hold **Reset** while powering on until the panel countdown, set the PC to `192.168.1.2/24`, open `http://192.168.1.1`, upload firmware from [dl.gl-inet.com](https://dl.gl-inet.com/). Recovery only accepts vendor images.
 
 ## Ports
 
@@ -64,28 +74,59 @@ images.
 |---|---|
 | WAN (10G RJ45) | `eth2` |
 | WAN (SFP+) | `sfp` (same firewall WAN zone) |
-| LAN | `lan1`–`lan8` (2.5G + 1G) |
+| LAN | `lan1`–`lan4` (2.5G on YT9224) · `lan5`–`lan8` (1G on MT7988 switch) |
 
-MACs: factory eMMC `0x4000` (WAN label), LAN = WAN+2; Wi-Fi bands from
-`0x4006`.
+MACs: factory eMMC `0x4000` (WAN label), LAN = WAN+2; Wi‑Fi bands from `0x4006`.
 
 ## Hardware
 
 | | |
 |---|---|
-| SoC | MT7988A (4× A73) |
+| SoC | MT7988A (4× Cortex‑A73) |
 | RAM / storage | 2 GB DDR4 / eMMC |
-| Wi-Fi | MT7996 tri-band Wi-Fi 7 |
+| Wi‑Fi | MT7996 tri‑band Wi‑Fi 7 (2.4 / 5 / 6 GHz) |
 | Switch | YT9224 DSA + YT8824 2.5G PHYs; 10G C45 WAN PHY |
 | Panel | ST7789 SPI + CST3530 touch |
-| Cooling | PWM fan, SoC thermal trips |
+| Cooling | PWM fan, SoC thermal trips (fan starts ~45 °C) |
 | Console | `ttyS0` 115200 8N1 |
+
+## MilkFlint carried over — Flint 4 focused
+
+Everything below ships in the image. Generic MilkFlint behaviour is kept; defaults that touch radios, WED, or the switch are pointed at **MT7996 / MT7988 / YT9224**.
+
+| Area | What you get on Flint 4 |
+|---|---|
+| **MilkFlint UI** | Dashboard, Wi‑Fi, guests, DNS, AdGuard Home, banIP, SQM, VPN, schedules, device control, themes, upgrade, Performance Tuning — LuCI under **Advanced** |
+| **uhttpd** | `milkflint.html` is the index page; UI assets under `/milkflint/` |
+| **Packet steering** | MilkFlint layout; RSS target is `eth2` (10G WAN) via `ports rss` |
+| **Smart Queue** | Multi‑queue CAKE defaults; SQM remembers VPN queues when WED is on |
+| **Wi‑Fi latency** | 5 GHz + **6 GHz** best‑effort TXOP/backoff tweak; MU EDCA timers shortened; DTIM 1; airtime fairness ready (off until enabled) |
+| **6 GHz** | Default PSC channel **37** instead of `auto` (avoids 5+6 GHz MLD ACS deadlock) |
+| **WED** | `mt7996e wed_enable=Y` by default; flowtable hotplug when radios appear |
+| **Stealth / ping** | WAN ping off and related firewall defaults from MilkFlint |
+| **Front panel** | ST7789 + CST3530 drivers in the image |
+| **Fan** | PWM fan with earlier low trip so the 10G PHY stays cooler |
+
+### Flint 4 kernel / board fixes in this release
+
+Pulled from OpenWrt main / community Flint 4 work (and verified against GitHub `BE14000` / `Flint 4` reports):
+
+- **YT9224 `motorcomm,mdi-swap = <0x0780>`** — lan1–lan4 link without relying on vendor U‑Boot alone ([openwrt mdi-swap](https://github.com/openwrt/openwrt/blob/main/target/linux/generic/pending-6.18/967-54-net-dsa-yt922x-apply-the-board-mdi-swap.patch))
+- **USXGMII PCS** — skip in‑band link‑up reconfig so 10G WAN does not flap forever (community fix for openwrt#26690-class behaviour)
+- **mt76** — FILS / action-frame layout compatibility with OpenWrt 25.12 mac80211
+- **YT8824** — `of.h` include fix for Motorcomm PHY build
+- **In-band WAN** — `managed = "in-band-status"` on the 10G GMAC
+
+### Known issues (upstream / hardware)
+
+- **openwrt#26690** — some units still report 10G WAN wedging when a second radio comes up; we ship the PCS skip, but treat multi-radio + 10G as “watch the link” until OpenWrt closes the bug.
+- **openwrt#26691** — rare cold boot with empty 10G speed capabilities; power cycle if WAN stays dark.
+- **6 GHz** needs a country that allows it (not `00`; `US` can show 0 dBm / no-IR). Prefer `DE` or similar + WPA3.
+- Prefer official MilkFlint4 images over mixing snapshot `kmod-*` from downloads.openwrt.org (vermagic mismatch).
 
 ## Build
 
-Linux host with the
-[OpenWrt build system](https://openwrt.org/docs/guide-developer/build-system/install-buildsystem).
-Use **gcc** as the host compiler (not clang).
+Linux host with the [OpenWrt build system](https://openwrt.org/docs/guide-developer/build-system/install-buildsystem). Use **gcc** as the host compiler (not clang).
 
 ```bash
 git clone https://github.com/REFFIXX/MilkFlint4.git
@@ -98,27 +139,29 @@ make download
 make -j$(nproc)
 ```
 
-Image: `bin/targets/mediatek/filogic/milkflint4-*-glinet_gl-be14000-squashfs-sysupgrade.bin`.
+Image:
 
-UI rebuild (Node 24 + pnpm):
-
-```bash
-cd milkflint/ui && pnpm install --frozen-lockfile && pnpm package
+```text
+bin/targets/mediatek/filogic/milkflint4-*-glinet_gl-be14000-squashfs-sysupgrade.bin
 ```
 
-## Notes
+UI rebuild (Node **24.11** + pnpm):
 
-- Package manager is **`apk`**. Prefer a new image over mixing official
-  snapshot `kmod-*` packages (kernel mismatch).
-- Prefer an explicit **PSC** 6 GHz channel (5, 21, 37, …) over `auto`.
-- Development is on **`main`**.
+```bash
+cd milkflint/ui && pnpm install --frozen-lockfile --config.trust-policy=off && pnpm exec vite build && node scripts/package.ts
+```
+
+## Tree map
 
 | Path | Role |
 |---|---|
-| `target/linux/mediatek/` | BE14000 DTS, DSA/panel patches, board scripts |
+| `target/linux/mediatek/` | BE14000 DTS, DSA / PCS / panel patches, board scripts, Flint 4 Wi‑Fi defaults |
 | `package/kernel/cst353x/` | CST3530 touch |
-| `package/milkflint/` | UI + MilkFlint packages |
-| `milkflint/diffconfig` | Flint 4 build seed |
+| `package/milkflint/` | UI + MilkFlint packages (WED aware of `mt7996e`) |
+| `milkflint/ui/` | React UI source |
+| `milkflint/diffconfig` | Flint 4 build seed (`VERSION_DIST=MilkFlint4`) |
+
+Development is on **`main`**.
 
 ## License
 

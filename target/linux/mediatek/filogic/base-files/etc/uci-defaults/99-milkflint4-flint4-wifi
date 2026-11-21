@@ -1,0 +1,57 @@
+#!/bin/sh
+# Flint 4 (GL-BE14000) Wi-Fi defaults on top of MilkFlint's generic tweaks:
+# MT7996 tri-band Wi-Fi 7, WED on the MT7988, and a sane 6 GHz PSC start.
+
+[ "$(board_name)" = glinet,gl-be14000 ] || exit 0
+
+. /lib/functions.sh
+
+# MilkFlint's Performance Tuning WED path (mt7996e). On by default for this
+# board so Wi-Fi <-> WAN can leave the CPU once flow offloading is enabled.
+if [ -z "$(uci -q get milkflint.defaults.flint4_wed)" ]; then
+	uci -q get milkflint.wifi >/dev/null || uci set milkflint.wifi=wifi
+	uci set milkflint.wifi.wed=1
+	uci -q batch <<-UCI
+		set milkflint.defaults=defaults
+		set milkflint.defaults.flint4_wed='1'
+		commit milkflint
+	UCI
+	[ -x /usr/libexec/milkflint/wed ] && /usr/libexec/milkflint/wed conf
+fi
+
+# Best-effort latency tweak (MilkFlint wifi_be) also on 6 GHz: same long
+# TXOP / short backoff problem under download as on 5 GHz.
+if [ -z "$(uci -q get milkflint.defaults.flint4_wifi_be6)" ]; then
+	for radio in $(uci -q show wireless | sed -n "s/^wireless\.\([^.=]*\)=wifi-device$/\1/p"); do
+		[ "$(uci -q get "wireless.$radio.band")" = 6g ] || continue
+		uci set "wireless.$radio.tx_burst=0"
+		uci -q del_list "wireless.$radio.hostapd_options=tx_queue_data2_cwmin=31"
+		uci add_list "wireless.$radio.hostapd_options=tx_queue_data2_cwmin=31"
+	done
+	uci -q commit wireless
+	uci -q batch <<-UCI
+		set milkflint.defaults=defaults
+		set milkflint.defaults.flint4_wifi_be6='1'
+		commit milkflint
+	UCI
+fi
+
+# Prefer an explicit 6 GHz PSC channel when still on auto: ACS on two MLD
+# links (5 + 6 GHz) can deadlock; PSC 37 is widely usable once a country
+# that allows 6 GHz is set.
+if [ -z "$(uci -q get milkflint.defaults.flint4_psc6)" ]; then
+	for radio in $(uci -q show wireless | sed -n "s/^wireless\.\([^.=]*\)=wifi-device$/\1/p"); do
+		[ "$(uci -q get "wireless.$radio.band")" = 6g ] || continue
+		ch=$(uci -q get "wireless.$radio.channel")
+		[ -z "$ch" ] || [ "$ch" = auto ] || continue
+		uci set "wireless.$radio.channel=37"
+	done
+	uci -q commit wireless
+	uci -q batch <<-UCI
+		set milkflint.defaults=defaults
+		set milkflint.defaults.flint4_psc6='1'
+		commit milkflint
+	UCI
+fi
+
+exit 0
