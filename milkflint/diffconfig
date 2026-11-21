@@ -4,9 +4,10 @@ CONFIG_TARGET_mediatek=y
 CONFIG_TARGET_mediatek_filogic=y
 CONFIG_TARGET_mediatek_filogic_DEVICE_glinet_gl-be14000=y
 
-# MilkFlint4 0.3a on OpenWrt main-line mediatek (kernel 6.18) with
-# Flint 4 hardware RSS, RTL8261C/D PHY firmware, and a full kmod set so
-# opkg/apk extras match this image's vermagic (not downloads.openwrt.org).
+# MilkFlint4 0.4a-k7 — experimental mediatek/filogic on Linux 7.3.5
+# (OpenWrt main is still 6.18). Board RSS comes from upstream 7.3 mtk_eth;
+# RTL8261C/D firmware + BE14000 Wi-Fi/panel packages stay selected.
+# CONFIG_ALL_KMODS stays off on this track (see comment below).
 CONFIG_IMAGEOPT=y
 CONFIG_VERSIONOPT=y
 CONFIG_VERSION_DIST="MilkFlint4"
