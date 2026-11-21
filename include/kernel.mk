@@ -151,12 +151,7 @@ PKG_SYMVERS_DIR = $(KERNEL_BUILD_DIR)/symvers
 define collect_module_symvers
 	rm -f $(PKG_BUILD_DIR)/Module.symvers.tmp; \
 	for subdir in $(PKG_EXTMOD_SUBDIRS); do \
-		realdir=$$$$(readlink -f $(PKG_BUILD_DIR)); \
-		grep -F $(PKG_BUILD_DIR) $(PKG_BUILD_DIR)/$$$$subdir/Module.symvers >> $(PKG_BUILD_DIR)/Module.symvers.tmp; \
-		[ "$(PKG_BUILD_DIR)" = "$$$$realdir" ] || \
-			grep -F $$$$realdir $(PKG_BUILD_DIR)/$$$$subdir/Module.symvers >> $(PKG_BUILD_DIR)/Module.symvers.tmp; \
-		[ -s $(PKG_BUILD_DIR)/Module.symvers.tmp ] || \
-			cat $(PKG_BUILD_DIR)/$$$$subdir/Module.symvers >> $(PKG_BUILD_DIR)/Module.symvers.tmp; \
+		cat $(PKG_BUILD_DIR)/$$$$subdir/Module.symvers >> $(PKG_BUILD_DIR)/Module.symvers.tmp; \
 	done; \
 	sort -u $(PKG_BUILD_DIR)/Module.symvers.tmp > $(PKG_BUILD_DIR)/Module.symvers; \
 	mkdir -p $(PKG_SYMVERS_DIR); \
