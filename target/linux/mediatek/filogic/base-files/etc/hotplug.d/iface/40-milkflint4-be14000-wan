@@ -13,10 +13,14 @@ pulse_fan() {
 	# flapping is still in progress (side-channel, not thermal).
 	cd=/sys/class/thermal/cooling_device0
 	[ -w "$cd/cur_state" ] || return 0
-	echo 1 > "$cd/cur_state" 2>/dev/null || true
+	prev=$(cat "$cd/cur_state" 2>/dev/null || echo 0)
+	# Raise to at least 1; leave alone if thermal already asked for more.
+	[ "$prev" -ge 1 ] 2>/dev/null || echo 1 > "$cd/cur_state" 2>/dev/null || true
 	sleep 8
-	# Leave at least level 1 if thermal already wants more; else back to 0
-	echo 0 > "$cd/cur_state" 2>/dev/null || true
+	# Only drop back if we were the ones who raised it and nothing hotter
+	# took over during the wait — never force 0 over an active trip.
+	now=$(cat "$cd/cur_state" 2>/dev/null || echo 0)
+	[ "$prev" = 0 ] && [ "$now" = 1 ] && echo 0 > "$cd/cur_state" 2>/dev/null || true
 }
 
 bounce_wan() {

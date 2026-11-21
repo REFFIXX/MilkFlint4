@@ -1,0 +1,18 @@
+# Flint 4 (GL-BE14000): seed milkflint.wifi.wed=1 before 81_milkflint-tuning
+# writes /etc/modules.conf. On a fresh flash the uci-defaults that mark WED
+# on (99-milkflint4-flint4-wifi) run after kmodloader, so without this the
+# first boot loads mt7996e with wed_enable off until a reboot.
+
+milkflint4_flint4_wed_preinit() {
+	. /lib/functions.sh
+	[ "$(board_name)" = glinet,gl-be14000 ] || return 0
+	# Once the board default has been applied (or the user turned WED off
+	# after that), honour milkflint.wifi.wed alone via 81_milkflint-tuning.
+	[ -z "$(uci -q get milkflint.defaults.flint4_wed)" ] || return 0
+	[ -z "$(uci -q get milkflint.wifi.wed)" ] || return 0
+	uci -q get milkflint.wifi >/dev/null || uci set milkflint.wifi=wifi
+	uci set milkflint.wifi.wed=1
+	uci commit milkflint
+}
+
+boot_hook_add preinit_main milkflint4_flint4_wed_preinit

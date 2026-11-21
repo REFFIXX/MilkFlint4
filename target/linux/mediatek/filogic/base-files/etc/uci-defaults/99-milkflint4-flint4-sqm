@@ -1,13 +1,32 @@
 #!/bin/sh
 # Flint 4 (GL-BE14000) SQM / CAKE defaults: MT7988 has four A73 cores and
-# (with MilkFlint RSS eth patches) four RX rings on eth2. Prefer multi-queue
-# CAKE earlier than MilkFlint's generic 500 Mbit threshold, keep download
-# no-split-gso ready for multi-gig lines, and pin fairness opts for a busy
-# home / lab gateway.
+# (with MilkFlint RSS eth patches) four RX rings on the WAN MAC. Prefer
+# multi-queue CAKE earlier than MilkFlint's generic 500 Mbit threshold, keep
+# download no-split-gso ready for multi-gig lines, and pin fairness opts for
+# a busy home / lab gateway.
 
 [ "$(board_name)" = glinet,gl-be14000 ] || exit 0
 
 . /lib/functions.sh
+
+# Stock sqm-scripts ships queue 'eth1' (Flint 2 / many Mediatek boards).
+# BE14000's WAN netdev is 'wan' (02_network). Remap once so the UI and the
+# multi-gig defaults below actually hit the internet port.
+if [ -z "$(uci -q get milkflint.defaults.flint4_sqm_wan)" ]; then
+	for queue in $(uci -q show sqm | sed -n "s/^sqm\.\([^.=]*\)=queue$/\1/p"); do
+		[ "$(uci -q get "sqm.$queue.interface")" = eth1 ] || continue
+		uci set "sqm.$queue.interface=wan"
+		if [ "$queue" = eth1 ] && [ -z "$(uci -q get sqm.wan)" ]; then
+			uci rename sqm.eth1=wan
+		fi
+	done
+	uci -q commit sqm
+	uci -q batch <<-UCI
+		set milkflint.defaults=defaults
+		set milkflint.defaults.flint4_sqm_wan='1'
+		commit milkflint
+	UCI
+fi
 
 # Keep Performance Tuning's multi-queue CAKE preference on: the UI will not
 # auto-disable cake_mq just because a queue is under 500 Mbit/s. Four cores
