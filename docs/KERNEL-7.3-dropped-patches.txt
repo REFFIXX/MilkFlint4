@@ -69,3 +69,5 @@ STOP: hand-refresh Filogic-critical 003-clk-mediatek-mt7988-use-MUX_CLR_SET-for-
 RESTORE yt922x/mtdsplit/jffs2-lzma/mtk_ppe for hand refresh (13:01Z)
 STOP: hand-refresh Flint4-critical 400-mtd-mtdsplit-support.patch
 DROP mediatek/003-clk-mt7988 MUX_CLR_SET (already upstream in 7.3.5)
+STOP: hand-refresh Flint4-critical 530-jffs2_make_lzma_available.patch
+DROP 530-jffs2_lzma (Flint4 is squashfs/eMMC; refresh later if needed)
