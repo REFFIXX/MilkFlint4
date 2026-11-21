@@ -103,3 +103,9 @@ DROP mediatek/990-12-net-ethernet-mtk_eth_soc-read-only-the-RX-descriptor.patch 
 DROP mediatek/990-13-net-ethernet-mtk_eth_soc-sync-only-the-RX-buffer-of-.patch (RSS/LRO already in Linux 7.3.5 mtk_eth_soc)
 DROP mediatek/990-14-net-ethernet-mtk_eth_soc-cap-the-RX-interrupt-delay.patch (RSS/LRO already in Linux 7.3.5 mtk_eth_soc)
 DROP mediatek/990-16-net-ethernet-mtk_eth_soc-enable-RSS-for-MT7988.patch (RSS/LRO already in Linux 7.3.5 mtk_eth_soc)
+DROP 117-complete-mt7981b-dtsi.patch
+DROP 186-arm64-dts-mt7988a-complete-dtsi.patch
+DROP 198-dts-mt7988a-enable-wed.patch
+DROP 320-hwrng-mtk-add-support-for-hw-access-via-SMCC.patch
+DROP 740-net-pcs-mtk_lynxi-add-mt7987-support.patch
+PREPARE_OK iteration=6
