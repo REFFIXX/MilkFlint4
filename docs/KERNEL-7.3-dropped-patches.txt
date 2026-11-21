@@ -31,3 +31,37 @@ DROP 760-12-net-dsa-mxl862xx-implement-port-MTU-configuration.patch
 DROP 760-13-net-dsa-mxl862xx-support-BR_HAIRPIN_MODE-bridge-flag.patch
 DROP 760-14-net-dsa-mxl862xx-support-BR_ISOLATED-bridge-flag.patch
 DROP 760-15-DO-NOT-SUBMIT-net-dsa-mxl862xx-re-introduce-PCE-work.patch
+DROP 795-03-net-ethernet-mtk_ppe_offload-set-output-device-befor.patch
+DROP 795-08-net-dsa-tag_mxl862xx_8021q-set-skb-queue_mapping-to-.patch
+DROP 812-PCI-sysfs-enforce-single-creation-of-sysfs-entry-for.patch
+DROP 835-03-leds-trigger-netdev-fix-sysfs-update-group-races.patch
+DROP 835-05-leds-trigger-netdev-serialize-mode-interval-stores-with-trigger-lock.patch
+DROP 895-00-net-pse-pd-fix-out-of-bounds-bitmap-access-in-pse_isr-on-32-bit.patch
+DROP 936-bus-mhi-host-pci_generic-Disable-doorbell-burst-mode-for-Quectel-RM500Q-AE.patch
+DROP 967-27-net-dsa-yt92xx-Add-support-for-Motorcomm-YT922x.patch
+DROP 967-40-net-dsa-yt922x-add-selectable-four-byte-port-tag.patch
+DROP 967-42-net-dsa-yt922x-add-hardware-bridge-offload.patch
+DROP 967-45-net-dsa-yt922x-add-unicast-fdb-management.patch
+DROP 967-46-net-dsa-yt922x-track-default-vid-fdb-aliases.patch
+DROP 967-48-net-dsa-yt922x-complete-clause22-pcs-negotiation.patch
+DROP 967-49-net-dsa-yt922x-offload-multicast-database.patch
+DROP 967-50-net-dsa-yt922x-add-8021q-vlan-offload.patch
+DROP 967-51-net-dsa-yt922x-ignore-auxiliary-vid0-fdb.patch
+DROP 967-52-net-dsa-yt922x-sync-mdb-with-bridge-snooping.patch
+DROP 967-54-net-dsa-yt922x-apply-the-board-mdi-swap.patch
+DROP 967-55-net-dsa-yt922x-expose-mib-statistics.patch
+DROP 200-tools_portability.patch
+DROP 250-netfilter_depends.patch
+DROP 251-kconfig.patch
+DROP 259-regmap_dynamic.patch
+DROP 260-crypto_test_dependencies.patch
+DROP 402-mtd-blktrans-call-add-disks-after-mtd-device.patch
+DROP 651-wireless_mesh_header.patch
+DROP 770-r8169-LED-uses-original-network-port-name.patch
+DROP 901-debloat_sock_diag.patch
+DROP 902-debloat_proc.patch
+DROP 904-debloat_dma_buf.patch
+DROP 905-io_uring-zcrx-Use-IS_REACHABLE-instead-of-IS_ENABLED.patch
+DROP 970-mux-expose-core-config.patch
+STOP: mediatek patch needs hand refresh: /home/ubuntu/worktrees/milkflint4-k7/target/linux/mediatek/patches-7.3/002-clk-mediatek-mt8192-use-MUX_CLR_SET.patch
+DROP mediatek/002-clk-mt8192 (not Filogic)
