@@ -1,0 +1,20 @@
+From: MilkFlint4 <milkflint4@local>
+Subject: [PATCH] backports: include linux/hex.h for mac_pton on Linux 7.3
+
+mac_pton() moved to linux/hex.h; pull it in via netdevice.h so
+cfg80211/mac80211/mt76 debugfs and sysfs compile against 7.3.
+
+--- a/backport-include/linux/netdevice.h
++++ b/backport-include/linux/netdevice.h
+@@ -4,6 +4,11 @@
+ #include <linux/version.h>
+ #include <backport/magic.h>
+ 
++#if LINUX_VERSION_IS_GEQ(7,0,0)
++/* mac_pton() moved out of etherdevice.h into hex.h */
++#include <linux/hex.h>
++#endif
++
+ #if LINUX_VERSION_IS_LESS(4,15,0)
+ static inline int _bp_netdev_upper_dev_link(struct net_device *dev,
+ 					    struct net_device *upper_dev)
