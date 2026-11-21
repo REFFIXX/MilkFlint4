@@ -123,3 +123,4 @@ DROP pending-7.3/496+497 virt_concat (upstream mtd_virt_concat in 7.3)
 FIX hack-7.3/646 use net/dsfield.h
 ADD hack-7.3/651 xt_FLOWOFFLOAD include x_tables.h
 FIX files/swconfig_leds.c include string.h for 7.x
+FIX swconfig_leds: strncpy -> strscpy (removed in Linux 7)
