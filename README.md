@@ -103,8 +103,9 @@ Everything below ships in the image. Generic MilkFlint behaviour is kept; defaul
 | **Theme** | Default **Monokai milk** (milky Monokai Pro: pink / cyan / green on soft milk panels). Honey milk stays available. LuCI Advanced uses Footstrap’s matching Monokai milk palette |
 | **Upstream MilkFlint** | Includes OddBlueDog **MilkFlint 0.85a** (device control, crontab schedules, CAKE/Wi‑Fi fixes, AdGuard/ubus fixes) — Flint 2–only bits left aside; Flint 4 WED/Wi‑Fi/switch overlays on top |
 | **uhttpd** | `milkflint.html` is the index page; UI assets under `/milkflint/` |
-| **Packet steering** | Hardware **RSS** on `wan` (four PDMA rings / GIC 221–224), not software RPS — MilkFlint layout via `ports rss` |
+| **Packet steering** | Hardware **RSS** on `wan` (four PDMA rings / GIC 221–224), not software RPS — MilkFlint layout via `ports rss`; forced on in Flint 4 defaults |
 | **Smart Queue** | Multi‑queue CAKE on by default for Flint 4; ingress `cake_mq` + `no-split-gso` on multi‑gig WAN; per‑host fairness (`nat dual-dsthost` / `dual-srchost`); egress stays single CAKE on `mtk_soc_eth` |
+| **Max performance** | See **MilkFlint4 performance defaults** below — conntrack, TCP buffers, netdev budget, CPU `performance`, flow offload + WED |
 | **Wi‑Fi latency** | 5 GHz + **6 GHz** best‑effort TXOP/backoff tweak; MU EDCA timers shortened; DTIM 1; airtime fairness ready (off until enabled) |
 | **Country** | Default **US** on first boot; 6 GHz LPI AP allowed (regdb patch drops US `NO-IR`) |
 | **6 GHz** | Default PSC channel **37** instead of `auto` (avoids 5+6 GHz MLD ACS deadlock) |
@@ -113,6 +114,24 @@ Everything below ships in the image. Generic MilkFlint behaviour is kept; defaul
 | **Front panel** | MIPI DBI panel firmware + CST3530 touch |
 | **Fan** | PWM fan with earlier low trip so the 10G PHY stays cooler |
 | **kmods** | Full `CONFIG_ALL_KMODS` set built with this image’s vermagic — install extras from the MilkFlint4 package feed, not downloads.openwrt.org |
+
+### MilkFlint4 performance defaults (Flint 4)
+
+Keeps every original MilkFlint Performance Tuning path (WED, AQL, steering UI, CAKE knobs, GRO), then adds board defaults tuned for **MT7988A + 2 GB + 10G WAN + Wi‑Fi 7**:
+
+| Knob | Default on first boot |
+|---|---|
+| **CPU** | `performance` governor on all four A73s (fan + 45 °C trip handle heat) |
+| **Packet steering** | MilkFlint **RSS** forced (`milkflint.steering.rss=1`); realtime NAPI rings; Wi‑Fi workers spread |
+| **RX coalesce** | `rx_delay=20` µs when unset |
+| **Flow offload** | Firewall software + **hardware** flow offloading on; WED on (`mt7996e`) |
+| **Conntrack** | `nf_conntrack_max=262144` / `buckets=65536` |
+| **TCP / sockets** | Large `rmem`/`wmem` (16 MiB cap), `somaxconn=4096`, `tcp_max_syn_backlog=8192`, `tcp_fastopen=3`, `tcp_slow_start_after_idle=0`, `tcp_mtu_probing=1` |
+| **Netdev** | `netdev_max_backlog=5000`, `netdev_budget=600` / `8000` µs |
+| **Neigh** | Higher IPv4/IPv6 `gc_thresh` for dense Wi‑Fi client tables |
+| **VM** | `swappiness=0`, milder `vfs_cache_pressure` |
+
+Applied by `99-milkflint4-flint4-perf` (once; clear `milkflint.defaults.flint4_perf` to re-seed), `/etc/sysctl.d/22-milkflint4-be14000.conf`, and `milkflint4-perf` at boot. Change anything later under **Performance Tuning** / LuCI — those edits stick.
 
 ### Flint 4 kernel / board fixes in this release (0.3a)
 
