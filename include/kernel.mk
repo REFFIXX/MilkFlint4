@@ -154,6 +154,11 @@ define collect_module_symvers
 		grep -F $(PKG_BUILD_DIR) $(PKG_BUILD_DIR)/$$$$subdir/Module.symvers >> $(PKG_BUILD_DIR)/Module.symvers.tmp; \
 		[ "$(PKG_BUILD_DIR)" = "$$$$realdir" ] || \
 			grep -F $$$$realdir $(PKG_BUILD_DIR)/$$$$subdir/Module.symvers >> $(PKG_BUILD_DIR)/Module.symvers.tmp; \
+		# Linux 6.18+ modpost writes module names, not absolute paths, in
+		# Module.symvers column 3 — path greps above yield an empty file.
+		# Out-of-tree Module.symvers only lists this package's symbols.
+		[ -s $(PKG_BUILD_DIR)/Module.symvers.tmp ] || \
+			cat $(PKG_BUILD_DIR)/$$$$subdir/Module.symvers >> $(PKG_BUILD_DIR)/Module.symvers.tmp; \
 	done; \
 	sort -u $(PKG_BUILD_DIR)/Module.symvers.tmp > $(PKG_BUILD_DIR)/Module.symvers; \
 	mkdir -p $(PKG_SYMVERS_DIR); \
@@ -251,8 +256,12 @@ $(call KernelPackage/$(1)/config)
 				mkdir -p $$(1)/$(MODULES_SUBDIR) ; \
 				$(CP) -L $$$$$$$$mod $$(1)/$(MODULES_SUBDIR)/ ; \
 			else \
-				echo "ERROR: module '$$$$$$$$mod' is missing." >&2; \
-				exit 1; \
+				if [ "$(CONFIG_ALL_KMODS)" = "y" ]; then \
+					echo "WARNING: module '$$$$$$$$mod' is missing (CONFIG_ALL_KMODS=y); skipping" >&2; \
+				else \
+					echo "ERROR: module '$$$$$$$$mod' is missing." >&2; \
+					exit 1; \
+				fi; \
 			fi; \
 		  done;
 		  $(call ModuleAutoLoad,$(1),$$(1),$(filter-out 0-,$(word 1,$(AUTOLOAD))-),$(filter-out 0,$(word 2,$(AUTOLOAD))),$(sort $(wordlist 3,99,$(AUTOLOAD))))
