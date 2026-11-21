@@ -67,3 +67,5 @@ STOP: mediatek patch needs hand refresh: /home/ubuntu/worktrees/milkflint4-k7/ta
 DROP mediatek/002-clk-mt8192 (not Filogic)
 STOP: hand-refresh Filogic-critical 003-clk-mediatek-mt7988-use-MUX_CLR_SET-for-gate-less-mu.patch
 RESTORE yt922x/mtdsplit/jffs2-lzma/mtk_ppe for hand refresh (13:01Z)
+STOP: hand-refresh Flint4-critical 400-mtd-mtdsplit-support.patch
+DROP mediatek/003-clk-mt7988 MUX_CLR_SET (already upstream in 7.3.5)

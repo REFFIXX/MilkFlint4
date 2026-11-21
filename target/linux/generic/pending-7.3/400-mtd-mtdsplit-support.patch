@@ -53,13 +53,13 @@ Subject: [PATCH] mtd: mtdsplit support
 --- a/drivers/mtd/mtdpart.c
 +++ b/drivers/mtd/mtdpart.c
 @@ -15,11 +15,13 @@
- #include <linux/kmod.h>
  #include <linux/mtd/mtd.h>
  #include <linux/mtd/partitions.h>
-+#include <linux/magic.h>
  #include <linux/err.h>
++#include <linux/magic.h>
  #include <linux/of.h>
  #include <linux/of_platform.h>
+ #include <linux/mtd/concat.h>
  
  #include "mtdcore.h"
 +#include "mtdsplit/mtdsplit.h"
