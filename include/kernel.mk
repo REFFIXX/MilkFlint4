@@ -251,8 +251,12 @@ $(call KernelPackage/$(1)/config)
 				mkdir -p $$(1)/$(MODULES_SUBDIR) ; \
 				$(CP) -L $$$$$$$$mod $$(1)/$(MODULES_SUBDIR)/ ; \
 			else \
-				echo "ERROR: module '$$$$$$$$mod' is missing." >&2; \
-				exit 1; \
+				if [ "$(CONFIG_ALL_KMODS)" = "y" ]; then \
+					echo "WARNING: module '$$$$$$$$mod' is missing (CONFIG_ALL_KMODS=y); skipping" >&2; \
+				else \
+					echo "ERROR: module '$$$$$$$$mod' is missing." >&2; \
+					exit 1; \
+				fi; \
 			fi; \
 		  done;
 		  $(call ModuleAutoLoad,$(1),$$(1),$(filter-out 0-,$(word 1,$(AUTOLOAD))-),$(filter-out 0,$(word 2,$(AUTOLOAD))),$(sort $(wordlist 3,99,$(AUTOLOAD))))
