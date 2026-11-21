@@ -161,8 +161,8 @@ export const honeySeries = {
   wine: { light: 'oklch(36.5% 0.13 4)', dark: 'oklch(62% 0.115 341)' },
 } as const;
 
-/** The logo as drawn (milkflint/logo.svg): Monokai charcoal + milk. */
-export const logo = { stone: '#2d2a2e', stoneOnDark: '#727072', milk: '#fcfcfa' } as const;
+/** The logo as drawn (milkflint/logo.svg): Monokai charcoal + milk (+ pink 4). */
+export const logo = { stone: '#2d2a2e', stoneOnDark: '#727072', milk: '#fcfcfa', pink: '#ff6188' } as const;
 
 /** Font lists. The system ones cost the router nothing to serve. */
 export const fonts = {

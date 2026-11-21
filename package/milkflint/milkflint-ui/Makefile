@@ -2,7 +2,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=milkflint-ui
 PKG_VERSION:=0.5.0
-PKG_RELEASE:=1
+PKG_RELEASE:=2
 PKG_LICENSE:=MIT
 
 include $(INCLUDE_DIR)/package.mk
@@ -62,10 +62,12 @@ define Package/milkflint-ui/install
 	$(INSTALL_DATA) ./files/acl.json $(1)/usr/share/rpcd/acl.d/milkflint-ui.json
 	$(INSTALL_DATA) ./files/rpcd.uc $(1)/usr/share/rpcd/ucode/milkflint
 	$(INSTALL_BIN) ./files/uci-defaults.sh $(1)/etc/uci-defaults/90-milkflint-ui
-	$(INSTALL_DIR) $(1)/www/luci-static/footstrap $(1)/www/luci-static/resources
-	$(INSTALL_DATA) ./files/luci-footstrap/cascade.css $(1)/www/luci-static/footstrap/cascade.css
-	$(INSTALL_DATA) ./files/luci-footstrap/fs-axes.js $(1)/www/luci-static/resources/fs-axes.js
-	$(INSTALL_DATA) ./files/luci-footstrap/fs-appearance.js $(1)/www/luci-static/resources/fs-appearance.js
+	# Footstrap Monokai milk overlays: ship privately, then copy in postinst so we
+	# do not fight luci-theme-footstrap's apk ownership of the same paths.
+	$(INSTALL_DIR) $(1)/usr/share/milkflint/luci-footstrap
+	$(INSTALL_DATA) ./files/luci-footstrap/cascade.css $(1)/usr/share/milkflint/luci-footstrap/cascade.css
+	$(INSTALL_DATA) ./files/luci-footstrap/fs-axes.js $(1)/usr/share/milkflint/luci-footstrap/fs-axes.js
+	$(INSTALL_DATA) ./files/luci-footstrap/fs-appearance.js $(1)/usr/share/milkflint/luci-footstrap/fs-appearance.js
 	for f in ./files/features/*/; do \
 		id=$$$$(basename $$$$f); \
 		[ ! -f $$$$f/rpcd.uc ] || $(INSTALL_DATA) $$$$f/rpcd.uc $(1)/usr/share/rpcd/ucode/milkflint-$$$$id; \
@@ -79,6 +81,19 @@ define Package/milkflint-ui/install
 		[ ! -d $$$$f/hotplug.d ] || { $(INSTALL_DIR) $(1)/etc/hotplug.d && $(CP) $$$$f/hotplug.d/* $(1)/etc/hotplug.d/; }; \
 		[ ! -d $$$$f/licenses ] || { $(INSTALL_DIR) $(1)/www/licenses/$$$$id $(1)/usr/share/licenses && $(INSTALL_DATA) $$$$f/licenses/* $(1)/www/licenses/$$$$id/ && $(LN) /www/licenses/$$$$id $(1)/usr/share/licenses/$$$$id; }; \
 	done
+endef
+
+# Apply Monokai milk Footstrap overlays after luci-theme-footstrap is on the rootfs
+# (apk refuses two packages owning the same path).
+define Package/milkflint-ui/postinst
+#!/bin/sh
+root="$${IPKG_INSTROOT}"
+src="$${root}/usr/share/milkflint/luci-footstrap"
+[ -f "$$src/cascade.css" ] || exit 0
+mkdir -p "$${root}/www/luci-static/footstrap" "$${root}/www/luci-static/resources"
+cp -f "$$src/cascade.css" "$${root}/www/luci-static/footstrap/cascade.css"
+cp -f "$$src/fs-axes.js" "$${root}/www/luci-static/resources/fs-axes.js"
+cp -f "$$src/fs-appearance.js" "$${root}/www/luci-static/resources/fs-appearance.js"
 endef
 
 $(eval $(call BuildPackage,milkflint-ui))
