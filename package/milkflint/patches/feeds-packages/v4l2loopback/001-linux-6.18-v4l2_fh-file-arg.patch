@@ -1,0 +1,25 @@
+From: MilkFlint4 <builder@milkflint4>
+Subject: [PATCH] v4l2loopback: pass struct file to v4l2_fh_add/del
+
+Linux 6.18 requires the filp argument on v4l2_fh_add/v4l2_fh_del.
+
+--- a/v4l2loopback.c
++++ b/v4l2loopback.c
+@@ -2334,7 +2334,7 @@ static int v4l2_loopback_open(struct file *file)
+ 	v4l2_fh_init(&opener->fh, video_devdata(file));
+ 	file->private_data = &opener->fh;
+ 
+-	v4l2_fh_add(&opener->fh);
++	v4l2_fh_add(&opener->fh, file);
+ 	dprintk("open() -> dev@%p with image@%p\n", dev,
+ 		dev ? dev->image : NULL);
+ 	return 0;
+@@ -2383,7 +2383,7 @@ static int v4l2_loopback_close(struct file *file)
+ 		}
+ 	}
+ 
+-	v4l2_fh_del(&opener->fh);
++	v4l2_fh_del(&opener->fh, file);
+ 	v4l2_fh_exit(&opener->fh);
+ 
+ 	kfree(opener);
