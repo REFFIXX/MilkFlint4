@@ -65,3 +65,5 @@ DROP 905-io_uring-zcrx-Use-IS_REACHABLE-instead-of-IS_ENABLED.patch
 DROP 970-mux-expose-core-config.patch
 STOP: mediatek patch needs hand refresh: /home/ubuntu/worktrees/milkflint4-k7/target/linux/mediatek/patches-7.3/002-clk-mediatek-mt8192-use-MUX_CLR_SET.patch
 DROP mediatek/002-clk-mt8192 (not Filogic)
+STOP: hand-refresh Filogic-critical 003-clk-mediatek-mt7988-use-MUX_CLR_SET-for-gate-less-mu.patch
+RESTORE yt922x/mtdsplit/jffs2-lzma/mtk_ppe for hand refresh (13:01Z)
