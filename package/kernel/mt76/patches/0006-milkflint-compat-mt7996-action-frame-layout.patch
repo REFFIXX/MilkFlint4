@@ -1,0 +1,29 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: milkflint4 <milkflint4@localhost>
+Date: Sat, 21 Nov 2026 08:10:00 +0100
+Subject: [PATCH] milkflint compat: mt7996 action frame layout for OpenWrt 25.12
+
+Same pre-d49721c2 layout as 0002 for mt76_connac_mac.c: OpenWrt 25.12
+mac80211 still uses u.action.u.addba_req.action_code and a bare
+IEEE80211_MIN_ACTION_SIZE constant.
+
+Not for upstream.
+
+---
+ mt7996/mac.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+--- a/mt7996/mac.c
++++ b/mt7996/mac.c
+@@ -774,9 +774,9 @@
+ 	u32 val;
+ 
+ 	if (ieee80211_is_action(fc) &&
+-	    skb->len >= IEEE80211_MIN_ACTION_SIZE(action_code) &&
++	    skb->len >= IEEE80211_MIN_ACTION_SIZE &&
+ 	    mgmt->u.action.category == WLAN_CATEGORY_BACK &&
+-	    mgmt->u.action.action_code == WLAN_ACTION_ADDBA_REQ) {
++	    mgmt->u.action.u.addba_req.action_code == WLAN_ACTION_ADDBA_REQ) {
+ 		if (is_mt7990(&dev->mt76))
+ 			txwi[6] |= cpu_to_le32(FIELD_PREP(MT_TXD6_TID_ADDBA, tid));
+ 		else
