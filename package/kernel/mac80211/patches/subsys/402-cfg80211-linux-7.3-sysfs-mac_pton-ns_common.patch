@@ -1,0 +1,34 @@
+From: MilkFlint <milkflint@local>
+Subject: [PATCH] cfg80211: Linux 7.3 sysfs — mac_pton + class.namespace
+
+Linux 7.3 moved mac_pton to <linux/hex.h> and changed class.namespace
+to return const struct ns_common * (via to_ns_common).
+
+---
+ net/wireless/sysfs.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+--- a/net/wireless/sysfs.c
++++ b/net/wireless/sysfs.c
+@@ -9,6 +9,7 @@
+  * Copyright (C) 2020-2021, 2023-2024 Intel Corporation
+  */
+ 
++#include <linux/hex.h>
+ #include <linux/device.h>
+ #include <linux/module.h>
+ #include <linux/netdevice.h>
+@@ -171,10 +172,10 @@ static SIMPLE_DEV_PM_OPS(wiphy_pm_ops, wiphy_suspend, wiphy_resume);
+ #define WIPHY_PM_OPS NULL
+ #endif
+ 
+-static const void *wiphy_namespace(const struct device *d)
++static const struct ns_common *wiphy_namespace(const struct device *d)
+ {
+ 	struct wiphy *wiphy = container_of(d, struct wiphy, dev);
+ 
+-	return wiphy_net(wiphy);
++	return to_ns_common(wiphy_net(wiphy));
+ }
+ 
+ struct class ieee80211_class = {
