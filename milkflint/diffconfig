@@ -50,6 +50,7 @@ CONFIG_PACKAGE_kmod-hwmon-pwmfan=y
 CONFIG_PACKAGE_kmod-usb3=y
 CONFIG_PACKAGE_kmod-backlight-pwm=y
 CONFIG_PACKAGE_kmod-drm-panel-mipi-dbi=y
+CONFIG_PACKAGE_kmod-drm-client-lib=y
 CONFIG_PACKAGE_mipi-dbi-glinet-gl-be14000=y
 CONFIG_PACKAGE_kmod-input-touchscreen-hynitron-cst3530=y
 CONFIG_PACKAGE_kmod-input-evdev=y
