@@ -1,16 +1,26 @@
 From: MilkFlint4 <builder@milkflint4>
 Subject: [PATCH] ath9k: include linux/of.h for of_property_read_bool
 
-Needed by Ubiquiti HSR OF property check on kernels that no longer
-pull of.h transitively.
+Ubiquiti HSR OF property checks in main.c / channel.c need an explicit
+of.h include on kernels that no longer pull it in transitively.
 
 --- a/drivers/net/wireless/ath/ath9k/main.c
 +++ b/drivers/net/wireless/ath/ath9k/main.c
-@@ -18,6 +18,7 @@
+@@ -15,6 +15,7 @@
   */
  
- #include <linux/module.h>
+ #include <linux/nl80211.h>
 +#include <linux/of.h>
+ #include <linux/delay.h>
  #include "ath9k.h"
+ #include "btcoex.h"
+--- a/drivers/net/wireless/ath/ath9k/channel.c
++++ b/drivers/net/wireless/ath/ath9k/channel.c
+@@ -15,6 +15,7 @@
+  */
  
- static char *dev_info = "ath9k";
+ #include "ath9k.h"
++#include <linux/of.h>
+ #include "hsr.h"
+ 
+ /* Set/change channels.  If the channel is really being changed, it's done
