@@ -1,9 +1,10 @@
-From 4dd35ca6747a57261f3b10982a4a8cc765d6549f Mon Sep 17 00:00:00 2001
 From: Lorenzo Bianconi <lorenzo@kernel.org>
 Date: Thu, 17 Jul 2025 18:45:48 +0200
-Subject: [PATCH] target: mediatek: Enable WED for MT7988 devices running 6.12.x kernels
+Subject: [PATCH] target: mediatek: Enable WED for MT7988 (refreshed for Linux 7.3)
 
 Add WED related nodes to the device tree of the MT7988 SoC family.
+Refreshed for 7.3.5: wo_* syscons sit after eth_sram (crypto node
+is not present in upstream 7.3.5 mt7988a.dtsi).
 
 Signed-off-by: Lorenzo Bianconi <lorenzo@kernel.org>
 Signed-off-by: Daniel Golle <daniel@makrotopia.org>
@@ -43,7 +44,7 @@ Signed-off-by: Daniel Golle <daniel@makrotopia.org>
  	};
  
  	soc {
-@@ -870,6 +896,50 @@
+@@ -744,6 +770,50 @@
  			reg = <0 0x15000000 0 0x1000>;
  			#clock-cells = <1>;
  			#reset-cells = <1>;
@@ -94,7 +95,7 @@ Signed-off-by: Daniel Golle <daniel@makrotopia.org>
  		};
  
  		switch: switch@15020000 {
-@@ -1091,6 +1161,7 @@
+@@ -965,6 +1035,7 @@
  			#size-cells = <0>;
  			mediatek,ethsys = <&ethsys>;
  			mediatek,infracfg = <&topmisc>;
@@ -102,10 +103,11 @@ Signed-off-by: Daniel Golle <daniel@makrotopia.org>
  
  			gmac0: mac@0 {
  				compatible = "mediatek,eth-mac";
-@@ -1154,6 +1225,72 @@
+@@ -1011,6 +1082,72 @@
+ 			#size-cells = <1>;
  			ranges = <0 0x15400000 0 0x200000>;
  		};
- 
++
 +		wo_ccif0: syscon@151a5000 {
 +			compatible = "mediatek,mt7988-wo-ccif", "syscon";
 +			reg = <0 0x151a5000 0 0x1000>;
@@ -171,7 +173,6 @@ Signed-off-by: Daniel Golle <daniel@makrotopia.org>
 +			compatible = "mediatek,mt7988-wo-cpuboot", "syscon";
 +			reg = <0 0x15394000 0 0x1000>;
 +		};
-+
- 		crypto: crypto@15600000 {
- 			compatible = "inside-secure,safexcel-eip197b";
- 			reg = <0 0x15600000 0 0x180000>;
+ 	};
+ 
+ 	thermal-zones {

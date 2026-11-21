@@ -111,3 +111,6 @@ DROP 740-net-pcs-mtk_lynxi-add-mt7987-support.patch
 PREPARE_OK iteration=6
 DROP mediatek/117-mt7981b-dtsi (not Flint4; refresh later)
 DROP mediatek/186-mt7988a-complete-dtsi (largely upstream in 7.3.5; leftover was 2.5G PHY LEDs)
+DROP mediatek/320-hwrng-SMCC (needs refresh for 7.3 RNG driver)
+REFRESH mediatek/198-dts-mt7988a-enable-wed for 7.3.5 eth_sram context
+DROP 740-net-pcs-mtk_lynxi-add-mt7987-support.patch (auto; needs refresh for 7.3)
