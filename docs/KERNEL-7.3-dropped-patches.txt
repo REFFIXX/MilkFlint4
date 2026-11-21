@@ -119,3 +119,5 @@ RESTORE pending-7.3/450-block-allow-setting-partition-of_node (required by 451)
 KEEP-BROKEN 450/451 partition of_node (7.3 uses find_partition_fwnode + seq_buf API; series needs rewrite)
 REFRESH pending-7.3/490 ubi_attach_mtd_dev 7-arg
 ADD hack-7.3/646 xt_connmark IP headers for 645
+DROP pending-7.3/496+497 virt_concat (upstream mtd_virt_concat in 7.3)
+FIX hack-7.3/646 use net/dsfield.h
