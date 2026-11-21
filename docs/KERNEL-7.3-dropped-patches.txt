@@ -125,3 +125,4 @@ ADD hack-7.3/651 xt_FLOWOFFLOAD include x_tables.h
 FIX files/swconfig_leds.c include string.h for 7.x
 FIX swconfig_leds: strncpy -> strscpy (removed in Linux 7)
 DROP pending-7.3/737-{01,03,07,08,09,10} — need broken PCS-provider phylink API (pcs_interfaces); stock 7.3 mtk_eth SGMII OK; SerDes refresh later
+DROP mediatek/750-752 mt7987 (not needed for BE14000/mt7988; needs 737 SerDes context)
