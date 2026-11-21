@@ -26,6 +26,10 @@ CONFIG_DEVEL=y
 CONFIG_KERNEL_CFLAGS="-mcpu=cortex-a53"
 CONFIG_KERNEL_BUILD_USER="builder"
 CONFIG_KERNEL_BUILD_DOMAIN="milkflint4"
+# Prefer host clang for eBPF (avoids multi-hour tools/llvm-bpf on builders).
+# CONFIG_BPF_TOOLCHAIN_BUILD_LLVM is not set
+# CONFIG_BPF_TOOLCHAIN_NONE is not set
+CONFIG_BPF_TOOLCHAIN_HOST=y
 
 # Linux 7.3: keep ALL_KMODS so extras match this image's vermagic.
 # Hard-fail feed packages are disabled below; build with IGNORE_ERRORS='n m'.
