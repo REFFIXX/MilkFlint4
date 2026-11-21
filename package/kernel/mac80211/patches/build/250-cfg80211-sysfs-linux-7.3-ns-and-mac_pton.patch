@@ -1,0 +1,37 @@
+From: MilkFlint4 <milkflint4@local>
+Subject: [PATCH] cfg80211: fix sysfs for Linux 7.3 (ns_common + mac_pton)
+
+Linux 7.3 class.namespace returns ns_common*; mac_pton moved to hex.h.
+
+--- a/net/wireless/sysfs.c
++++ b/net/wireless/sysfs.c
+@@ -10,6 +10,7 @@
+ 
+ #include <linux/device.h>
+ #include <linux/module.h>
++#include <linux/hex.h>
+ #include <linux/netdevice.h>
+ #include <linux/nl80211.h>
+ #include <linux/rtnetlink.h>
+@@ -171,12 +172,21 @@
+ #define WIPHY_PM_OPS NULL
+ #endif
+ 
++#if LINUX_VERSION_IS_GEQ(7,0,0)
++static const struct ns_common *wiphy_namespace(const struct device *d)
++{
++	struct wiphy *wiphy = container_of(d, struct wiphy, dev);
++
++	return to_ns_common(wiphy_net(wiphy));
++}
++#else
+ static const void *wiphy_namespace(const struct device *d)
+ {
+ 	struct wiphy *wiphy = container_of(d, struct wiphy, dev);
+ 
+ 	return wiphy_net(wiphy);
+ }
++#endif
+ 
+ struct class ieee80211_class = {
+ 	.name = "ieee80211",
