@@ -1,0 +1,30 @@
+From: MilkFlint <milkflint@local>
+Subject: [PATCH] mt7981b: restore gbe_led0/1 pinmux nodes
+
+OpenWrt board DTS files (e.g. iptime AX3000M, TOTOLINK X6000R) reference
+&gbe_led0_pins / &gbe_led1_pins. The 6.18 port of 117-complete-mt7981b-dtsi
+dropped those labels from the SoC dtsi, so image DTB builds fail.
+
+--- a/arch/arm64/boot/dts/mediatek/mt7981b.dtsi
++++ b/arch/arm64/boot/dts/mediatek/mt7981b.dtsi
+@@ -352,6 +352,20 @@
+ 					drive-strength = <MTK_DRIVE_4mA>;
+ 				};
+ 			};
++
++			gbe_led0_pins: gbe-led0-pins {
++				mux {
++					function = "led";
++					groups = "gbe_led0";
++				};
++			};
++
++			gbe_led1_pins: gbe-led1-pins {
++				mux {
++					function = "led";
++					groups = "gbe_led1";
++				};
++			};
+ 		};
+ 
+ 		efuse@11f20000 {
