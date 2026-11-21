@@ -30,6 +30,8 @@ CONFIG_KERNEL_BUILD_DOMAIN="milkflint4"
 # CONFIG_BPF_TOOLCHAIN_BUILD_LLVM is not set
 # CONFIG_BPF_TOOLCHAIN_NONE is not set
 CONFIG_BPF_TOOLCHAIN_HOST=y
+# Skip toolchain gdb (heavy C++ / OOM on 16G builders); not needed for image.
+# CONFIG_GDB is not set
 
 # Linux 7.3 overnight: skip ALL_KMODS (optional packaging hard-fails).
 # Board milkflint packages stay =y; build with IGNORE_ERRORS='n m'.
