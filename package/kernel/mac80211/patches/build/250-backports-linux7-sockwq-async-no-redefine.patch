@@ -6,12 +6,9 @@ see enums, so the backport aliases shadow them with macros that expand
 to the removed SOCK_ASYNC_* names and break the build on 7.3.
 
 ---
- backport-include/linux/net.h | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
-
 --- a/backport-include/linux/net.h
 +++ b/backport-include/linux/net.h
-@@ -3,11 +3,13 @@
+@@ -3,12 +3,15 @@
  #include_next <linux/net.h>
  #include <linux/static_key.h>
  
