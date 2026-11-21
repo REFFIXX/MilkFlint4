@@ -37,7 +37,7 @@ fi
 # slower profiles the UI may write later.
 if [ -z "$(uci -q get milkflint.defaults.flint4_sqm_gso)" ]; then
 	for queue in $(uci -q show sqm | sed -n "s/^sqm\.\([^.=]*\)=queue$/\1/p"); do
-		case "$(uci -q get "sqm.$queue.interface")" in eth2 | sfp) ;; *) continue ;; esac
+		case "$(uci -q get "sqm.$queue.interface")" in wan | eth2 | sfp) ;; *) continue ;; esac
 		dl=$(uci -q get "sqm.$queue.download")
 		[ -n "$dl" ] && [ "$dl" -ge 100000 ] 2>/dev/null || continue
 		opts=$(uci -q get "sqm.$queue.iqdisc_opts")
@@ -59,7 +59,7 @@ fi
 # dual-srchost on upload. Leave queues that already set nat/nonat alone.
 if [ -z "$(uci -q get milkflint.defaults.flint4_cake_host)" ]; then
 	for queue in $(uci -q show sqm | sed -n "s/^sqm\.\([^.=]*\)=queue$/\1/p"); do
-		case "$(uci -q get "sqm.$queue.interface")" in eth2 | sfp) ;; *) continue ;; esac
+		case "$(uci -q get "sqm.$queue.interface")" in wan | eth2 | sfp) ;; *) continue ;; esac
 		iopts=$(uci -q get "sqm.$queue.iqdisc_opts")
 		eopts=$(uci -q get "sqm.$queue.eqdisc_opts")
 		case " $iopts " in *" nat "* | *" nonat "* | *" dual-dsthost "* | *" triple-isolate "*) ;; *)

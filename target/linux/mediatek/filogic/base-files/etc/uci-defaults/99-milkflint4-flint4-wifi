@@ -55,3 +55,20 @@ if [ -z "$(uci -q get milkflint.defaults.flint4_psc6)" ]; then
 fi
 
 exit 0
+
+# Default Wi-Fi country US on first boot (MilkFlint4). Only when every radio
+# is still empty/00 so a user choice sticks. US 6 GHz LPI AP works with our
+# wireless-regdb patch (510-us-6ghz-lpi-allow-ap).
+if [ -z "$(uci -q get milkflint.defaults.flint4_country_us)" ]; then
+	for radio in $(uci -q show wireless | sed -n "s/^wireless\.\([^.=]*\)=wifi-device$/\1/p"); do
+		c=$(uci -q get "wireless.$radio.country")
+		[ -z "$c" ] || [ "$c" = 00 ] || continue
+		uci set "wireless.$radio.country=US"
+	done
+	uci -q commit wireless
+	uci -q batch <<-UCI
+		set milkflint.defaults=defaults
+		set milkflint.defaults.flint4_country_us='1'
+		commit milkflint
+	UCI
+fi

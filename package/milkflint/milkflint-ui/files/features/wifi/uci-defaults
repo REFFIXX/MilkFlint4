@@ -4,8 +4,8 @@
 # "00", the world rules), so a country chosen on the Wi-Fi page (or in
 # LuCI) stays. The kernel has one country for the whole router, so a radio
 # without one gets the country the others agree on (a radio added since,
-# or left out in LuCI); GB only when none has one (a fresh install, a
-# factory reset) or they differ. Wi-Fi itself stays off until it's set up.
+# or left out in LuCI); US when none has one (a fresh install / factory
+# reset) or they differ. Wi-Fi itself stays off until it's set up.
 # `wifi config` first: it writes the radios' config if it isn't there yet
 # (it only adds radios that are missing).
 wifi config > /dev/null 2>&1
@@ -24,7 +24,7 @@ done
 for radio in $radios; do
 	country=$(uci -q get "wireless.$radio.country")
 	if [ -z "$country" ] || [ "$country" = 00 ]; then
-		uci set "wireless.$radio.country=${agreed:-GB}"
+		uci set "wireless.$radio.country=${agreed:-US}"
 	fi
 done
 uci commit wireless

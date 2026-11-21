@@ -13,7 +13,7 @@
 <p align="center">
   <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/github/v/release/REFFIXX/MilkFlint4?label=release&color=b45309" alt="Release"></a>
   <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/badge/target-mediatek%2Ffilogic-0f766e" alt="Target"></a>
-  <a href="https://openwrt.org"><img src="https://img.shields.io/badge/base-OpenWrt%2025.12-1a7f4b" alt="OpenWrt"></a>
+  <a href="https://openwrt.org"><img src="https://img.shields.io/badge/base-OpenWrt%20main%206.18-1a7f4b" alt="OpenWrt"></a>
 </p>
 
 ---
@@ -59,9 +59,9 @@ Later MilkFlint4 → MilkFlint4 upgrades can keep settings.
 
 ### First boot
 
-1. LAN cable into any `lan1`–`lan8` port  
+1. LAN cable into any `lan2`–`lan9` port  
 2. Open `http://192.168.1.1` — empty password; set one under **Admin Password**  
-3. Turn Wi‑Fi on and set a **country** that allows 6 GHz if you want the 6 GHz radio (e.g. `DE`)  
+3. Wi‑Fi country defaults to **US** (6 GHz LPI AP enabled via our regdb patch). Change it under Wi‑Fi if you need another region; use **WPA3** on 6 GHz  
 4. Optional: **Performance Tuning → Hardware offloading (WED)** is on by default on Flint 4; enable firewall hardware flow offloading when you want Wi‑Fi ↔ WAN to leave the CPU  
 
 ### Back to stock GL.iNet
@@ -72,9 +72,8 @@ Hold **Reset** while powering on until the panel countdown, set the PC to `192.1
 
 | Role | Interface |
 |---|---|
-| WAN (10G RJ45) | `eth2` |
-| WAN (SFP+) | `sfp` (same firewall WAN zone) |
-| LAN | `lan1`–`lan4` (2.5G on YT9224) · `lan5`–`lan8` (1G on MT7988 switch) |
+| WAN (10G RJ45) | `wan` |
+| LAN | `lan2`–`lan5` (2.5G on YT9224) · `lan6`–`lan9` (1G) · `sfp` (SFP+ on LAN) |
 
 MACs: factory eMMC `0x4000` (WAN label), LAN = WAN+2; Wi‑Fi bands from `0x4006`.
 
@@ -83,10 +82,11 @@ MACs: factory eMMC `0x4000` (WAN label), LAN = WAN+2; Wi‑Fi bands from `0x4006
 | | |
 |---|---|
 | SoC | MT7988A (4× Cortex‑A73) |
+| Kernel | **6.18** (OpenWrt main mediatek/filogic) |
 | RAM / storage | 2 GB DDR4 / eMMC |
 | Wi‑Fi | MT7996 tri‑band Wi‑Fi 7 (2.4 / 5 / 6 GHz) |
-| Switch | YT9224 DSA + YT8824 2.5G PHYs; 10G C45 WAN PHY |
-| Panel | ST7789 SPI + CST3530 touch |
+| Switch | YT9224 DSA + YT8824 2.5G PHYs; RTL8261C/D-CG 10G WAN PHY |
+| Panel | MIPI DBI (ST7789) + CST3530 touch |
 | Cooling | PWM fan, SoC thermal trips (fan starts ~45 °C) |
 | Console | `ttyS0` 115200 8N1 |
 
@@ -100,37 +100,34 @@ Everything below ships in the image. Generic MilkFlint behaviour is kept; defaul
 | **Theme** | Default **Monokai milk** (milky Monokai Pro: pink / cyan / green on soft milk panels). Honey milk stays available. LuCI Advanced uses Footstrap’s matching Monokai milk palette |
 | **Upstream MilkFlint** | Includes OddBlueDog **MilkFlint 0.85a** (device control, crontab schedules, CAKE/Wi‑Fi fixes, AdGuard/ubus fixes) — Flint 2–only bits left aside; Flint 4 WED/Wi‑Fi/switch overlays on top |
 | **uhttpd** | `milkflint.html` is the index page; UI assets under `/milkflint/` |
-| **Packet steering** | Hardware **RSS** on `eth2` (four PDMA rings / GIC 221–224), not software RPS — MilkFlint layout via `ports rss` |
+| **Packet steering** | Hardware **RSS** on `wan` (four PDMA rings / GIC 221–224), not software RPS — MilkFlint layout via `ports rss` |
 | **Smart Queue** | Multi‑queue CAKE on by default for Flint 4; ingress `cake_mq` + `no-split-gso` on multi‑gig WAN; per‑host fairness (`nat dual-dsthost` / `dual-srchost`); egress stays single CAKE on `mtk_soc_eth` |
 | **Wi‑Fi latency** | 5 GHz + **6 GHz** best‑effort TXOP/backoff tweak; MU EDCA timers shortened; DTIM 1; airtime fairness ready (off until enabled) |
+| **Country** | Default **US** on first boot; 6 GHz LPI AP allowed (regdb patch drops US `NO-IR`) |
 | **6 GHz** | Default PSC channel **37** instead of `auto` (avoids 5+6 GHz MLD ACS deadlock) |
 | **WED** | `mt7996e wed_enable=Y` by default; flowtable hotplug when radios appear |
 | **Stealth / ping** | WAN ping off and related firewall defaults from MilkFlint |
-| **Front panel** | ST7789 + CST3530 drivers in the image |
+| **Front panel** | MIPI DBI panel firmware + CST3530 touch |
 | **Fan** | PWM fan with earlier low trip so the 10G PHY stays cooler |
+| **kmods** | Full `CONFIG_ALL_KMODS` set built with this image’s vermagic — install extras from the MilkFlint4 package feed, not downloads.openwrt.org |
 
-### Flint 4 kernel / board fixes in this release (0.2a)
+### Flint 4 kernel / board fixes in this release (0.3a)
 
-Pulled from OpenWrt main / community Flint 4 work (and verified against GitHub `BE14000` / `Flint 4` reports):
+Moved mediatek/filogic to **kernel 6.18** (OpenWrt main stack) for best Flint 4 performance:
 
-- **Hardware RSS (MT7988)** — DTSI PDMA IRQs SPI 189–192 + `MTK_PDMA_INT \| MTK_RSS` on `MT7988_CAPS` (same pattern as upstream MT7986 RSS). MilkFlint packet steering no longer falls back to RPS on `eth2`.
-- **YT9224 `motorcomm,mdi-swap = <0x0780>`** — lan1–lan4 link without relying on vendor U‑Boot alone ([openwrt mdi-swap](https://github.com/openwrt/openwrt/blob/main/target/linux/generic/pending-6.18/967-54-net-dsa-yt922x-apply-the-board-mdi-swap.patch))
-- **USXGMII PCS** — skip in‑band link‑up reconfig so 10G WAN does not flap forever (matches OpenWrt main `975-net-phy-mtk-usxgmii-fix-link-flapping` / openwrt#26690-class behaviour)
-- **rtl8261c-firmware** — ships `/lib/firmware/rtl8261c.bin` for the RTL8261C/D-CG 10G WAN PHY (full Realtek 8261C driver is on OpenWrt **6.18+** / main; 25.12 keeps the IEEE C45 PHY + PCS fix)
-- **mt76** — FILS / action-frame layout compatibility with OpenWrt 25.12 mac80211
-- **YT8824** — `of.h` include fix for Motorcomm PHY build
-- **In-band WAN** — `managed = "in-band-status"` on the 10G GMAC
-- **SQM / CAKE** — Flint 4 board defaults: keep `cake_mq` preferred, earlier `no-split-gso`, WAN host fairness
-
-OpenWrt **main** also carries a 6.18-oriented BE14000 DTS rewrite (`wan` netdev name, `yt922x_4b` tag, MIPI panel). MilkFlint4 **0.2a** stays on the 25.12 / vendor-compatible layout (`eth2`, `lan1`–`lan8`, ST7789 fbtft) so MilkFlint steering and the panel stack keep working; we port the functional fixes above rather than the whole DTS swap.
+- **Kernel 6.18** — OpenWrt main `backport` / `hack` / `pending` + mediatek `patches-6.18`, including full **RTL8261C/D-CG** Realtek PHY support + `rtl8261c` / `rtl826x` firmware
+- **Upstream BE14000 DTS** — `wan` netdev name, `yt922x_4b` DSA tag, `mediatek,force-fixed-10g`, MIPI panel, CST3530
+- **Hardware RSS (MT7988)** — PDMA IRQs SPI 189–192 + `MTK_PDMA_INT \| MTK_RSS` (MilkFlint 990-series, including MT7988 enablement)
+- **YT9224 mdi-swap / USXGMII PCS flap skip** — from OpenWrt main (975/978 + 967-54)
+- **US 6 GHz LPI** — wireless-regdb patch so US AP mode is not blocked by `NO-IR`
+- **SQM / CAKE** — MilkFlint `sch_cake` / `cake_mq` series ported to `pending-6.18` (870-*)
+- **ALL_KMODS** — extras match this build (official snapshot kmods will not load)
 
 ### Known issues (upstream / hardware)
 
-- **openwrt#26690** — some units still report 10G WAN wedging when a second radio comes up; we ship the PCS skip, but treat multi-radio + 10G as “watch the link” until OpenWrt closes the bug.
+- **openwrt#26690** — some units still report 10G WAN wedging when a second radio comes up; PCS skip is included, but treat multi-radio + 10G as “watch the link” until upstream closes it.
 - **openwrt#26691** — rare cold boot with empty 10G speed capabilities; power cycle if WAN stays dark.
-- **RTL8261C/D full driver** — needs kernel 6.18 Realtek PHY stack (OpenWrt main). Firmware blob is included; C45 + PCS is the 25.12 path.
-- **6 GHz** needs a country that allows it (not `00`; `US` can show 0 dBm / no-IR). Prefer `DE` or similar + WPA3.
-- Prefer official MilkFlint4 images over mixing snapshot `kmod-*` from downloads.openwrt.org (vermagic mismatch).
+- Do **not** mix `kmod-*` from downloads.openwrt.org into this image — vermagic will not match. Use the kmods built with this release.
 
 ## Build
 
@@ -163,11 +160,12 @@ cd milkflint/ui && pnpm install --frozen-lockfile --config.trust-policy=off && p
 
 | Path | Role |
 |---|---|
-| `target/linux/mediatek/` | BE14000 DTS, DSA / PCS / panel patches, board scripts, Flint 4 Wi‑Fi defaults |
-| `package/kernel/cst353x/` | CST3530 touch |
+| `target/linux/mediatek/` | BE14000 DTS, 6.18 patches, board scripts, Flint 4 Wi‑Fi / SQM defaults |
+| `target/linux/generic/*-6.18/` | OpenWrt main 6.18 backports + MilkFlint CAKE (`870-*`) |
+| `package/firmware/` | `rtl8261c-firmware`, `rtl826x-firmware`, MIPI DBI panel sequences |
 | `package/milkflint/` | UI + MilkFlint packages (WED aware of `mt7996e`) |
 | `milkflint/ui/` | React UI source |
-| `milkflint/diffconfig` | Flint 4 build seed (`VERSION_DIST=MilkFlint4`) |
+| `milkflint/diffconfig` | Flint 4 build seed (`VERSION_DIST=MilkFlint4`, kernel 6.18, `ALL_KMODS`) |
 
 Development is on **`main`**.
 
