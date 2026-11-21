@@ -2,7 +2,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=milkflint-ui
 PKG_VERSION:=0.5.0
-PKG_RELEASE:=2
+PKG_RELEASE:=3
 PKG_LICENSE:=MIT
 
 include $(INCLUDE_DIR)/package.mk
@@ -68,6 +68,7 @@ define Package/milkflint-ui/install
 	$(INSTALL_DATA) ./files/luci-footstrap/cascade.css $(1)/usr/share/milkflint/luci-footstrap/cascade.css
 	$(INSTALL_DATA) ./files/luci-footstrap/fs-axes.js $(1)/usr/share/milkflint/luci-footstrap/fs-axes.js
 	$(INSTALL_DATA) ./files/luci-footstrap/fs-appearance.js $(1)/usr/share/milkflint/luci-footstrap/fs-appearance.js
+	$(INSTALL_DATA) ./files/luci-footstrap/partials/head.ut $(1)/usr/share/milkflint/luci-footstrap/head.ut
 	for f in ./files/features/*/; do \
 		id=$$$$(basename $$$$f); \
 		[ ! -f $$$$f/rpcd.uc ] || $(INSTALL_DATA) $$$$f/rpcd.uc $(1)/usr/share/rpcd/ucode/milkflint-$$$$id; \
@@ -90,10 +91,13 @@ define Package/milkflint-ui/postinst
 root="$${IPKG_INSTROOT}"
 src="$${root}/usr/share/milkflint/luci-footstrap"
 [ -f "$$src/cascade.css" ] || exit 0
-mkdir -p "$${root}/www/luci-static/footstrap" "$${root}/www/luci-static/resources"
+mkdir -p "$${root}/www/luci-static/footstrap" "$${root}/www/luci-static/resources" \
+	"$${root}/usr/share/ucode/luci/template/themes/footstrap/partials"
 cp -f "$$src/cascade.css" "$${root}/www/luci-static/footstrap/cascade.css"
 cp -f "$$src/fs-axes.js" "$${root}/www/luci-static/resources/fs-axes.js"
 cp -f "$$src/fs-appearance.js" "$${root}/www/luci-static/resources/fs-appearance.js"
+[ -f "$$src/head.ut" ] && cp -f "$$src/head.ut" \
+	"$${root}/usr/share/ucode/luci/template/themes/footstrap/partials/head.ut"
 endef
 
 $(eval $(call BuildPackage,milkflint-ui))

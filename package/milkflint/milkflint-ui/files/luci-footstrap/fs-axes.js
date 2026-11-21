@@ -107,8 +107,8 @@ function propAxis(key, sdKey, prop, min, max, dfl, fmt, after) {
 	};
 }
 
-/* Palette: footstrap is the default (bare :root); every other colourway is an opt-in data-palette
- * value, defined in styles/03-palettes.css.
+/* Palette: Monokai milk is the MilkFlint4 default (bare :root). Every other colourway — including
+ * stock Footstrap blue — is an opt-in data-palette value.
  *
  * Not the enumAxis shape, which has one `on` name and reads every other stored string — including a
  * real palette — as the default. The array is what VALIDATES a stored value: a name added to the
@@ -118,7 +118,7 @@ function propAxis(key, sdKey, prop, min, max, dfl, fmt, after) {
  * Legacy names ('rvht'/'roman'/'github') are migrated by head.ut before paint, so they never reach
  * PALETTE.current() on a loaded page; the stray fallthrough covers them anyway. */
 
-const PALETTES = [ 'monokai-milk', 'hicontrast', 'bootstrap', '2020', 'forum' ];	/* the non-default values; 'footstrap' = bare :root */
+const PALETTES = [ 'footstrap', 'hicontrast', 'bootstrap', '2020', 'forum' ];	/* opt-in; 'monokai-milk' = bare :root */
 const PALETTE = prefs.listAxis('fs-palette', 'data-palette', PALETTES, 'monokai-milk');
 
 /* Wallpaper is a multi-value axis: off (bare canvas), pattern (the admin-uploaded SVG, tiled and
@@ -385,7 +385,7 @@ function resetToBuiltin() {
 	 * first click — the one state no static gate can see and the live check does. */
 	prefs.applyLayout('top');
 	prefs.applyMode('auto');
-	PALETTE.apply('footstrap');
+	PALETTE.apply('monokai-milk');
 	WALLPAPER.apply('off');
 	TINT.apply(0);
 	ACCENT.apply(0);

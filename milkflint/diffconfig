@@ -83,3 +83,4 @@ CONFIG_PACKAGE_luci-proto-qmi=y
 # On an arm64 build host, OpenWrt's Go (for dnsproxy and AdGuard Home) can't
 # build its own bootstrap: point it at the host's Go instead, e.g.
 # CONFIG_GOLANG_EXTERNAL_BOOTSTRAP_ROOT="/usr/lib/go"
+CONFIG_DISPLAY_SUPPORT=y

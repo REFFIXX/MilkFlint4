@@ -36,7 +36,7 @@ their own.
    doesn't know.
 2. Add it to `themes/index.ts`: it becomes a card on System → Themes. Set
    `hidden: true` to keep it off while you work on it (development builds
-   still show it). `DEFAULT_THEME_ID` there names the default (Honey milk).
+   still show it). `DEFAULT_THEME_ID` there names the default (Monokai milk).
 3. For chart colours, run `node scripts/theme-series.ts` with the scheme's
    panel colour and a lightness range, once per scheme, and paste the result
    (the script's header shows an example).
