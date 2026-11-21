@@ -6,17 +6,20 @@
 
 <p align="center">
   <strong>OpenWrt for the GL.iNet Flint 4 (GL-BE14000)</strong><br>
-  MediaTek MT7988A · Wi‑Fi 7 · 10G WAN · 2.5G LAN · SFP+ · front panel<br>
+  MediaTek MT7988A · <strong>kernel 6.18</strong> · Wi‑Fi 7 · 10G WAN · 2.5G LAN · SFP+ · front panel<br>
   MilkFlint’s everyday UI, tuned for Flint 4 hardware
 </p>
 
 <p align="center">
-  <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/github/v/release/REFFIXX/MilkFlint4?label=release&color=b45309" alt="Release"></a>
+  <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/badge/version-0.3a-b45309" alt="Version 0.3a"></a>
+  <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/badge/kernel-6.18-1a7f4b" alt="Kernel 6.18"></a>
   <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/badge/target-mediatek%2Ffilogic-0f766e" alt="Target"></a>
-  <a href="https://openwrt.org"><img src="https://img.shields.io/badge/base-OpenWrt%20main%206.18-1a7f4b" alt="OpenWrt"></a>
+  <a href="https://openwrt.org"><img src="https://img.shields.io/badge/base-OpenWrt%20main-1a7f4b" alt="OpenWrt"></a>
 </p>
 
 ---
+
+**MilkFlint4 0.3a** runs **OpenWrt main / kernel 6.18** on the Flint 4 — full **RTL8261C/D** 10G PHY, hardware **RSS** on `wan`, default Wi‑Fi country **US** (6 GHz LPI + WPA3), and **`CONFIG_ALL_KMODS`** so extras match this image’s vermagic (do not pull snapshot `kmod-*` from downloads.openwrt.org).
 
 MilkFlint4 is MilkFlint, rebuilt for the **Flint 4**: the same dashboard, guest Wi‑Fi, AdGuard Home, banIP, Smart Queue (CAKE), WireGuard, themes, and Performance Tuning — wired to MT7988 / MT7996 / YT9224 instead of the Flint 2’s MT7986 stack.
 
@@ -125,9 +128,11 @@ Moved mediatek/filogic to **kernel 6.18** (OpenWrt main stack) for best Flint 4 
 
 ### Known issues (upstream / hardware)
 
-- **openwrt#26690** — some units still report 10G WAN wedging when a second radio comes up; PCS skip is included, but treat multi-radio + 10G as “watch the link” until upstream closes it.
-- **openwrt#26691** — rare cold boot with empty 10G speed capabilities; power cycle if WAN stays dark.
-- Do **not** mix `kmod-*` from downloads.openwrt.org into this image — vermagic will not match. Use the kmods built with this release.
+Still open upstream — not MilkFlint regressions, and **not** the old 0.2a “need 6.18 / prefer DE / mix snapshot kmods” notes (those are fixed in **0.3a**):
+
+- **[openwrt#26690](https://github.com/openwrt/openwrt/issues/26690)** — some units still report 10G WAN wedging when a second radio comes up; PCS skip is included, but treat multi-radio + 10G as “watch the link” until upstream closes it.
+- **[openwrt#26691](https://github.com/openwrt/openwrt/issues/26691)** — rare cold boot with empty 10G speed capabilities; power cycle if WAN stays dark.
+- **kmods** — install only modules built with this **0.3a** image (`ALL_KMODS` / matching vermagic). Snapshot packages from downloads.openwrt.org will not load.
 
 ## Build
 
