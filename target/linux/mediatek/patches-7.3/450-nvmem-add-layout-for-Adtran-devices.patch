@@ -57,6 +57,7 @@ Signed-off-by: Daniel Golle <daniel@makrotopia.org>
 @@ -0,0 +1,135 @@
 +// SPDX-License-Identifier: GPL-2.0
 +#include <linux/ctype.h>
++#include <linux/hex.h>
 +#include <linux/etherdevice.h>
 +#include <linux/nvmem-consumer.h>
 +#include <linux/nvmem-provider.h>
