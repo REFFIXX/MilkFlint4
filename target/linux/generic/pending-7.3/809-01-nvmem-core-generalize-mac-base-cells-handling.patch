@@ -135,6 +135,7 @@ Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
   */
  
 +#include <linux/ctype.h>
++#include <linux/hex.h>
  #include <linux/device.h>
  #include <linux/dma-mapping.h>
 +#include <linux/etherdevice.h>
