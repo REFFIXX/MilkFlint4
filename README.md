@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/badge/version-0.3a-b45309" alt="Version 0.3a"></a>
+  <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/badge/version-0.5a-b45309" alt="Version 0.5a"></a>
   <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/badge/kernel-6.18-1a7f4b" alt="Kernel 6.18"></a>
   <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/badge/target-mediatek%2Ffilogic-0f766e" alt="Target"></a>
   <a href="https://openwrt.org"><img src="https://img.shields.io/badge/base-OpenWrt%20main-1a7f4b" alt="OpenWrt"></a>
@@ -19,7 +19,7 @@
 
 ---
 
-**MilkFlint4 0.3a** runs **OpenWrt main / kernel 6.18** on the Flint 4 — full **RTL8261C/D** 10G PHY, hardware **RSS** on `wan`, default Wi‑Fi country **US** (6 GHz LPI + WPA3), and **`CONFIG_ALL_KMODS`** so extras match this image’s vermagic (do not pull snapshot `kmod-*` from downloads.openwrt.org).
+**MilkFlint4 0.5a** runs **OpenWrt main / kernel 6.18** on the Flint 4 — full **RTL8261C/D** 10G PHY, hardware **RSS** on `wan`, default Wi‑Fi country **US** (6 GHz LPI + WPA3), uplink MU‑MIMO off by default, and **`CONFIG_ALL_KMODS`** so extras match this image’s vermagic (do not pull snapshot `kmod-*` from downloads.openwrt.org).
 
 MilkFlint4 is MilkFlint, rebuilt for the **Flint 4**: the same dashboard, guest Wi‑Fi, AdGuard Home, banIP, Smart Queue (CAKE), WireGuard, themes, and Performance Tuning — wired to MT7988 / MT7996 / YT9224 instead of the Flint 2’s MT7986 stack.
 
@@ -133,7 +133,14 @@ Keeps every original MilkFlint Performance Tuning path (WED, AQL, steering UI, C
 
 Applied by `99-milkflint4-flint4-perf` (once; clear `milkflint.defaults.flint4_perf` to re-seed), `/etc/sysctl.d/22-milkflint4-be14000.conf`, and `milkflint4-perf` at boot. Change anything later under **Performance Tuning** / LuCI — those edits stick.
 
-### Flint 4 kernel / board fixes in this release (0.3a)
+### What’s new in 0.5a
+
+- **Uplink MU‑MIMO off by default** (OddBlueDog): clears `mimo_ul_en` that caused ~65–300 ms best‑effort Wi‑Fi pauses; Tuning switches for uplink MU‑MIMO / OFDMA
+- **SQM** remaps stock `eth1` → `wan` so multi‑gig CAKE defaults apply on BE14000
+- **WED** seeds on first boot (preinit) so `mt7996e` loads with `wed_enable=Y` without a second reboot
+- US country / Upgrade URL / BE14000 keep‑settings / `mt7996e` log+IRQ fixes
+
+### Flint 4 kernel / board fixes (since 0.3a)
 
 Moved mediatek/filogic to **kernel 6.18** (OpenWrt main stack) for best Flint 4 performance:
 
@@ -147,7 +154,7 @@ Moved mediatek/filogic to **kernel 6.18** (OpenWrt main stack) for best Flint 4 
 
 ### 10G WAN mitigations (openwrt#26690 / #26691)
 
-MilkFlint4 **0.3a** ships board + driver workarounds for the RTL8261C/D issues still open upstream:
+MilkFlint4 ships board + driver workarounds for the RTL8261C/D issues still open upstream:
 
 - **#26691 (empty PMA / `-EINVAL` on cold boot)** — `rtl8261x_get_features` loads firmware early (before `config_init`), soft-resets and re-reads abilities up to 5×, and fails the probe instead of attaching a blank PHY; longer PHY reset deassert in DTS.
 - **#26690 (WAN flaps / wedges when a second radio comes up)** — USXGMII PCS flap skip + RTL8261 SerDes reset (OpenWrt main), MDIO at 2.5 MHz, `eee-broken-*` on the WAN PHY, 45 °C fan trip, and a `wan` hotplug that pulses the fan + bounces the link on rapid multi-radio flaps (matches the recovery path reported upstream).
