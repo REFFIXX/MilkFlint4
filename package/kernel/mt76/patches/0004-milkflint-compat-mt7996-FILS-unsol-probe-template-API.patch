@@ -1,0 +1,33 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: milkflint4 <milkflint4@localhost>
+Date: Sat, 21 Nov 2026 08:00:00 +0100
+Subject: [PATCH] milkflint compat: mt7996 FILS/unsol probe template API
+
+OpenWrt 25.12 mac80211 still uses the two-argument FILS / unsolicited
+probe template helpers. Upstream mt7996 already passes link_id; drop it
+like the mt7915 compat patch.
+
+Not for upstream.
+
+---
+ mt7996/mcu.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
+
+--- a/mt7996/mcu.c
++++ b/mt7996/mcu.c
+@@ -3529,13 +3529,11 @@
+ 	if (changed & BSS_CHANGED_FILS_DISCOVERY &&
+ 	    link_conf->fils_discovery.max_interval) {
+ 		interval = link_conf->fils_discovery.max_interval;
+-		skb = ieee80211_get_fils_discovery_tmpl(hw, vif,
+-							link_conf->link_id);
++		skb = ieee80211_get_fils_discovery_tmpl(hw, vif);
+ 	} else if (changed & BSS_CHANGED_UNSOL_BCAST_PROBE_RESP &&
+ 		   link_conf->unsol_bcast_probe_resp_interval) {
+ 		interval = link_conf->unsol_bcast_probe_resp_interval;
+-		skb = ieee80211_get_unsol_bcast_probe_resp_tmpl(hw, vif,
+-								link_conf->link_id);
++		skb = ieee80211_get_unsol_bcast_probe_resp_tmpl(hw, vif);
+ 	}
+ 
+ 	if (!skb) {
