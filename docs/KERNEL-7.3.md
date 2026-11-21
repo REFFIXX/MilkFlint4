@@ -25,7 +25,8 @@ NPU offload landed around Airoha EN7581 + MT7996; MT7988 may not expose the same
 4. `pending-7.3` / `hack-7.3` copied from 6.18 for refresh  
 5. `mediatek/patches-7.3` copied from 6.18; dropped `*-v6.19-*` … `*-v7.3-*` already-in-tree patches  
 6. Kept MilkFlint **990-*** RSS series + **991** RTL8261x cold-boot retry for re-port  
-7. Board defaults (US country, SQM, WAN mitigations, max-perf sysctl) stay — userspace is kernel-agnostic  
+7. Board defaults (US country, SQM, WAN mitigations, max-perf sysctl) stay — userspace is kernel-agnostic
+8. `filogic/config-7.3` (+ other mediatek subtarget `config-7.3`) seeded from 6.18/6.12 so `CONFIG_ARCH_MEDIATEK` is set  
 
 ## Build (worktree)
 
