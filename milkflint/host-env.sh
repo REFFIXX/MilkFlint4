@@ -21,11 +21,24 @@ else
   export HOSTCXX=g++
 fi
 
-# Host BPF toolchain (CONFIG_BPF_TOOLCHAIN_HOST): need llvm opt/llc/llvm-strip,
-# not just clang. Ubuntu package: llvm (provides /usr/bin/opt).
-if ! command -v opt >/dev/null 2>&1; then
-  echo "WARN: 'opt' not in PATH; install llvm for bridger/BPF packages" >&2
-fi
+# Host BPF toolchain (CONFIG_BPF_TOOLCHAIN_HOST): need llvm opt/llc/llvm-dis/
+# llvm-strip beside clang. bpf.mk searches dir(clang) first — on Ubuntu
+# /usr/bin/clang → llvm-18, so put /usr/lib/llvm-*/bin on PATH (and prefer
+# CONFIG_BPF_TOOLCHAIN_HOST_PATH="/usr/lib/llvm-18" in diffconfig).
+for _mf_llvm in /usr/lib/llvm-18/bin /usr/lib/llvm-*/bin; do
+  if [ -x "$_mf_llvm/opt" ] && [ -x "$_mf_llvm/llvm-dis" ]; then
+    case ":$PATH:" in *":$_mf_llvm:"*) ;; *) PATH="$_mf_llvm:$PATH" ;; esac
+    export PATH
+    break
+  fi
+done
+unset _mf_llvm
+for _mf_t in opt llc llvm-dis llvm-strip; do
+  if ! command -v "$_mf_t" >/dev/null 2>&1; then
+    echo "WARN: '$_mf_t' not in PATH; install llvm (apt: llvm-18) for bridger/BPF" >&2
+  fi
+done
+unset _mf_t
 
 if [ -x /usr/bin/gcc ] && [ "$(readlink -f /usr/bin/cc 2>/dev/null)" != "$(readlink -f /usr/bin/gcc)" ]; then
   echo "WARN: /usr/bin/cc is not gcc; fixing staging host gcc/g++/cc -> ${HOSTCC}" >&2

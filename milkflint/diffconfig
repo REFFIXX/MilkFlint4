@@ -28,9 +28,12 @@ CONFIG_KERNEL_CFLAGS="-mcpu=cortex-a53"
 CONFIG_KERNEL_BUILD_USER="builder"
 CONFIG_KERNEL_BUILD_DOMAIN="milkflint4"
 # Prefer host clang for eBPF (avoids multi-hour tools/llvm-bpf on builders).
+# Point at the LLVM prefix so bpf.mk finds opt/llc/llvm-dis next to clang
+# (Ubuntu: apt install llvm-18 → /usr/lib/llvm-18).
 # CONFIG_BPF_TOOLCHAIN_BUILD_LLVM is not set
 # CONFIG_BPF_TOOLCHAIN_NONE is not set
 CONFIG_BPF_TOOLCHAIN_HOST=y
+CONFIG_BPF_TOOLCHAIN_HOST_PATH="/usr/lib/llvm-18"
 # Skip toolchain gdb (heavy C++ / OOM on 16G builders); not needed for image.
 # CONFIG_GDB is not set
 
