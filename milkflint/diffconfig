@@ -81,4 +81,14 @@ CONFIG_DISPLAY_SUPPORT=y
 
 # Out-of-tree PF_RING is not 6.18-ready (dev_get_flags); keep ALL_KMODS otherwise.
 # CONFIG_PACKAGE_kmod-pf-ring is not set
+# Telephony / legacy xtables-addons break on 6.18+ (octdef.h / compat_xtables.h);
+# not used on GL-BE14000.
+# CONFIG_PACKAGE_kmod-dahdi is not set
+# CONFIG_PACKAGE_kmod-dahdi-dummy is not set
+# CONFIG_PACKAGE_kmod-dahdi-echocan-oslec is not set
+# CONFIG_PACKAGE_kmod-dahdi-hfcs is not set
+# CONFIG_PACKAGE_kmod-ipt-account is not set
+# CONFIG_PACKAGE_kmod-ipt-pknock is not set
+# CONFIG_PACKAGE_iptables-mod-account is not set
+# CONFIG_PACKAGE_iptables-mod-pknock is not set
 # When building: make IGNORE_ERRORS="n m" world  # ALL_KMODS packaging gaps on 6.18
