@@ -28,6 +28,8 @@ import {
   retryChoices,
   rxDelayChoices,
   rxDelayLabel,
+  muruUlChoices,
+  muruUlLabel,
   voAggrChoices,
   voAggrLabel,
 } from './knobs';
@@ -413,6 +415,8 @@ export function AqlCard({
   const high = aqlHighOf(form);
   const retriesNow = status?.knobs.wifi_retries ?? null;
   const voAggrNow = status?.knobs.wifi_vo_aggr ?? null;
+  const muruMimoNow = status?.knobs.wifi_muru_mimo_ul ?? null;
+  const muruOfdmaNow = status?.knobs.wifi_muru_ofdma_ul ?? null;
   return (
     <Card>
       <CardHeading
@@ -609,6 +613,60 @@ export function AqlCard({
           </Select>
         </Field>
         {voAggrNow !== null && <NowRow label="Voice queue aggregation in use now">{voAggrNow ? 'On' : 'Off'}</NowRow>}
+        <Field
+          id="muruMimoUl"
+          label="Uplink MU-MIMO"
+          {...explain(
+            'Lets the radio schedule when Wi‑Fi 6/7 devices may upload (STA_REC_MURU mimo_ul_en). Off by default: on the MT7986 that scheduling caused brief 65–300 ms best‑effort pauses while voice stayed fine. Turn on only if several devices upload heavily at once and you accept the occasional pause. Already‑joined devices keep the old setting until they reconnect.',
+            [mf('wifi', 'muru_mimo_ul')],
+          )}
+        >
+          <Select
+            value={form.muruMimoUl === '' ? 'off' : form.muruMimoUl}
+            onValueChange={(v) => {
+              set('muruMimoUl', v === 'off' ? '' : v);
+            }}
+          >
+            <SelectTrigger id="muruMimoUl">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {muruUlChoices.map((v) => (
+                <SelectItem key={v === '' ? 'off' : v} value={v === '' ? 'off' : v}>
+                  {muruUlLabel(v)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </Field>
+        {muruMimoNow !== null && <NowRow label="Uplink MU-MIMO in use now">{muruMimoNow ? 'On' : 'Off'}</NowRow>}
+        <Field
+          id="muruOfdmaUl"
+          label="Uplink OFDMA"
+          {...explain(
+            'Lets the radio schedule Wi‑Fi 6/7 uplink in OFDMA trigger frames (STA_REC_MURU ofdma_ul_en). Off by default, as stock mt76. Turn on for scheduled multi‑client uplink; already‑joined devices keep the old setting until they reconnect.',
+            [mf('wifi', 'muru_ofdma_ul')],
+          )}
+        >
+          <Select
+            value={form.muruOfdmaUl === '' ? 'off' : form.muruOfdmaUl}
+            onValueChange={(v) => {
+              set('muruOfdmaUl', v === 'off' ? '' : v);
+            }}
+          >
+            <SelectTrigger id="muruOfdmaUl">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {muruUlChoices.map((v) => (
+                <SelectItem key={v === '' ? 'off' : v} value={v === '' ? 'off' : v}>
+                  {muruUlLabel(v)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </Field>
+        {muruOfdmaNow !== null && <NowRow label="Uplink OFDMA in use now">{muruOfdmaNow ? 'On' : 'Off'}</NowRow>}
       </CardContent>
     </Card>
   );

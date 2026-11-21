@@ -29,6 +29,10 @@
 # - milkflint.wifi.vo_aggr: whether the Wi-Fi driver aggregates the voice queue,
 #   on by default (/usr/libexec/milkflint/wifi-vo-aggr;
 #   the ieee80211 hotplug runs it for each radio too);
+# - milkflint.wifi.muru_mimo_ul / muru_ofdma_ul: uplink MU-MIMO / uplink OFDMA
+#   in the Wi-Fi driver's STA_REC_MURU ("1" on; unset off). Off by default so
+#   scheduled uplink trigger bursts don't stall best-effort TX
+#   (/usr/libexec/milkflint/wifi-muru-ul; ieee80211 hotplug too);
 # - milkflint.wifi.spr_<band>: what each radio's driver does about spatial
 #   reuse (/usr/libexec/milkflint/wifi-spr; the ieee80211 hotplug runs it for
 #   each radio too);
@@ -83,6 +87,7 @@ apply() {
 	put cake_ecn "$(uci -q get milkflint.cake.ecn_drop) $(uci -q get milkflint.cake.l4s)" /usr/libexec/milkflint/cake-ecn
 	put cake_dscp "$(uci -q get milkflint.cake.dscp_restore)" /usr/libexec/milkflint/cake-dscp
 	put vo_aggr "$(uci -q get milkflint.wifi.vo_aggr)" /usr/libexec/milkflint/wifi-vo-aggr
+	put muru_ul "$(uci -q get milkflint.wifi.muru_mimo_ul) $(uci -q get milkflint.wifi.muru_ofdma_ul)" /usr/libexec/milkflint/wifi-muru-ul
 	put spr "$(uci -q get milkflint.wifi.spr_2g) $(uci -q get milkflint.wifi.spr_5g) $(uci -q get milkflint.wifi.spr_6g)" /usr/libexec/milkflint/wifi-spr
 	put twt "$(uci -q show milkflint.wifi | grep '\.twt_')" /usr/libexec/milkflint/wifi-twt
 	put retries "$(uci -q get milkflint.wifi.retries)" /usr/libexec/milkflint/wifi-retries
