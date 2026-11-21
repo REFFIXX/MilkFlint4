@@ -109,3 +109,4 @@ DROP 198-dts-mt7988a-enable-wed.patch
 DROP 320-hwrng-mtk-add-support-for-hw-access-via-SMCC.patch
 DROP 740-net-pcs-mtk_lynxi-add-mt7987-support.patch
 PREPARE_OK iteration=6
+DROP mediatek/117-mt7981b-dtsi (not Flint4; refresh later)
