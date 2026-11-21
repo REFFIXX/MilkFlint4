@@ -85,12 +85,13 @@ Signed-off-by: Felix Fietkau <nbd@nbd.name>
 +}
 +
 +/* gpio_chip handler : set GPIO pin to value */
-+static void ath9k_gpio_pin_set(struct gpio_chip *chip, unsigned offset,
++static int ath9k_gpio_pin_set(struct gpio_chip *chip, unsigned offset,
 +			       int value)
 +{
 +	struct ath_softc *sc = gpiochip_get_data(chip);
 +
 +	ath9k_hw_set_gpio(sc->sc_ah, offset, value);
++	return 0;
 +}
 +
 +/* register GPIO chip */
