@@ -1,0 +1,23 @@
+Index: drivers/staging/fbtft/fbtft.h
+===================================================================
+--- a/drivers/staging/fbtft/fbtft.h
++++ b/drivers/staging/fbtft/fbtft.h
+@@ -15,6 +15,7 @@
+ #include <linux/fb.h>
+ #include <linux/spinlock.h>
+ #include <linux/spi/spi.h>
++#include <linux/completion.h>
+ #include <linux/platform_device.h>
+ 
+ #define FBTFT_NOP		0x00
+@@ -230,6 +231,9 @@ struct fbtft_par {
+ 	ktime_t update_time;
+ 	bool bgr;
+ 	void *extra;
+ 	bool polarity;
++	/* Optional tearing-effect IRQ (e.g. ST7789P3 on GL.iNet panels) */
++	int irq_te;
++	struct completion panel_te;
+ };
+ 
+ #define NUMARGS(...)  (sizeof((int[]){__VA_ARGS__}) / sizeof(int))
