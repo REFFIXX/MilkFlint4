@@ -4,13 +4,13 @@ CONFIG_TARGET_mediatek=y
 CONFIG_TARGET_mediatek_filogic=y
 CONFIG_TARGET_mediatek_filogic_DEVICE_glinet_gl-be14000=y
 
-# MilkFlint4 0.4a-k7 — experimental Linux 7.3.5 on mediatek/filogic
-# (OpenWrt main still ships 6.18). Same Flint 4 RSS / RTL8261C/D /
-# ALL_KMODS story; vermagic will not match openwrt.org snapshots.
+# MilkFlint4 0.3a on OpenWrt main-line mediatek (kernel 6.18) with
+# Flint 4 hardware RSS, RTL8261C/D PHY firmware, and a full kmod set so
+# opkg/apk extras match this image's vermagic (not downloads.openwrt.org).
 CONFIG_IMAGEOPT=y
 CONFIG_VERSIONOPT=y
 CONFIG_VERSION_DIST="MilkFlint4"
-CONFIG_VERSION_NUMBER="0.4a-k7"
+CONFIG_VERSION_NUMBER="0.3a"
 CONFIG_VERSION_CODE_FILENAMES=y
 CONFIG_VERSION_MANUFACTURER="MilkFlint4"
 CONFIG_VERSION_MANUFACTURER_URL="https://github.com/REFFIXX/MilkFlint4"
@@ -79,5 +79,16 @@ CONFIG_PACKAGE_luci-proto-qmi=y
 
 CONFIG_DISPLAY_SUPPORT=y
 
-# Out-of-tree PF_RING is not ready for this kernel bump.
+# Out-of-tree PF_RING is not 6.18-ready (dev_get_flags); keep ALL_KMODS otherwise.
 # CONFIG_PACKAGE_kmod-pf-ring is not set
+# Telephony / legacy xtables-addons break on 6.18+ (octdef.h / compat_xtables.h);
+# not used on GL-BE14000.
+# CONFIG_PACKAGE_kmod-dahdi is not set
+# CONFIG_PACKAGE_kmod-dahdi-dummy is not set
+# CONFIG_PACKAGE_kmod-dahdi-echocan-oslec is not set
+# CONFIG_PACKAGE_kmod-dahdi-hfcs is not set
+# CONFIG_PACKAGE_kmod-ipt-account is not set
+# CONFIG_PACKAGE_kmod-ipt-pknock is not set
+# CONFIG_PACKAGE_iptables-mod-account is not set
+# CONFIG_PACKAGE_iptables-mod-pknock is not set
+# When building: make IGNORE_ERRORS="n m" world  # ALL_KMODS packaging gaps on 6.18
