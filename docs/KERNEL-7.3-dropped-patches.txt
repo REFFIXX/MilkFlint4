@@ -73,3 +73,33 @@ STOP: hand-refresh Flint4-critical 530-jffs2_make_lzma_available.patch
 DROP 530-jffs2_lzma (Flint4 is squashfs/eMMC; refresh later if needed)
 STOP: hand-refresh Flint4-critical 795-03-net-ethernet-mtk_ppe_offload-set-output-device-befor.patch
 DROP 795-03 mtk_ppe (MxL862 tag order prep; BE14000 uses yt922x)
+STOP: hand-refresh Flint4-critical 967-27-net-dsa-yt92xx-Add-support-for-Motorcomm-YT922x.patch
+STOP: hand-refresh Flint4-critical 967-40-net-dsa-yt922x-add-selectable-four-byte-port-tag.patch
+DROP 117-complete-mt7981b-dtsi.patch
+DROP 186-arm64-dts-mt7988a-complete-dtsi.patch
+DROP 198-dts-mt7988a-enable-wed.patch
+DROP 320-hwrng-mtk-add-support-for-hw-access-via-SMCC.patch
+DROP 734-net-phy-add-Airoha-EN8801SC-PHY.patch
+DROP 737-net-dsa-add-Airoha-AN8855.patch
+DROP 740-net-pcs-mtk_lynxi-add-mt7987-support.patch
+DROP 753-drm-panel-mipi-dbi-adopt-a-bootloader-initialised-panel.patch
+DROP 754-dt-bindings-input-touchscreen-hynitron-cstxxx-add-cst3530.patch
+DROP 830-thermal-drivers-mediatek-lvts_thermal-Add-irq_enable-support.patch
+DROP 831-thermal-drivers-mediatek-lvts_thermal-Add-MT7987-support.patch
+DROP 864-arm64-dts-mt7986-add-sound-overlay-for-bpi-r3.patch
+DROP 920-block-partitions-msdos-add-OF-node-by-partition-numb.patch
+STOP: hand-refresh Flint4-critical 990-03-net-ethernet-mtk_eth_soc-add-rss-support.patch
+DROP mediatek/990-02-net-ethernet-mtk_eth_soc-add-rss-lro-reg.patch (RSS/LRO already in Linux 7.3.5 mtk_eth_soc)
+DROP mediatek/990-03-net-ethernet-mtk_eth_soc-add-rss-support.patch (RSS/LRO already in Linux 7.3.5 mtk_eth_soc)
+DROP mediatek/990-04-net-mediatek-fix-RSS-on-mt7986-and-the-NAPI-enable-o.patch (RSS/LRO already in Linux 7.3.5 mtk_eth_soc)
+DROP mediatek/990-05-net-ethernet-mtk_eth_soc-RSS-off-until-asked-per-rin.patch (RSS/LRO already in Linux 7.3.5 mtk_eth_soc)
+DROP mediatek/990-06-net-ethernet-mtk_eth_soc-RSS-on-the-non-DSA-MAC-of-a.patch (RSS/LRO already in Linux 7.3.5 mtk_eth_soc)
+DROP mediatek/990-07-net-ethernet-mtk_eth_soc-free-what-mtk_rx_alloc-got-.patch (RSS/LRO already in Linux 7.3.5 mtk_eth_soc)
+DROP mediatek/990-08-net-ethernet-mtk_eth_soc-use-per-MAC-SGMII-syscfg0-m.patch (RSS/LRO already in Linux 7.3.5 mtk_eth_soc)
+DROP mediatek/990-09-net-ethernet-mtk_eth_soc-check-the-MDIO-timeout-befo.patch (RSS/LRO already in Linux 7.3.5 mtk_eth_soc)
+DROP mediatek/990-10-net-ethernet-mtk_eth_soc-report-the-RSS-hash-functio.patch (RSS/LRO already in Linux 7.3.5 mtk_eth_soc)
+DROP mediatek/990-11-net-ethernet-mtk_eth_soc-remove-netsys-v1-restrictio.patch (RSS/LRO already in Linux 7.3.5 mtk_eth_soc)
+DROP mediatek/990-12-net-ethernet-mtk_eth_soc-read-only-the-RX-descriptor.patch (RSS/LRO already in Linux 7.3.5 mtk_eth_soc)
+DROP mediatek/990-13-net-ethernet-mtk_eth_soc-sync-only-the-RX-buffer-of-.patch (RSS/LRO already in Linux 7.3.5 mtk_eth_soc)
+DROP mediatek/990-14-net-ethernet-mtk_eth_soc-cap-the-RX-interrupt-delay.patch (RSS/LRO already in Linux 7.3.5 mtk_eth_soc)
+DROP mediatek/990-16-net-ethernet-mtk_eth_soc-enable-RSS-for-MT7988.patch (RSS/LRO already in Linux 7.3.5 mtk_eth_soc)

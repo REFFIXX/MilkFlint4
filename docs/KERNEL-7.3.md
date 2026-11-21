@@ -51,3 +51,11 @@ make -j$(nproc) world V=s
 
 - Replacing the **0.3a / 6.18** release track on `main`  
 - Official openwrt.org kmods (vermagic will never match)  
+
+## Upstream win (confirmed on 7.3.5)
+
+Linux **7.3.5** already includes MediaTek **hardware RSS** in `mtk_eth_soc`
+(`MTK_RSS`, `mtk_rss_init`, indirection table, MT7988 caps). MilkFlint's
+out-of-tree `990-*` RSS patch series is **quarantined** on this branch as
+redundant. Remaining work is board defaults + any MilkFlint UX knobs that
+are not upstream, plus YT922x DSA (refreshed) and RTL8261x cold-boot retry.
