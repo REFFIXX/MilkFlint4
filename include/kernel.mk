@@ -149,14 +149,12 @@ PKG_EXTMOD_SUBDIRS ?= .
 PKG_SYMVERS_DIR = $(KERNEL_BUILD_DIR)/symvers
 
 define collect_module_symvers
+	rm -f $(PKG_BUILD_DIR)/Module.symvers.tmp; \
 	for subdir in $(PKG_EXTMOD_SUBDIRS); do \
 		realdir=$$$$(readlink -f $(PKG_BUILD_DIR)); \
 		grep -F $(PKG_BUILD_DIR) $(PKG_BUILD_DIR)/$$$$subdir/Module.symvers >> $(PKG_BUILD_DIR)/Module.symvers.tmp; \
 		[ "$(PKG_BUILD_DIR)" = "$$$$realdir" ] || \
 			grep -F $$$$realdir $(PKG_BUILD_DIR)/$$$$subdir/Module.symvers >> $(PKG_BUILD_DIR)/Module.symvers.tmp; \
-		# Linux 6.18+ modpost writes module names, not absolute paths, in
-		# Module.symvers column 3 — path greps above yield an empty file.
-		# Out-of-tree Module.symvers only lists this package's symbols.
 		[ -s $(PKG_BUILD_DIR)/Module.symvers.tmp ] || \
 			cat $(PKG_BUILD_DIR)/$$$$subdir/Module.symvers >> $(PKG_BUILD_DIR)/Module.symvers.tmp; \
 	done; \
