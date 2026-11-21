@@ -834,8 +834,10 @@ define KernelPackage/crypto-sha3
   TITLE:=SHA3 digest CryptoAPI module
   DEPENDS:=+kmod-crypto-hash
   KCONFIG:= CONFIG_CRYPTO_SHA3
-  FILES:=$(LINUX_DIR)/crypto/sha3_generic.ko
-  AUTOLOAD:=$(call AutoLoad,09,sha3_generic)
+  FILES:= \
+	$(LINUX_DIR)/crypto/sha3.ko \
+	$(LINUX_DIR)/lib/crypto/libsha3.ko
+  AUTOLOAD:=$(call AutoLoad,09,sha3)
   $(call AddDepends/crypto)
 endef
 
