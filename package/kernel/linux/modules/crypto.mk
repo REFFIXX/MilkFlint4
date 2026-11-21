@@ -836,7 +836,10 @@ $(eval $(call KernelPackage,crypto-sha1))
 define KernelPackage/crypto-sha3
   TITLE:=SHA3 digest CryptoAPI module
   DEPENDS:=+kmod-crypto-hash
-  KCONFIG:= CONFIG_CRYPTO_SHA3
+  KCONFIG:= \
+	CONFIG_CRYPTO_SHA3 \
+	CONFIG_CRYPTO_LIB_SHA3
+  # Linux 7.x: sha3.ko + libsha3 (was sha3_generic.ko).
   FILES:= \
 	$(LINUX_DIR)/crypto/sha3.ko \
 	$(LINUX_DIR)/lib/crypto/libsha3.ko
