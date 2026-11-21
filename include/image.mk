@@ -707,7 +707,12 @@ define Device/Build/dtb
   $(KDIR)/image-$(1).dtb: FORCE
 	$(call Image/BuildDTB,$(strip $(2))/$(strip $(3)).dts,$$@)
 
+  # Only selected profile DTBs — Linux 7.3 drops some SoC labels that
+  # unselected filogic boards still reference, and compile-dtb otherwise
+  # hard-fails the whole image install on the first broken board.
+  ifneq ($$(_PROFILE_SET),)
   compile-dtb: $(KDIR)/image-$(1).dtb
+  endif
   endif
 
 endef
@@ -718,7 +723,9 @@ define Device/Build/dtbo
   $(KDIR)/image-$(1).dtbo: FORCE
 	$(call Image/BuildDTBO,$(strip $(2))/$(strip $(3)).dtso,$$@)
 
+  ifneq ($$(_PROFILE_SET),)
   compile-dtb: $(KDIR)/image-$(1).dtbo
+  endif
   endif
 
 endef

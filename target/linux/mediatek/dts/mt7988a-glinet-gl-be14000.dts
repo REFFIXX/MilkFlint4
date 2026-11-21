@@ -236,10 +236,8 @@
 	};
 };
 
-&usxgmiisys1 {
-	mediatek,force-fixed-10g;
-};
-
+/* Linux 7.3: usxgmiisys PCS nodes are not in the SoC DTSI (OpenWrt 186/978
+ * series deferred). gmac1 already has a 10G fixed-link below. */
 &gmac2 {
 	phy-mode = "usxgmii";
 	phy-connection-type = "usxgmii";
