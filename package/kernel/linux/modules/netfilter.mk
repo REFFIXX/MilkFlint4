@@ -202,7 +202,8 @@ define KernelPackage/nf-flow
 	CONFIG_NETFILTER_INGRESS=y \
 	CONFIG_NF_FLOW_TABLE \
 	CONFIG_NF_FLOW_TABLE_HW
-  DEPENDS:=+kmod-nf-conntrack
+  # Linux 7.3: nf_flow_table.ko depends on nf_tables (kmod-nft-core).
+  DEPENDS:=+kmod-nf-conntrack +kmod-nft-core
   FILES:= $(LINUX_DIR)/net/netfilter/nf_flow_table.ko
   AUTOLOAD:=$(call AutoProbe,nf_flow_table nf_flow_table_hw)
 endef
