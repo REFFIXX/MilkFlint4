@@ -55,6 +55,9 @@ CONFIG_PACKAGE_mt7988-wo-firmware=y
 
 CONFIG_PACKAGE_luci=y
 CONFIG_PACKAGE_luci-ssl=y
+# Advanced (LuCI) uses Footstrap with MilkFlint4's Monokai milk palette.
+CONFIG_PACKAGE_luci-theme-footstrap=y
+# CONFIG_PACKAGE_luci-theme-bootstrap is not set
 
 # MilkFlint's web interface at the router's address; LuCI stays under
 # "Advanced". Smart Queue needs SQM with CAKE.

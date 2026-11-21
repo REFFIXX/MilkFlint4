@@ -8,10 +8,11 @@
 import type { Theme } from '../contract.ts';
 import { honeyMilk } from './honey-milk.ts';
 import { minimamilk } from './minimamilk.ts';
+import { monokaiMilk } from './monokai-milk.ts';
 import { plainMilk } from './plain-milk.ts';
 import { proof } from './proof.ts';
 
-export const themes: readonly Theme[] = [honeyMilk, plainMilk, proof, minimamilk];
+export const themes: readonly Theme[] = [monokaiMilk, honeyMilk, plainMilk, proof, minimamilk];
 
-/** The theme a new router starts with. */
-export const DEFAULT_THEME_ID = honeyMilk.id;
+/** The theme a new router starts with (MilkFlint4: Monokai milk). */
+export const DEFAULT_THEME_ID = monokaiMilk.id;

@@ -11,7 +11,7 @@ define Package/milkflint-ui
   SECTION:=luci
   CATEGORY:=LuCI
   TITLE:=MilkFlint web interface (dashboard and main settings)
-  DEPENDS:=+luci-base +rpcd +rpcd-mod-ucode +rpcd-mod-iwinfo +uhttpd +uhttpd-mod-ubus \
+  DEPENDS:=+luci-base +luci-theme-footstrap +rpcd +rpcd-mod-ucode +rpcd-mod-iwinfo +uhttpd +uhttpd-mod-ubus \
 	+ucode +ucode-mod-fs +ucode-mod-uci +ucode-mod-resolv +ucode-mod-nl80211 +ucode-mod-socket +ethtool +milkflint-rtprio
   PKGARCH:=all
   # the account the dnsproxy for devices sent through a VPN runs as (feature
@@ -62,6 +62,10 @@ define Package/milkflint-ui/install
 	$(INSTALL_DATA) ./files/acl.json $(1)/usr/share/rpcd/acl.d/milkflint-ui.json
 	$(INSTALL_DATA) ./files/rpcd.uc $(1)/usr/share/rpcd/ucode/milkflint
 	$(INSTALL_BIN) ./files/uci-defaults.sh $(1)/etc/uci-defaults/90-milkflint-ui
+	$(INSTALL_DIR) $(1)/www/luci-static/footstrap $(1)/www/luci-static/resources
+	$(INSTALL_DATA) ./files/luci-footstrap/cascade.css $(1)/www/luci-static/footstrap/cascade.css
+	$(INSTALL_DATA) ./files/luci-footstrap/fs-axes.js $(1)/www/luci-static/resources/fs-axes.js
+	$(INSTALL_DATA) ./files/luci-footstrap/fs-appearance.js $(1)/www/luci-static/resources/fs-appearance.js
 	for f in ./files/features/*/; do \
 		id=$$$$(basename $$$$f); \
 		[ ! -f $$$$f/rpcd.uc ] || $(INSTALL_DATA) $$$$f/rpcd.uc $(1)/usr/share/rpcd/ucode/milkflint-$$$$id; \

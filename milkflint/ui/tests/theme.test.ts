@@ -175,7 +175,7 @@ test('themes: the generated CSS writes the chart dashes and the link underline',
 });
 
 test('themes: the existing themes keep their look', () => {
-  for (const id of ['honey-milk', 'plain-milk', 'moss']) {
+  for (const id of ['monokai-milk', 'honey-milk', 'plain-milk', 'moss']) {
     const theme = themes.find((t) => t.id === id);
     assert.ok(theme !== undefined, id);
     assert.deepEqual(theme.presentation, standardPresentation, id);

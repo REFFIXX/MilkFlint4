@@ -1,0 +1,14 @@
+#!/bin/sh
+# MilkFlint4: LuCI Advanced uses Footstrap; its built-in default palette is
+# Monokai milk (matches the MilkFlint UI theme).
+
+[ "$(board_name)" = glinet,gl-be14000 ] || exit 0
+
+if [ -d /www/luci-static/footstrap ]; then
+	uci -q batch <<-UCI
+		set luci.main.mediaurlbase=/luci-static/footstrap
+		commit luci
+	UCI
+fi
+
+exit 0

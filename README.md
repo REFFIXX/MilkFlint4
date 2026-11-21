@@ -97,6 +97,8 @@ Everything below ships in the image. Generic MilkFlint behaviour is kept; defaul
 | Area | What you get on Flint 4 |
 |---|---|
 | **MilkFlint UI** | Dashboard, Wi‑Fi, guests, DNS, AdGuard Home, banIP, SQM, VPN, schedules, device control, themes, upgrade, Performance Tuning — LuCI under **Advanced** |
+| **Theme** | Default **Monokai milk** (milky Monokai Pro: pink / cyan / green on soft milk panels). Honey milk stays available. LuCI Advanced uses Footstrap’s matching Monokai milk palette |
+| **Upstream MilkFlint** | Includes OddBlueDog **MilkFlint 0.85a** (device control, crontab schedules, CAKE/Wi‑Fi fixes, AdGuard/ubus fixes) — Flint 2–only bits left aside; Flint 4 WED/Wi‑Fi/switch overlays on top |
 | **uhttpd** | `milkflint.html` is the index page; UI assets under `/milkflint/` |
 | **Packet steering** | MilkFlint layout; RSS target is `eth2` (10G WAN) via `ports rss` |
 | **Smart Queue** | Multi‑queue CAKE defaults; SQM remembers VPN queues when WED is on |
