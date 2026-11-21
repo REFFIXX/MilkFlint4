@@ -189,14 +189,15 @@ ifdef CONFIG_TARGET_IMAGES_GZIP
 endif
 
 
-# Disable noisy checks by default as in upstream
+# Disable noisy checks by default as in upstream.
+# Note: kernel 7.3 scripts/dtc has no graph_child_address check (only
+# graph_endpoint/nodes/port); -Wno-graph_child_address is a hard error there.
 DTC_WARN_FLAGS := \
   -Wno-interrupt_provider \
   -Wno-unique_unit_address \
   -Wno-unit_address_vs_reg \
   -Wno-avoid_unnecessary_addr_size \
   -Wno-alias_paths \
-  -Wno-graph_child_address \
   -Wno-simple_bus_reg
 
 DTC_FLAGS += $(DTC_WARN_FLAGS)
