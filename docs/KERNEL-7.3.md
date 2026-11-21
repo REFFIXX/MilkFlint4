@@ -40,12 +40,13 @@ make -j$(nproc) world V=s
 
 ## Success criteria
 
-- [ ] `make target/linux/prepare` applies clean on filogic  
-- [ ] Kernel + modules build for `glinet_gl-be14000`  
+- [x] `make target/linux/prepare` applies clean on filogic  
+- [x] Kernel + modules build for `glinet_gl-be14000`  
+- [x] `make world` → `milkflint4-*-glinet_gl-be14000-squashfs-sysupgrade.bin` (first green: 0.4a-k7 r33311, ~30 MiB)  
 - [ ] WAN 10G + tri-band Wi‑Fi bring-up  
 - [ ] Drop redundant `990-*` if upstream RSS/LRO covers MT7988  
 - [ ] Document vermagic / ALL_KMODS same as 0.3a  
-- [ ] Optional: MilkFlint4 **0.4a-k7** release tag (not main until proven)
+- [ ] Optional: MilkFlint4 **0.4a-k7** release tag (not main until proven) 
 
 ## Non-goals (yet)
 
