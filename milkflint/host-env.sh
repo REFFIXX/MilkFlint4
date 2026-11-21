@@ -21,6 +21,12 @@ else
   export HOSTCXX=g++
 fi
 
+# Host BPF toolchain (CONFIG_BPF_TOOLCHAIN_HOST): need llvm opt/llc/llvm-strip,
+# not just clang. Ubuntu package: llvm (provides /usr/bin/opt).
+if ! command -v opt >/dev/null 2>&1; then
+  echo "WARN: 'opt' not in PATH; install llvm for bridger/BPF packages" >&2
+fi
+
 if [ -x /usr/bin/gcc ] && [ "$(readlink -f /usr/bin/cc 2>/dev/null)" != "$(readlink -f /usr/bin/gcc)" ]; then
   echo "WARN: /usr/bin/cc is not gcc; fixing staging host gcc/g++/cc -> ${HOSTCC}" >&2
 fi
