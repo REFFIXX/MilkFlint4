@@ -35,7 +35,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
 -	eth->rx_bytes += bytes;
 -	dim_update_sample(eth->rx_events, eth->rx_packets, eth->rx_bytes,
 -			  &dim_sample);
--	net_dim(&eth->rx_dim, dim_sample);
+-	net_dim(&eth->rx_dim, &dim_sample);
 +	WRITE_ONCE(rx_napi->rx_packets, rx_napi->rx_packets + done);
 +	WRITE_ONCE(rx_napi->rx_bytes, rx_napi->rx_bytes + bytes);
 +	/* The rings share one interrupt delay, so one DIM samples them all:
@@ -51,7 +51,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
 +			rbytes += READ_ONCE(eth->rx_napi[i].rx_bytes);
 +		}
 +		dim_update_sample(events, packets, rbytes, &dim_sample);
-+		net_dim(&eth->rx_dim, dim_sample);
++		net_dim(&eth->rx_dim, &dim_sample);
 +		spin_unlock(&eth->rx_dim_sample_lock);
 +	}
  

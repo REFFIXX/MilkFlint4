@@ -171,29 +171,16 @@ renamed irq_fe, RSS caps on MT7986 only.
  
  	return rx_done_total;
  }
-@@ -3072,11 +3039,20 @@ static int mtk_rx_alloc(struct mtk_eth *
- 		ring->dma = dma_alloc_coherent(eth->dma_dev,
- 				RX_DESC_OFS(eth, rx_dma_size),
- 				&ring->phys, GFP_KERNEL);
-+		ring->in_sram = false;
- 	} else {
- 		struct mtk_tx_ring *tx_ring = &eth->tx_ring;
-+		dma_addr_t offset;
- 
--		ring->dma = tx_ring->dma + TX_DESC_OFS(eth, tx_ring_size * (ring_no + 1));
--		ring->phys = tx_ring->phys + TX_DESC_OFS(eth, tx_ring_size * (ring_no + 1));
-+		/* The RX rings follow the TX ring in the frame engine's SRAM,
-+		 * packed: spaced by a TX ring each, the RSS rings 2 and 3
-+		 * would run past the end of the MT7986's 256 KB.
-+		 */
-+		offset = TX_DESC_OFS(eth, tx_ring_size) +
-+			 RX_DESC_OFS(eth, soc->rx.dma_size * ring_no);
-+		ring->dma = tx_ring->dma + offset;
-+		ring->phys = tx_ring->phys + offset;
-+		ring->in_sram = true;
- 	}
- 
+@@ -3119,6 +3086,9 @@ static int mtk_rx_alloc(struct mtk_eth *
+ 	ring->dma = mtk_dma_ring_alloc(eth,
+ 				       RX_DESC_OFS(eth, rx_dma_size),
+ 				       &ring->phys,
+ 				       rx_flag == MTK_RX_FLAGS_NORMAL);
++	/* Track whether gen_pool SRAM backed this ring (for mtk_rx_clean). */
++	ring->in_sram = (rx_flag == MTK_RX_FLAGS_NORMAL) &&
++			!!eth->sram_pool;
  	if (!ring->dma)
+ 		return -ENOMEM;
 @@ -3141,6 +3117,7 @@ static int mtk_rx_alloc(struct mtk_eth *
  	else
  		ring->crx_idx_reg = reg_map->pdma.pcrx_ptr +
@@ -423,21 +410,26 @@ renamed irq_fe, RSS caps on MT7986 only.
  				     "Error requesting FE RX IRQ\n");
  
  	if (!MTK_HAS_CAPS(eth->soc->caps, MTK_SHARED_INT))
-@@ -3643,11 +3763,11 @@ static int mtk_get_irqs(struct platform_
- 	 */
+@@ -3705,15 +3825,15 @@ static int mtk_get_irqs(struct platform_
  	for (i = 0; i < MTK_FE_IRQ_NUM; i++) {
- 		if (MTK_HAS_CAPS(eth->soc->caps, MTK_SHARED_INT) && i > 0)
--			eth->irq[i] = eth->irq[MTK_FE_IRQ_SHARED];
-+			eth->irq_fe[i] = eth->irq_fe[MTK_FE_IRQ_SHARED];
- 		else
--			eth->irq[i] = platform_get_irq(pdev, i);
-+			eth->irq_fe[i] = platform_get_irq(pdev, i);
+ 		if (MTK_HAS_CAPS(eth->soc->caps, MTK_SHARED_INT)) {
+ 			if (i == MTK_FE_IRQ_SHARED)
+-				eth->irq[MTK_FE_IRQ_SHARED] = platform_get_irq(pdev, i);
++				eth->irq_fe[MTK_FE_IRQ_SHARED] = platform_get_irq(pdev, i);
+ 			else
+-				eth->irq[i] = eth->irq[MTK_FE_IRQ_SHARED];
++				eth->irq_fe[i] = eth->irq_fe[MTK_FE_IRQ_SHARED];
+ 		} else {
+-			eth->irq[i] = platform_get_irq(pdev, i + 1);
++			eth->irq_fe[i] = platform_get_irq(pdev, i + 1);
+ 		}
  
 -		if (eth->irq[i] < 0) {
 +		if (eth->irq_fe[i] < 0) {
  			dev_err(&pdev->dev, "no IRQ%d resource found\n", i);
  			return -ENXIO;
  		}
+ 	}
 @@ -3656,14 +3776,22 @@ static int mtk_get_irqs(struct platform_
  	return 0;
  }

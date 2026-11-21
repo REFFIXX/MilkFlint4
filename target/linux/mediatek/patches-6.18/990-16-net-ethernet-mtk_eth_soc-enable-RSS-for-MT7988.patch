@@ -6,8 +6,8 @@ Subject: [PATCH] net: ethernet: mtk_eth_soc: enable RSS for MT7988
 MT7988 already has rss_num = 4 in mt7988_data and the same PDMA RSS
 hardware as MT7986. Mirror the MT7986 CAPS enablement (MTK_PDMA_INT |
 MTK_RSS) so RX hashing and multi-queue IRQs work once the DTSI exposes
-pdma0-pdma3 (see 990-15). Without this, MilkFlint falls back to software
-RPS on eth2 (Flint 4 / GL-BE14000 WAN).
+pdma0-pdma3 (already in 6.18 mt7988a.dtsi). Without this, MilkFlint falls back to software
+RPS on wan (Flint 4 / GL-BE14000).
 
 ---
  drivers/net/ethernet/mediatek/mtk_eth_soc.h | 3 ++-

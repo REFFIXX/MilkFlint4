@@ -117,10 +117,10 @@ Moved mediatek/filogic to **kernel 6.18** (OpenWrt main stack) for best Flint 4 
 
 - **Kernel 6.18** — OpenWrt main `backport` / `hack` / `pending` + mediatek `patches-6.18`, including full **RTL8261C/D-CG** Realtek PHY support + `rtl8261c` / `rtl826x` firmware
 - **Upstream BE14000 DTS** — `wan` netdev name, `yt922x_4b` DSA tag, `mediatek,force-fixed-10g`, MIPI panel, CST3530
-- **Hardware RSS (MT7988)** — PDMA IRQs SPI 189–192 + `MTK_PDMA_INT \| MTK_RSS` (MilkFlint 990-series, including MT7988 enablement)
+- **Hardware RSS (MT7988)** — 6.18 `mt7988a.dtsi` already exposes `pdma0`–`pdma3`; MilkFlint 990-series (refreshed for 6.18 eth API) enables `MTK_PDMA_INT \| MTK_RSS` on MT7988
 - **YT9224 mdi-swap / USXGMII PCS flap skip** — from OpenWrt main (975/978 + 967-54)
 - **US 6 GHz LPI** — wireless-regdb patch so US AP mode is not blocked by `NO-IR`
-- **SQM / CAKE** — MilkFlint `sch_cake` / `cake_mq` series ported to `pending-6.18` (870-*)
+- **SQM / CAKE** — OpenWrt main `cake_mq` backports (`backport-6.18` 700-*/701-*) + MilkFlint sync_time hack (`hack-6.18` 710-*)
 - **ALL_KMODS** — extras match this build (official snapshot kmods will not load)
 
 ### Known issues (upstream / hardware)
@@ -161,7 +161,7 @@ cd milkflint/ui && pnpm install --frozen-lockfile --config.trust-policy=off && p
 | Path | Role |
 |---|---|
 | `target/linux/mediatek/` | BE14000 DTS, 6.18 patches, board scripts, Flint 4 Wi‑Fi / SQM defaults |
-| `target/linux/generic/*-6.18/` | OpenWrt main 6.18 backports + MilkFlint CAKE (`870-*`) |
+| `target/linux/generic/*-6.18/` | OpenWrt main 6.18 backports (`cake_mq` 700-*/701-*) + MilkFlint CAKE sync hack (`710-*`) |
 | `package/firmware/` | `rtl8261c-firmware`, `rtl826x-firmware`, MIPI DBI panel sequences |
 | `package/milkflint/` | UI + MilkFlint packages (WED aware of `mt7996e`) |
 | `milkflint/ui/` | React UI source |

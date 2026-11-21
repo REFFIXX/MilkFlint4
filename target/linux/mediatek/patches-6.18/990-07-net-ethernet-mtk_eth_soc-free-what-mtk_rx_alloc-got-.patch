@@ -50,7 +50,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
  	ring->calc_idx_update = false;
  	ring->calc_idx = rx_dma_size - 1;
  	if (rx_flag == MTK_RX_FLAGS_QDMA)
-@@ -3180,10 +3185,14 @@ static void mtk_rx_clean(struct mtk_eth
+@@ -3218,10 +3223,14 @@ static void mtk_rx_clean(struct mtk_eth
  					 ring->buf_size, DMA_FROM_DEVICE);
  			mtk_rx_put_buff(ring, ring->data[i], false);
  		}
@@ -64,6 +64,6 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
 +	kfree(ring->data);
 +	ring->data = NULL;
 +
- 	if (!in_sram && ring->dma) {
- 		dma_free_coherent(eth->dma_dev,
- 				  RX_DESC_OFS(eth, ring->dma_size),
+ 	if (ring->dma) {
+ 		mtk_dma_ring_free(eth, RX_DESC_OFS(eth, ring->dma_size),
+ 				  ring->dma, ring->phys, in_sram);
