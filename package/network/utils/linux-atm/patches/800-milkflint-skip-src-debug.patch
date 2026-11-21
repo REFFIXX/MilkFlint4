@@ -1,0 +1,7 @@
+--- a/src/Makefile.am
++++ b/src/Makefile.am
+@@ -1,4 +1,5 @@
+-SUBDIRS = include lib qgen sap arpd test debug man
++# MilkFlint: skip debug (svctor needs ATM_GETADDR removed from modern uapi)
++SUBDIRS = include lib qgen sap arpd test man
+ EXTRA_DIST = Rules.make USAGE

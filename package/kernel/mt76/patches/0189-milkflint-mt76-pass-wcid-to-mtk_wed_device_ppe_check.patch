@@ -28,7 +28,7 @@ sites so the out-of-tree mt76 tree builds against that API.
  				 FIELD_GET(MT_DMA_PPE_CPU_REASON, info),
 -				 FIELD_GET(MT_DMA_PPE_ENTRY, info));
 +				 FIELD_GET(MT_DMA_PPE_ENTRY, info),
-+				 msta->wcid.idx);
++				 msta->deflink.wcid.idx);
  }
  
  static int
