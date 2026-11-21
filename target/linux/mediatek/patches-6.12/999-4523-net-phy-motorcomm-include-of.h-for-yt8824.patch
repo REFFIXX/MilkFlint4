@@ -1,0 +1,16 @@
+From: MilkFlint4 <builder@milkflint4>
+Subject: [PATCH] net: phy: motorcomm: include linux/of.h for YT8824 OF props
+
+The YT8824 package probe uses of_property_read_string() but motorcomm.c
+only includes linux/property.h. With -Werror=implicit-function-declaration
+that breaks the filogic kernel build.
+
+--- a/drivers/net/phy/motorcomm.c
++++ b/drivers/net/phy/motorcomm.c
+@@ -11,6 +11,7 @@
+ #include <linux/etherdevice.h>
+ #include <linux/kernel.h>
+ #include <linux/module.h>
++#include <linux/of.h>
+ #include <linux/phy.h>
+ #include <linux/property.h>
