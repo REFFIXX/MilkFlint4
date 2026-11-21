@@ -1763,7 +1763,7 @@ define Device/glinet_gl-be14000
 	kmod-mt7996-firmware kmod-mt7996-233-firmware mt7988-wo-firmware \
 	kmod-phy-motorcomm kmod-dsa-yt92xx kmod-sfp kmod-usb3 \
 	kmod-fb-tft-st7789p3 kmod-input-touchscreen-cst353x kmod-input-evdev \
-	bridger
+	bridger rtl8261c-firmware
   IMAGES += factory.bin
   IMAGE/factory.bin := append-kernel | pad-to 32M | append-rootfs
   IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata

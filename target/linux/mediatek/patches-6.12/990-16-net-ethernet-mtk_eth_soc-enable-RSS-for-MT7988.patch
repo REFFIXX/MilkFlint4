@@ -1,0 +1,27 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MilkFlint4 <milkflint4@local>
+Date: Sat, 21 Nov 2026 10:00:00 +0000
+Subject: [PATCH] net: ethernet: mtk_eth_soc: enable RSS for MT7988
+
+MT7988 already has rss_num = 4 in mt7988_data and the same PDMA RSS
+hardware as MT7986. Mirror the MT7986 CAPS enablement (MTK_PDMA_INT |
+MTK_RSS) so RX hashing and multi-queue IRQs work once the DTSI exposes
+pdma0-pdma3 (see 990-15). Without this, MilkFlint falls back to software
+RPS on eth2 (Flint 4 / GL-BE14000 WAN).
+
+---
+ drivers/net/ethernet/mediatek/mtk_eth_soc.h | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+--- a/drivers/net/ethernet/mediatek/mtk_eth_soc.h
++++ b/drivers/net/ethernet/mediatek/mtk_eth_soc.h
+@@ -1263,7 +1263,8 @@ enum mkt_eth_capabilities {
+ 		      MTK_GMAC3_SGMII | MTK_GMAC3_USXGMII | \
+ 		      MTK_MUX_GMAC123_TO_GEPHY_SGMII | \
+ 		      MTK_MUX_GMAC123_TO_USXGMII | MTK_MUX_GMAC2_TO_2P5GPHY | \
+-		      MTK_QDMA | MTK_RSTCTRL_PPE1 | MTK_RSTCTRL_PPE2 | MTK_SRAM)
++		      MTK_QDMA | MTK_RSTCTRL_PPE1 | MTK_RSTCTRL_PPE2 | MTK_SRAM | \
++		      MTK_PDMA_INT | MTK_RSS)
+ 
+ struct mtk_tx_dma_desc_info {
+ 	dma_addr_t	addr;

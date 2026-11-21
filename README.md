@@ -100,8 +100,8 @@ Everything below ships in the image. Generic MilkFlint behaviour is kept; defaul
 | **Theme** | Default **Monokai milk** (milky Monokai Pro: pink / cyan / green on soft milk panels). Honey milk stays available. LuCI Advanced uses Footstrap’s matching Monokai milk palette |
 | **Upstream MilkFlint** | Includes OddBlueDog **MilkFlint 0.85a** (device control, crontab schedules, CAKE/Wi‑Fi fixes, AdGuard/ubus fixes) — Flint 2–only bits left aside; Flint 4 WED/Wi‑Fi/switch overlays on top |
 | **uhttpd** | `milkflint.html` is the index page; UI assets under `/milkflint/` |
-| **Packet steering** | MilkFlint layout; RSS target is `eth2` (10G WAN) via `ports rss` |
-| **Smart Queue** | Multi‑queue CAKE defaults; SQM remembers VPN queues when WED is on |
+| **Packet steering** | Hardware **RSS** on `eth2` (four PDMA rings / GIC 221–224), not software RPS — MilkFlint layout via `ports rss` |
+| **Smart Queue** | Multi‑queue CAKE on by default for Flint 4; ingress `cake_mq` + `no-split-gso` on multi‑gig WAN; per‑host fairness (`nat dual-dsthost` / `dual-srchost`); egress stays single CAKE on `mtk_soc_eth` |
 | **Wi‑Fi latency** | 5 GHz + **6 GHz** best‑effort TXOP/backoff tweak; MU EDCA timers shortened; DTIM 1; airtime fairness ready (off until enabled) |
 | **6 GHz** | Default PSC channel **37** instead of `auto` (avoids 5+6 GHz MLD ACS deadlock) |
 | **WED** | `mt7996e wed_enable=Y` by default; flowtable hotplug when radios appear |
@@ -109,20 +109,26 @@ Everything below ships in the image. Generic MilkFlint behaviour is kept; defaul
 | **Front panel** | ST7789 + CST3530 drivers in the image |
 | **Fan** | PWM fan with earlier low trip so the 10G PHY stays cooler |
 
-### Flint 4 kernel / board fixes in this release
+### Flint 4 kernel / board fixes in this release (0.2a)
 
 Pulled from OpenWrt main / community Flint 4 work (and verified against GitHub `BE14000` / `Flint 4` reports):
 
+- **Hardware RSS (MT7988)** — DTSI PDMA IRQs SPI 189–192 + `MTK_PDMA_INT \| MTK_RSS` on `MT7988_CAPS` (same pattern as upstream MT7986 RSS). MilkFlint packet steering no longer falls back to RPS on `eth2`.
 - **YT9224 `motorcomm,mdi-swap = <0x0780>`** — lan1–lan4 link without relying on vendor U‑Boot alone ([openwrt mdi-swap](https://github.com/openwrt/openwrt/blob/main/target/linux/generic/pending-6.18/967-54-net-dsa-yt922x-apply-the-board-mdi-swap.patch))
-- **USXGMII PCS** — skip in‑band link‑up reconfig so 10G WAN does not flap forever (community fix for openwrt#26690-class behaviour)
+- **USXGMII PCS** — skip in‑band link‑up reconfig so 10G WAN does not flap forever (matches OpenWrt main `975-net-phy-mtk-usxgmii-fix-link-flapping` / openwrt#26690-class behaviour)
+- **rtl8261c-firmware** — ships `/lib/firmware/rtl8261c.bin` for the RTL8261C/D-CG 10G WAN PHY (full Realtek 8261C driver is on OpenWrt **6.18+** / main; 25.12 keeps the IEEE C45 PHY + PCS fix)
 - **mt76** — FILS / action-frame layout compatibility with OpenWrt 25.12 mac80211
 - **YT8824** — `of.h` include fix for Motorcomm PHY build
 - **In-band WAN** — `managed = "in-band-status"` on the 10G GMAC
+- **SQM / CAKE** — Flint 4 board defaults: keep `cake_mq` preferred, earlier `no-split-gso`, WAN host fairness
+
+OpenWrt **main** also carries a 6.18-oriented BE14000 DTS rewrite (`wan` netdev name, `yt922x_4b` tag, MIPI panel). MilkFlint4 **0.2a** stays on the 25.12 / vendor-compatible layout (`eth2`, `lan1`–`lan8`, ST7789 fbtft) so MilkFlint steering and the panel stack keep working; we port the functional fixes above rather than the whole DTS swap.
 
 ### Known issues (upstream / hardware)
 
 - **openwrt#26690** — some units still report 10G WAN wedging when a second radio comes up; we ship the PCS skip, but treat multi-radio + 10G as “watch the link” until OpenWrt closes the bug.
 - **openwrt#26691** — rare cold boot with empty 10G speed capabilities; power cycle if WAN stays dark.
+- **RTL8261C/D full driver** — needs kernel 6.18 Realtek PHY stack (OpenWrt main). Firmware blob is included; C45 + PCS is the 25.12 path.
 - **6 GHz** needs a country that allows it (not `00`; `US` can show 0 dBm / no-IR). Prefer `DE` or similar + WPA3.
 - Prefer official MilkFlint4 images over mixing snapshot `kmod-*` from downloads.openwrt.org (vermagic mismatch).
 
