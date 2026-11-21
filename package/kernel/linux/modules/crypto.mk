@@ -1129,48 +1129,13 @@ define KernelPackage/crypto-sha512
   DEPENDS:=+kmod-crypto-hash
   KCONFIG:= \
 	CONFIG_CRYPTO_SHA512 \
-	CONFIG_CRYPTO_SHA512_ARM \
-	CONFIG_CRYPTO_SHA512_ARM64 \
-	CONFIG_CRYPTO_SHA512_OCTEON \
-	CONFIG_CRYPTO_SHA512_SSSE3
-  FILES:=$(LINUX_DIR)/crypto/sha512_generic.ko
-  AUTOLOAD:=$(call AutoLoad,09,sha512_generic)
+	CONFIG_CRYPTO_LIB_SHA512
+  FILES:= \
+	$(LINUX_DIR)/crypto/sha512.ko \
+	$(LINUX_DIR)/lib/crypto/libsha512.ko
+  AUTOLOAD:=$(call AutoLoad,09,sha512)
   $(call AddDepends/crypto)
 endef
-
-define KernelPackage/crypto-sha512/arm
-  FILES+=$(LINUX_DIR)/arch/arm/crypto/sha512-arm.ko
-  AUTOLOAD+=$(call AutoLoad,09,sha512-arm)
-endef
-
-define KernelPackage/crypto-sha512/aarch64
-  FILES+=$(LINUX_DIR)/arch/arm64/crypto/sha512-arm64.ko
-  AUTOLOAD+=$(call AutoLoad,09,sha512-arm64)
-endef
-
-KernelPackage/crypto-sha512/imx/cortexa7=$(KernelPackage/crypto-sha512/arm)
-KernelPackage/crypto-sha512/imx/cortexa9=$(KernelPackage/crypto-sha512/arm)
-KernelPackage/crypto-sha512/ipq40xx=$(KernelPackage/crypto-sha512/arm)
-KernelPackage/crypto-sha512/mvebu/cortexa9=$(KernelPackage/crypto-sha512/arm)
-
-define KernelPackage/crypto-sha512/octeon
-  FILES+=$(LINUX_DIR)/arch/mips/cavium-octeon/crypto/octeon-sha512.ko
-  AUTOLOAD+=$(call AutoLoad,09,octeon-sha512)
-endef
-
-KernelPackage/crypto-sha512/tegra=$(KernelPackage/crypto-sha512/arm)
-
-ifndef CONFIG_TARGET_uml
-define KernelPackage/crypto-sha512/x86_64
-  FILES+=$(LINUX_DIR)/arch/x86/crypto/sha512-ssse3.ko
-  AUTOLOAD+=$(call AutoLoad,09,sha512-ssse3)
-endef
-endif
-
-ifdef KernelPackage/crypto-sha512/$(ARCH)
-  KernelPackage/crypto-sha512/$(CRYPTO_TARGET)=\
-	  $(KernelPackage/crypto-sha512/$(ARCH))
-endif
 
 $(eval $(call KernelPackage,crypto-sha512))
 

@@ -1,0 +1,19 @@
+From: MilkFlint4 <builder@milkflint4>
+Subject: [PATCH] arm64: dts: mt7988a: add cpufreq calibration efuse cell
+
+Extracted from the 6.x complete-dtsi series so 842 (CPU voltage
+calibration) can resolve &cpufreq_calibration on Linux 7.3.
+
+--- a/arch/arm64/boot/dts/mediatek/mt7988a.dtsi
++++ b/arch/arm64/boot/dts/mediatek/mt7988a.dtsi
+@@ -717,6 +717,10 @@
+ 			soc-uuid@140 {
+ 				reg = <0x140 0x10>;
+ 			};
++
++			cpufreq_calibration: calib@278 {
++				reg = <0x278 0x1>;
++			};
+ 
+ 			lvts_calibration: calib@918 {
+ 				reg = <0x918 0x28>;
