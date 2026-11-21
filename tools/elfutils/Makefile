@@ -102,6 +102,7 @@ HOST_CONFIGURE_ARGS += \
 	--without-libiconv-prefix \
 	--disable-debuginfod \
 	--disable-libdebuginfod \
+	--disable-demangler \
 	--disable-nls \
 	--disable-shared \
 	--enable-static \
