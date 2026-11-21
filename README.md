@@ -126,13 +126,20 @@ Moved mediatek/filogic to **kernel 6.18** (OpenWrt main stack) for best Flint 4 
 - **SQM / CAKE** — OpenWrt main `cake_mq` backports (`backport-6.18` 700-*/701-*) + MilkFlint sync_time hack (`hack-6.18` 710-*)
 - **ALL_KMODS** — extras match this build (official snapshot kmods will not load)
 
-### Known issues (upstream / hardware)
+### 10G WAN mitigations (openwrt#26690 / #26691)
 
-Still open upstream — not MilkFlint regressions, and **not** the old 0.2a “need 6.18 / prefer DE / mix snapshot kmods” notes (those are fixed in **0.3a**):
+MilkFlint4 **0.3a** ships board + driver workarounds for the RTL8261C/D issues still open upstream:
 
-- **[openwrt#26690](https://github.com/openwrt/openwrt/issues/26690)** — some units still report 10G WAN wedging when a second radio comes up; PCS skip is included, but treat multi-radio + 10G as “watch the link” until upstream closes it.
-- **[openwrt#26691](https://github.com/openwrt/openwrt/issues/26691)** — rare cold boot with empty 10G speed capabilities; power cycle if WAN stays dark.
-- **kmods** — install only modules built with this **0.3a** image (`ALL_KMODS` / matching vermagic). Snapshot packages from downloads.openwrt.org will not load.
+- **#26691 (empty PMA / `-EINVAL` on cold boot)** — `rtl8261x_get_features` loads firmware early (before `config_init`), soft-resets and re-reads abilities up to 5×, and fails the probe instead of attaching a blank PHY; longer PHY reset deassert in DTS.
+- **#26690 (WAN flaps / wedges when a second radio comes up)** — USXGMII PCS flap skip + RTL8261 SerDes reset (OpenWrt main), MDIO at 2.5 MHz, `eee-broken-*` on the WAN PHY, 45 °C fan trip, and a `wan` hotplug that pulses the fan + bounces the link on rapid multi-radio flaps (matches the recovery path reported upstream).
+
+If WAN still misbehaves after a hard wedge, power-cycle the router (warm reboot is not enough once the PHY is stuck).
+
+### Packages / kmods
+
+**Do not install `kmod-*` from downloads.openwrt.org** into a MilkFlint4 image — vermagic will not match. That is true for any image whose kernel is not bit-identical to the official builder (RSS, US 6 GHz LPI, and the WAN PHY retry are kernel-side).
+
+MilkFlint4 builds **`CONFIG_ALL_KMODS`** with this tree so extras match the image. The MilkFlint **UI and tweaks are userspace** (packages under `package/milkflint/`, board uci-defaults); they work on this image and can also be layered onto a stock OpenWrt main build if you prefer official kmods and accept losing MilkFlint’s kernel-side WAN/RSS/6 GHz bits.
 
 ## Build
 

@@ -276,16 +276,30 @@
 };
 
 &mdio_bus {
-	clock-frequency = <10500000>;
+	/*
+	 * 2.5 MHz: openwrt#26690 saw far less MDIO frame corruption at the
+	 * driver default than at the previous 10.5 MHz board setting.
+	 */
+	clock-frequency = <2500000>;
 
 	phy0: ethernet-phy@0 {
-		/* external multi-gig PHY (c45) */
+		/* external multi-gig PHY (c45) — RTL8261C/D-CG 10G WAN */
 		compatible = "ethernet-phy-ieee802.3-c45";
 		reg = <0>;
 
 		reset-gpios = <&pio 1 GPIO_ACTIVE_LOW>;
 		reset-assert-us = <100000>;
-		reset-deassert-us = <300000>;
+		/* Extra settle after hard reset (openwrt#26691 cold-boot race) */
+		reset-deassert-us = <500000>;
+
+		/*
+		 * EEE is not reliably controllable via ethtool on this PHY and
+		 * has caused multi-gig / MTK interop flaps elsewhere; mark
+		 * copper EEE broken (openwrt#26690 guidance).
+		 */
+		eee-broken-100tx;
+		eee-broken-1000t;
+		eee-broken-10gt;
 	};
 
 	switch@1d {
