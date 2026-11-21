@@ -22,9 +22,9 @@ define KernelPackage/input-touchscreen-cst353x
 endef
 
 define KernelPackage/input-touchscreen-cst353x/description
- Driver for the Hynitron CST353X capacitive touch controller, as fitted to
- the GL.iNet BE10000. The controller answers on i2c at address 0x58 and
- uses 32 bit register addresses, which the mainline hynitron_cstxxx driver
+ Driver for the Hynitron CST3530/CST353X capacitive touch controller on the
+ GL.iNet GL-BE14000 (Flint 4). The controller answers on I2C at 0x58 and
+ uses 32-bit register addresses, which the mainline hynitron_cstxxx driver
  does not support.
 endef
 

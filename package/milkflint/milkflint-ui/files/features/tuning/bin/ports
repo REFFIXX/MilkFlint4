@@ -11,6 +11,10 @@
 SYSFS=${SYSFS:-/sys}
 BOARD_JSON=${BOARD_JSON:-/etc/board.json}
 
+board_id() {
+	jsonfilter -i "$BOARD_JSON" -e '@.model.id' 2> /dev/null
+}
+
 rss() {
 	for n in "$SYSFS"/class/net/*; do
 		case "$(readlink "$n/device" 2> /dev/null)" in
@@ -20,25 +24,30 @@ rss() {
 			;;
 		esac
 	done
-	# Flint 4 (BE14000) WAN is eth2; Flint 2 / others default to eth1
-	if [ -e "$SYSFS/class/net/eth2" ]; then
+	case "$(board_id)" in
+	glinet,gl-be14000)
 		echo eth2
-	else
+		;;
+	*)
 		echo eth1
-	fi
+		;;
+	esac
 }
 
 wan() {
 	dev=$(jsonfilter -i "$BOARD_JSON" -e '@.network.wan.device' 2> /dev/null)
+	[ -n "$dev" ] || {
+		# multi-port WAN stores devices under .ports[]
+		dev=$(jsonfilter -i "$BOARD_JSON" -e '@.network.wan.ports[0]' 2> /dev/null)
+	}
 	[ -n "$dev" ] || dev=$(uci -q get network.wan.device)
 	dev=${dev%%.*}
 	case "$dev" in
 	'' | @* | *[!A-Za-z0-9_-]*)
-		if [ -e "$SYSFS/class/net/eth2" ]; then
-			echo eth2
-		else
-			echo eth1
-		fi
+		case "$(board_id)" in
+		glinet,gl-be14000) echo eth2 ;;
+		*) echo eth1 ;;
+		esac
 		;;
 	*) echo "$dev" ;;
 	esac

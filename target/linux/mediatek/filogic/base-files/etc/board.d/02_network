@@ -102,10 +102,10 @@ mediatek_setup_interfaces()
 		ucidef_set_interfaces_lan_wan "lan1 lan2 lan3 lan4 lan5" eth1
 		;;
 	glinet,gl-be14000)
+		# eth2 = 10G RJ45 WAN; sfp = SFP+ (also WAN-zoned for NAT/firewall)
 		ucidef_set_interfaces_lan_wan \
-			"lan1 lan2 lan3 lan4 lan5 lan6 lan7 lan8" eth2
+			"lan1 lan2 lan3 lan4 lan5 lan6 lan7 lan8" "eth2 sfp"
 		ucidef_set_interface "lan" ipaddr "192.168.1.1" netmask "255.255.255.0"
-		ucidef_set_interface "secondwan" device "sfp" protocol "dhcp"
 		;;
 	bananapi,bpi-r3)
 		ucidef_set_interfaces_lan_wan "lan1 lan2 lan3 lan4 sfp2" "sfp1 wan"
@@ -284,7 +284,6 @@ mediatek_setup_macs()
 		;;
 	glinet,gl-be14000)
 		wan_mac=$(mmc_get_mac_binary "factory" "0x4000")
-		secondwan_mac=$(macaddr_add "$wan_mac" 1)
 		lan_mac=$(macaddr_add "$wan_mac" 2)
 		label_mac=$wan_mac
 		;;

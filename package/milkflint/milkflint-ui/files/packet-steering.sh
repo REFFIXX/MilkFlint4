@@ -1,6 +1,7 @@
 #!/bin/sh
-# MilkFlint's packet steering for the GL-MT6000, run by /etc/init.d/packet_steering
-# in place of OpenWrt's packet-steering.uc. $1 is network.globals.packet_steering:
+# MilkFlint packet steering (Flint 2 / Flint 4 / EX5601), run by
+# /etc/init.d/packet_steering in place of OpenWrt's packet-steering.uc.
+# $1 is network.globals.packet_steering:
 # 0 turns steering off; anything else (or unset) uses the layout below.
 #
 # OpenWrt's layout puts the mtk_eth NAPI on CPU0 and steers every packet the

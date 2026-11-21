@@ -7,6 +7,8 @@
 /dts-v1/;
 #include <dt-bindings/input/input.h>
 #include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/interrupt-controller/irq.h>
+#include <dt-bindings/pinctrl/mt65xx.h>
 #include <dt-bindings/regulator/richtek,rt5190a-regulator.h>
 
 #include "mt7988a.dtsi"
@@ -17,11 +19,8 @@
     mediatek,upgrade-firmware-part = "PARTLABEL=rootfs";
     chosen {
         rootdisk = <&emmc_rootfs>;
-        bootargs = "console=ttyS0,115200n1 loglevel=8  \
-                earlycon=uart8250,mmio32,0x11000000 \
-                earlyprintk pci=pcie_bus_perf \
-                root=PARTLABEL=rootfs rootwait \
-                rootfstype=squashfs,f2fs";
+        bootargs = "console=ttyS0,115200n1 pci=pcie_bus_perf \
+                root=PARTLABEL=rootfs rootwait";
     };
 
     gl-hw {
@@ -367,6 +366,10 @@
         reset-gpios = <&pio 34 GPIO_ACTIVE_LOW>;
         interrupt-parent = <&pio>;
         interrupts = <32 IRQ_TYPE_EDGE_FALLING>;
+        touchscreen-size-x = <240>;
+        touchscreen-size-y = <320>;
+        touchscreen-swapped-x-y;
+        touchscreen-inverted-y;
         status = "okay";
     };
 };
@@ -450,8 +453,28 @@
         mt7996@0,0 {
             reg = <0x0000 0 0 0 0>;
             compatible = "mediatek,mt7996";
+            #address-cells = <1>;
+            #size-cells = <0>;
             nvmem-cells = <&eeprom_factory_0>;
             nvmem-cell-names = "eeprom";
+
+            band@0 {
+                reg = <0>;
+                nvmem-cells = <&macaddr_wifi 0>;
+                nvmem-cell-names = "mac-address";
+            };
+
+            band@1 {
+                reg = <1>;
+                nvmem-cells = <&macaddr_wifi 1>;
+                nvmem-cell-names = "mac-address";
+            };
+
+            band@2 {
+                reg = <2>;
+                nvmem-cells = <&macaddr_wifi 2>;
+                nvmem-cell-names = "mac-address";
+            };
         };
     };
 };
@@ -500,13 +523,13 @@
 
     mdio0_pins: mdio0-pins {
         mux {
-            function = "mdio";
+            function = "eth";
             groups = "mdc_mdio0";
         };
 
         conf {
             groups = "mdc_mdio0";
-            drive-strength = <MTK_DRIVE_10mA>;
+            drive-strength = <MTK_DRIVE_8mA>;
         };
     };
 
@@ -646,6 +669,14 @@
     vusb50-supply = <&reg_5p0v>;
 };
 
+&tphy {
+    status = "okay";
+};
+
+&xsphy {
+    status = "okay";
+};
+
 &eth {
 	pinctrl-names = "default";
 	pinctrl-0 = <&mdio0_pins>;
@@ -655,13 +686,16 @@
 &gmac0 {
 	phy-mode = "internal";
 	phy-connection-type = "internal";
+	nvmem-cells = <&macaddr_ethernet 2>;
+	nvmem-cell-names = "mac-address";
 	status = "okay";
 };
 
 &gmac1 {
-	/delete-property/ phys;
 	phy-mode = "usxgmii";
 	phy-connection-type = "usxgmii";
+	nvmem-cells = <&macaddr_ethernet 1>;
+	nvmem-cell-names = "mac-address";
 	status = "okay";
 
 	fixed-link {
@@ -671,21 +705,17 @@
 	};
 };
 
-&usxgmiisys0 {
-	phys = <&xfi_tphy0>;
-};
-
 &usxgmiisys1 {
-	phys = <&xfi_tphy1>;
 	mediatek,force-fixed-10g;
 };
 
 &gmac2 {
-	/delete-property/ phys;
 	mac-type = "xgdm";
 	phy-mode = "usxgmii";
 	phy-connection-type = "usxgmii";
 	phy-handle = <&phy0>;
+	nvmem-cells = <&macaddr_ethernet 0>;
+	nvmem-cell-names = "mac-address";
 	status = "okay";
 };
 
@@ -787,17 +817,15 @@
 	phy0: ethernet-phy@0 {
 		reg = <0>;
 		compatible = "ethernet-phy-ieee802.3-c45";
-		mdi-reversal = /bits/ 16 <1>;
 		reset-assert-us = <100000>;
 		reset-deassert-us = <300000>;
 		reset-gpios = <&pio 1 GPIO_ACTIVE_LOW>;
-		interrupt-parent = <&pio>;
-		interrupts = <2 IRQ_TYPE_LEVEL_LOW>;
 	};
 };
 
 &switch {
 	status = "okay";
+	dsa,member = <0 0>;
 };
 
 &gsw_port0 {
@@ -817,7 +845,7 @@
 };
 
 &crypto {
-    status = "disabled";
+    status = "okay";
 };
 
 &mmc0 {
@@ -861,6 +889,18 @@
 
                         eeprom_factory_0: eeprom@0 {
                             reg = <0x0 0x1e00>;
+                        };
+
+                        macaddr_ethernet: macaddr@4000 {
+                            compatible = "mac-base";
+                            reg = <0x4000 0x6>;
+                            #nvmem-cell-cells = <1>;
+                        };
+
+                        macaddr_wifi: macaddr@4006 {
+                            compatible = "mac-base";
+                            reg = <0x4006 0x6>;
+                            #nvmem-cell-cells = <1>;
                         };
                     };
                 };

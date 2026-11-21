@@ -1753,6 +1753,8 @@ define Device/glinet_gl-be14000
   DEVICE_MODEL := GL-BE14000
   DEVICE_DTS := mt7988a-glinet-gl-be14000
   DEVICE_DTS_DIR := ../dts
+  DEVICE_DTS_LOADADDR := 0x45f00000
+  KERNEL_LOADADDR := 0x46000000
   BOARD_NAME := glinet,gl-be14000
   SUPPORTED_DEVICES += glinet,gl-be14000
   DEVICE_PACKAGES := e2fsprogs f2fsck mkf2fs blkid blockdev losetup \

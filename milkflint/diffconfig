@@ -20,9 +20,9 @@ CONFIG_VERSION_BUG_URL="https://github.com/REFFIXX/MilkFlint4/issues"
 CONFIG_VERSION_SUPPORT_URL="https://github.com/REFFIXX/MilkFlint4/issues"
 CONFIG_VERSION_FIRMWARE_URL="https://github.com/REFFIXX/MilkFlint4/releases"
 
-# The kernel compiled for the SoC's cores (Cortex-A73 on MT7988), as the
-# packages already are. "Kernel extra CFLAGS" is one of OpenWrt's developer
-# options, so it needs CONFIG_DEVEL.
+# Filogic's package ABI is cortex-a53 across MT798x (including MT7988's
+# A73 cores). Keep -mcpu=cortex-a53 so kmods match. CONFIG_DEVEL is required
+# for KERNEL_CFLAGS.
 CONFIG_DEVEL=y
 CONFIG_KERNEL_CFLAGS="-mcpu=cortex-a53"
 CONFIG_KERNEL_BUILD_USER="builder"
