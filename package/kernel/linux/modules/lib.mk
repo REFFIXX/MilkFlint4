@@ -218,7 +218,12 @@ define KernelPackage/lib-raid6
   TITLE:=RAID6 algorithm support
   HIDDEN:=1
   KCONFIG:=CONFIG_RAID6_PQ
+  # Linux 7.x moved raid6_pq under lib/raid/raid6/
+ifneq ($(wildcard $(LINUX_DIR)/lib/raid/raid6/raid6_pq.ko),)
+  FILES:=$(LINUX_DIR)/lib/raid/raid6/raid6_pq.ko
+else
   FILES:=$(LINUX_DIR)/lib/raid6/raid6_pq.ko
+endif
   AUTOLOAD:=$(call AutoProbe,raid6_pq)
 endef
 
@@ -234,7 +239,11 @@ define KernelPackage/lib-xor
   TITLE:=XOR blocks algorithm support
   HIDDEN:=1
   KCONFIG:=CONFIG_XOR_BLOCKS
-ifneq ($(wildcard $(LINUX_DIR)/arch/$(LINUX_KARCH)/lib/xor-neon.ko),)
+  # Linux 7.x moved xor.ko under lib/raid/xor/
+ifneq ($(wildcard $(LINUX_DIR)/lib/raid/xor/xor.ko),)
+  FILES:=$(LINUX_DIR)/lib/raid/xor/xor.ko
+  AUTOLOAD:=$(call AutoProbe,xor)
+else ifneq ($(wildcard $(LINUX_DIR)/arch/$(LINUX_KARCH)/lib/xor-neon.ko),)
   FILES:= \
     $(LINUX_DIR)/crypto/xor.ko \
     $(LINUX_DIR)/arch/$(LINUX_KARCH)/lib/xor-neon.ko

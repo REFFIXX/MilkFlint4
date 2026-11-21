@@ -380,7 +380,8 @@ $(eval $(call KernelPackage,md-raid10))
 
 
 define KernelPackage/md-raid456
-$(call KernelPackage/md/Depends,+kmod-lib-raid6 +kmod-lib-xor +kmod-lib-crc32c)
+# kmod-lib-crc32c removed upstream (crc32c builtin / crypto-crc32c); keep raid6+xor
+$(call KernelPackage/md/Depends,+kmod-lib-raid6 +kmod-lib-xor)
   TITLE:=RAID Level 456 Driver
   KCONFIG:= \
        CONFIG_ASYNC_CORE \
