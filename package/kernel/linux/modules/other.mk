@@ -34,7 +34,9 @@ define KernelPackage/dma-buf
   KCONFIG:=CONFIG_DMA_SHARED_BUFFER
   ifeq ($(strip $(CONFIG_EXTERNAL_KERNEL_TREE)),"")
     ifeq ($(strip $(CONFIG_KERNEL_GIT_CLONE_URI)),"")
-      FILES:=$(LINUX_DIR)/drivers/dma-buf/dma-shared-buffer.ko
+      # 904-debloat_dma_buf is broken on 7.3; DMA_SHARED_BUFFER is bool/built-in.
+      # Ship the .ko when modular, otherwise an empty meta package.
+      FILES:=$(wildcard $(LINUX_DIR)/drivers/dma-buf/dma-shared-buffer.ko)
     endif
   endif
   AUTOLOAD:=$(call AutoLoad,20,dma-shared-buffer)
