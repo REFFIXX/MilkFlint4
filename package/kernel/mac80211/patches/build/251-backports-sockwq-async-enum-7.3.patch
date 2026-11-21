@@ -1,0 +1,30 @@
+From: MilkFlint4 <milkflint4@local>
+Subject: [PATCH] backports: do not redefine SOCKWQ_ASYNC_* enums on Linux 7.3
+
+Kernel 7.3 exposes SOCKWQ_ASYNC_* as enum constants; the old
+#ifndef SOCKWQ_* aliases incorrectly redefine them to removed SOCK_ASYNC_*.
+
+--- a/backport-include/linux/net.h
++++ b/backport-include/linux/net.h
+@@ -3,12 +3,20 @@
+ #include_next <linux/net.h>
+ #include <linux/static_key.h>
+ 
+-
++/*
++ * Older kernels named these SOCK_ASYNC_*; newer kernels (incl. 7.3) use
++ * SOCKWQ_ASYNC_* as enum values. Only alias when the old names exist —
++ * #ifndef SOCKWQ_* is true for enums and must not redefine them.
++ */
++#ifdef SOCK_ASYNC_NOSPACE
+ #ifndef SOCKWQ_ASYNC_NOSPACE
+ #define SOCKWQ_ASYNC_NOSPACE   SOCK_ASYNC_NOSPACE
+ #endif
++#endif
++#ifdef SOCK_ASYNC_WAITDATA
+ #ifndef SOCKWQ_ASYNC_WAITDATA
+ #define SOCKWQ_ASYNC_WAITDATA   SOCK_ASYNC_WAITDATA
+ #endif
++#endif
+ 
+ #endif /* __BACKPORT_LINUX_NET_H */
