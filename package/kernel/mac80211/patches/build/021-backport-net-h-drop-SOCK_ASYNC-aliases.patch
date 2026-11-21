@@ -1,0 +1,21 @@
+From: MilkFlint4 <builder@milkflint4>
+Subject: [PATCH] backport: drop SOCK_ASYNC aliases on modern kernels
+
+SOCKWQ_ASYNC_* are enum constants in linux/net.h since ~5.x, so
+#ifndef never skips these aliases and SOCK_ASYNC_* no longer exist.
+
+--- a/backport-include/linux/net.h
++++ b/backport-include/linux/net.h
+@@ -3,12 +3,4 @@
+ #include_next <linux/net.h>
+ #include <linux/static_key.h>
+ 
+-
+-#ifndef SOCKWQ_ASYNC_NOSPACE
+-#define SOCKWQ_ASYNC_NOSPACE   SOCK_ASYNC_NOSPACE
+-#endif
+-#ifndef SOCKWQ_ASYNC_WAITDATA
+-#define SOCKWQ_ASYNC_WAITDATA   SOCK_ASYNC_WAITDATA
+-#endif
+-
+ #endif /* __BACKPORT_LINUX_NET_H */
