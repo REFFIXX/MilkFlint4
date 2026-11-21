@@ -351,21 +351,22 @@ endef
 $(eval $(call KernelPackage,crypto-gf128))
 
 
+# Linux 7.3 dropped crypto/ghash-generic; GHASH lives in arch CE drivers
+# (and libgf128hash). Package the CE module on aarch64 Filogic.
 define KernelPackage/crypto-ghash
   TITLE:=GHASH digest CryptoAPI module
   DEPENDS:=+kmod-crypto-gf128 +kmod-crypto-hash
   KCONFIG:= \
-	CONFIG_CRYPTO_GHASH \
 	CONFIG_CRYPTO_GHASH_ARM_CE \
 	CONFIG_CRYPTO_GHASH_ARM64_CE
-  FILES:=$(LINUX_DIR)/crypto/ghash-generic.ko
-  AUTOLOAD:=$(call AutoLoad,09,ghash-generic)
+  FILES:=
+  AUTOLOAD:=
   $(call AddDepends/crypto)
 endef
 
 define KernelPackage/crypto-ghash/arm-ce
-  FILES+= $(LINUX_DIR)/arch/arm/crypto/ghash-arm-ce.ko
-  AUTOLOAD+=ghash-arm-ce
+  FILES:=$(LINUX_DIR)/arch/arm/crypto/ghash-arm-ce.ko
+  AUTOLOAD:=$(call AutoLoad,09,ghash-arm-ce)
 endef
 
 KernelPackage/crypto-ghash/imx/cortexa7=$(KernelPackage/crypto-ghash/arm-ce)
@@ -374,10 +375,12 @@ KernelPackage/crypto-ghash/ipq40xx=$(KernelPackage/crypto-ghash/arm-ce)
 KernelPackage/crypto-ghash/mvebu/cortexa9=$(KernelPackage/crypto-ghash/arm-ce)
 
 define KernelPackage/crypto-ghash/aarch64-ce
-  FILES+= $(LINUX_DIR)/arch/arm64/crypto/ghash-ce.ko
-  AUTOLOAD+=ghash-ce
+  FILES:=$(LINUX_DIR)/arch/arm64/crypto/ghash-ce.ko
+  AUTOLOAD:=$(call AutoLoad,09,ghash-ce)
 endef
 
+KernelPackage/crypto-ghash/mediatek/filogic=$(KernelPackage/crypto-ghash/aarch64-ce)
+KernelPackage/crypto-ghash/mediatek/mt7622=$(KernelPackage/crypto-ghash/aarch64-ce)
 KernelPackage/crypto-ghash/qualcommax=$(KernelPackage/crypto-ghash/aarch64-ce)
 
 $(eval $(call KernelPackage,crypto-ghash))

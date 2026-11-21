@@ -36,6 +36,8 @@ define Package/linux-atm
   CATEGORY:=Libraries
   TITLE:=Linux ATM library
   URL:=http://linux-atm.sourceforge.net/
+  # Unused on Filogic/BE14000; host patches fail on this track — keep out of world.
+  DEPENDS:=@BROKEN
 endef
 
 define Package/linux-atm/description
