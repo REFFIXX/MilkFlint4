@@ -27,9 +27,9 @@ CONFIG_KERNEL_CFLAGS="-mcpu=cortex-a53"
 CONFIG_KERNEL_BUILD_USER="builder"
 CONFIG_KERNEL_BUILD_DOMAIN="milkflint4"
 
-# Linux 7.3: skip optional ALL_KMODS packaging (hard package/kernel/linux fails).
-# Board-required milkflint packages stay =y below. Build with IGNORE_ERRORS='n m'.
-# CONFIG_ALL_KMODS is not set
+# Linux 7.3: keep ALL_KMODS so extras match this image's vermagic.
+# Hard-fail feed packages are disabled below; build with IGNORE_ERRORS='n m'.
+CONFIG_ALL_KMODS=y
 
 # Flint 4 Wi-Fi 7 (mt7996)
 CONFIG_PACKAGE_kmod-mt7996e=y
