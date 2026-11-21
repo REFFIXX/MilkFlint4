@@ -31,6 +31,22 @@
 	status = "okay";
 };
 
+&pio {
+	gbe_led0_pins: gbe-led0-pins {
+		mux {
+			function = "led";
+			groups = "gbe_led0";
+		};
+	};
+
+	gbe_led1_pins: gbe-led1-pins {
+		mux {
+			function = "led";
+			groups = "gbe_led1";
+		};
+	};
+};
+
 &eth {
 	pinctrl-names = "default";
 	pinctrl-0 = <&mdio_pins &gbe_led0_pins &gbe_led1_pins>;

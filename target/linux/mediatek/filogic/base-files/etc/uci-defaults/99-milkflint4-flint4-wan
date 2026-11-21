@@ -1,0 +1,14 @@
+#!/bin/sh
+# Flint 4 WAN: mark board mitigations applied (DTS EEE-broken + hotplug recovery).
+
+[ "$(board_name)" = glinet,gl-be14000 ] || exit 0
+
+if [ -z "$(uci -q get milkflint.defaults.flint4_wan)" ]; then
+	uci -q batch <<-UCI
+		set milkflint.defaults=defaults
+		set milkflint.defaults.flint4_wan='1'
+		commit milkflint
+	UCI
+fi
+
+exit 0

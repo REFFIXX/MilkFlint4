@@ -285,7 +285,11 @@ ifneq ($(PKG_NAME),toolchain)
 		if [ -f "$(PKG_INFO_DIR)/$(1).missing" ]; then \
 			echo "Package $(1) is missing dependencies for the following libraries:" >&2; \
 			cat "$(PKG_INFO_DIR)/$(1).missing" >&2; \
-			false; \
+			if [ "$(CONFIG_ALL_KMODS)" = "y" ]; then \
+				echo "WARNING: continuing despite missing kmod deps (CONFIG_ALL_KMODS=y)" >&2; \
+			else \
+				false; \
+			fi; \
 		fi; \
 	)
   endef

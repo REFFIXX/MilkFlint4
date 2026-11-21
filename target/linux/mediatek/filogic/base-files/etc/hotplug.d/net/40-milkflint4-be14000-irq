@@ -1,0 +1,22 @@
+#!/bin/sh
+# Flint 4: when wan (RSS MAC) appears, nudge MilkFlint packet steering so
+# PDMA IRQs / NAPI land on separate A73 cores. No-op on other boards.
+
+[ "$(board_name)" = glinet,gl-be14000 ] || exit 0
+[ "$ACTION" = add ] || exit 0
+[ "$DEVICENAME" = wan ] || exit 0
+
+# Re-apply sysctl netdev budgets if the file exists (hotplug race at boot)
+[ -f /etc/sysctl.d/22-milkflint4-be14000.conf ] && \
+	sysctl -e -p /etc/sysctl.d/22-milkflint4-be14000.conf >/dev/null 2>&1 || true
+
+# Prefer performance governor whenever CPUs show up late
+for gov in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
+	[ -w "$gov" ] || continue
+	echo performance > "$gov" 2>/dev/null || true
+done
+
+/etc/init.d/packet_steering enabled 2>/dev/null && \
+	/etc/init.d/packet_steering reload 2>/dev/null || true
+
+exit 0

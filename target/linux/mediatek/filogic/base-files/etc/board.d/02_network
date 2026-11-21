@@ -102,9 +102,9 @@ mediatek_setup_interfaces()
 		ucidef_set_interfaces_lan_wan "lan1 lan2 lan3 lan4 lan5" eth1
 		;;
 	glinet,gl-be14000)
-		# eth2 = 10G RJ45 WAN; sfp = SFP+ (also WAN-zoned for NAT/firewall)
+		# wan = 10G RJ45 (openwrt,netdev-name); lan2-lan9 + sfp on LAN
 		ucidef_set_interfaces_lan_wan \
-			"lan1 lan2 lan3 lan4 lan5 lan6 lan7 lan8" "eth2 sfp"
+			"lan2 lan3 lan4 lan5 lan6 lan7 lan8 lan9 sfp" wan
 		ucidef_set_interface "lan" ipaddr "192.168.1.1" netmask "255.255.255.0"
 		;;
 	bananapi,bpi-r3)

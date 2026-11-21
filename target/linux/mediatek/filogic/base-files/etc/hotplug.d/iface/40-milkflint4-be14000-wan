@@ -1,0 +1,65 @@
+#!/bin/sh
+# GL-BE14000: recover 10G WAN (RTL8261) when it wedges under multi-radio load
+# (openwrt#26690) or fails to attach after cold boot (openwrt#26691).
+
+[ "$(board_name)" = glinet,gl-be14000 ] || exit 0
+[ "$INTERFACE" = wan ] || [ "$DEVICE" = wan ] || exit 0
+
+STATE_DIR=/tmp/milkflint4-wan
+mkdir -p "$STATE_DIR"
+
+pulse_fan() {
+	# Reporter: briefly enabling cooling_device0 latches the link while
+	# flapping is still in progress (side-channel, not thermal).
+	cd=/sys/class/thermal/cooling_device0
+	[ -w "$cd/cur_state" ] || return 0
+	echo 1 > "$cd/cur_state" 2>/dev/null || true
+	sleep 8
+	# Leave at least level 1 if thermal already wants more; else back to 0
+	echo 0 > "$cd/cur_state" 2>/dev/null || true
+}
+
+bounce_wan() {
+	logger -t milkflint4-wan "bouncing wan (ACTION=$ACTION)"
+	ip link set wan down 2>/dev/null || true
+	sleep 1
+	ip link set wan up 2>/dev/null || true
+}
+
+case "$ACTION" in
+ifup)
+	# Cold-boot attach race: interface came up but has no carrier and
+	# ethtool shows Unknown — one bounce + fan pulse often recovers.
+	sleep 3
+	carrier=$(cat /sys/class/net/wan/carrier 2>/dev/null || echo 0)
+	if [ "$carrier" = 0 ]; then
+		logger -t milkflint4-wan "wan up without carrier; recovering"
+		pulse_fan
+		bounce_wan
+	fi
+	echo 0 > "$STATE_DIR/flaps"
+	;;
+ifdown)
+	# Count rapid flaps while more than one radio is up.
+	flaps=0
+	[ -f "$STATE_DIR/flaps" ] && flaps=$(cat "$STATE_DIR/flaps")
+	flaps=$((flaps + 1))
+	echo "$flaps" > "$STATE_DIR/flaps"
+
+	radios=0
+	for d in /sys/class/ieee80211/phy*/device/net/*/operstate; do
+		[ -f "$d" ] || continue
+		[ "$(cat "$d" 2>/dev/null)" = up ] && radios=$((radios + 1))
+	done
+
+	if [ "$radios" -ge 2 ] && [ "$flaps" -ge 3 ]; then
+		logger -t milkflint4-wan \
+			"wan flap #$flaps with $radios radios up; fan pulse + bounce"
+		pulse_fan
+		bounce_wan
+		echo 0 > "$STATE_DIR/flaps"
+	fi
+	;;
+esac
+
+exit 0

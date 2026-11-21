@@ -70,6 +70,20 @@
 };
 
 &pio {
+	gbe_led0_pins: gbe-led0-pins {
+		mux {
+			function = "led";
+			groups = "gbe_led0";
+		};
+	};
+
+	gbe_led1_pins: gbe-led1-pins {
+		mux {
+			function = "led";
+			groups = "gbe_led1";
+		};
+	};
+
 	nand_pins: spi0-pins {
 		mux {
 			function = "spi";

@@ -3,7 +3,7 @@
 # so they work across boards (ui feature "tuning"):
 #   ports rss   the frame engine's MAC that isn't the switch's, whose RSS
 #               table packet steering sets: eth1 (WAN) on the GL-MT6000,
-#               wan on the EX5601/T-56, eth2 (WAN) on the GL-BE14000;
+#               wan on the EX5601/T-56 and GL-BE14000 (OpenWrt main DTS);
 #               eth1 if there's none
 #   ports wan   the board's WAN port (/etc/board.json), else the wan
 #               interface's device without a VLAN, else eth1
@@ -26,7 +26,7 @@ rss() {
 	done
 	case "$(board_id)" in
 	glinet,gl-be14000)
-		echo eth2
+		echo wan
 		;;
 	*)
 		echo eth1
@@ -45,7 +45,7 @@ wan() {
 	case "$dev" in
 	'' | @* | *[!A-Za-z0-9_-]*)
 		case "$(board_id)" in
-		glinet,gl-be14000) echo eth2 ;;
+		glinet,gl-be14000) echo wan ;;
 		*) echo eth1 ;;
 		esac
 		;;

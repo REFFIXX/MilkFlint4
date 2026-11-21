@@ -149,11 +149,9 @@ PKG_EXTMOD_SUBDIRS ?= .
 PKG_SYMVERS_DIR = $(KERNEL_BUILD_DIR)/symvers
 
 define collect_module_symvers
+	rm -f $(PKG_BUILD_DIR)/Module.symvers.tmp; \
 	for subdir in $(PKG_EXTMOD_SUBDIRS); do \
-		realdir=$$$$(readlink -f $(PKG_BUILD_DIR)); \
-		grep -F $(PKG_BUILD_DIR) $(PKG_BUILD_DIR)/$$$$subdir/Module.symvers >> $(PKG_BUILD_DIR)/Module.symvers.tmp; \
-		[ "$(PKG_BUILD_DIR)" = "$$$$realdir" ] || \
-			grep -F $$$$realdir $(PKG_BUILD_DIR)/$$$$subdir/Module.symvers >> $(PKG_BUILD_DIR)/Module.symvers.tmp; \
+		cat $(PKG_BUILD_DIR)/$$$$subdir/Module.symvers >> $(PKG_BUILD_DIR)/Module.symvers.tmp; \
 	done; \
 	sort -u $(PKG_BUILD_DIR)/Module.symvers.tmp > $(PKG_BUILD_DIR)/Module.symvers; \
 	mkdir -p $(PKG_SYMVERS_DIR); \
@@ -251,8 +249,12 @@ $(call KernelPackage/$(1)/config)
 				mkdir -p $$(1)/$(MODULES_SUBDIR) ; \
 				$(CP) -L $$$$$$$$mod $$(1)/$(MODULES_SUBDIR)/ ; \
 			else \
-				echo "ERROR: module '$$$$$$$$mod' is missing." >&2; \
-				exit 1; \
+				if [ "$(CONFIG_ALL_KMODS)" = "y" ]; then \
+					echo "WARNING: module '$$$$$$$$mod' is missing (CONFIG_ALL_KMODS=y); skipping" >&2; \
+				else \
+					echo "ERROR: module '$$$$$$$$mod' is missing." >&2; \
+					exit 1; \
+				fi; \
 			fi; \
 		  done;
 		  $(call ModuleAutoLoad,$(1),$$(1),$(filter-out 0-,$(word 1,$(AUTOLOAD))-),$(filter-out 0,$(word 2,$(AUTOLOAD))),$(sort $(wordlist 3,99,$(AUTOLOAD))))

@@ -1757,13 +1757,13 @@ define Device/glinet_gl-be14000
   KERNEL_LOADADDR := 0x46000000
   BOARD_NAME := glinet,gl-be14000
   SUPPORTED_DEVICES += glinet,gl-be14000
-  DEVICE_PACKAGES := e2fsprogs f2fsck mkf2fs blkid blockdev losetup \
-	kmod-fs-ext4 kmod-fs-f2fs kmod-fs-vfat kmod-i2c-gpio kmod-mmc \
-	kmod-nls-cp437 kmod-nls-iso8859-1 kmod-hwmon-pwmfan \
-	kmod-mt7996-firmware kmod-mt7996-233-firmware mt7988-wo-firmware \
-	kmod-phy-motorcomm kmod-dsa-yt92xx kmod-sfp kmod-usb3 \
-	kmod-fb-tft-st7789p3 kmod-input-touchscreen-cst353x kmod-input-evdev \
-	bridger rtl8261c-firmware
+  DEVICE_PACKAGES := kmod-mt7996-233-firmware kmod-hwmon-pwmfan kmod-usb3 \
+	kmod-backlight-pwm kmod-drm-panel-mipi-dbi mipi-dbi-glinet-gl-be14000 \
+	kmod-input-touchscreen-hynitron-cst3530 kmod-input-evdev \
+	mt7988-wo-firmware rtl8261c-firmware e2fsprogs f2fsck \
+	mkf2fs bridger kmod-sfp kmod-i2c-gpio \
+	blkid blockdev losetup kmod-fs-ext4 kmod-fs-f2fs kmod-fs-vfat \
+	kmod-mmc kmod-nls-cp437 kmod-nls-iso8859-1
   IMAGES += factory.bin
   IMAGE/factory.bin := append-kernel | pad-to 32M | append-rootfs
   IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
