@@ -351,22 +351,29 @@ endef
 $(eval $(call KernelPackage,crypto-gf128))
 
 
-# Linux 7.3 dropped crypto/ghash-generic; GHASH lives in arch CE drivers
-# (and libgf128hash). Package the CE module on aarch64 Filogic.
+# Linux 7.x dropped crypto/ghash-generic; GHASH then lives in arch CE drivers
+# (and libgf128hash). Keep the generic module when the tree still builds it
+# (6.12 / 6.18), and add CE modules on ARM targets that have them.
 define KernelPackage/crypto-ghash
   TITLE:=GHASH digest CryptoAPI module
   DEPENDS:=+kmod-crypto-gf128 +kmod-crypto-hash
   KCONFIG:= \
+	CONFIG_CRYPTO_GHASH \
 	CONFIG_CRYPTO_GHASH_ARM_CE \
 	CONFIG_CRYPTO_GHASH_ARM64_CE
+ifneq ($(wildcard $(LINUX_DIR)/crypto/ghash-generic.ko),)
+  FILES:=$(LINUX_DIR)/crypto/ghash-generic.ko
+  AUTOLOAD:=$(call AutoLoad,09,ghash-generic)
+else
   FILES:=
   AUTOLOAD:=
+endif
   $(call AddDepends/crypto)
 endef
 
 define KernelPackage/crypto-ghash/arm-ce
-  FILES:=$(LINUX_DIR)/arch/arm/crypto/ghash-arm-ce.ko
-  AUTOLOAD:=$(call AutoLoad,09,ghash-arm-ce)
+  FILES+= $(LINUX_DIR)/arch/arm/crypto/ghash-arm-ce.ko
+  AUTOLOAD+=ghash-arm-ce
 endef
 
 KernelPackage/crypto-ghash/imx/cortexa7=$(KernelPackage/crypto-ghash/arm-ce)
@@ -375,8 +382,8 @@ KernelPackage/crypto-ghash/ipq40xx=$(KernelPackage/crypto-ghash/arm-ce)
 KernelPackage/crypto-ghash/mvebu/cortexa9=$(KernelPackage/crypto-ghash/arm-ce)
 
 define KernelPackage/crypto-ghash/aarch64-ce
-  FILES:=$(LINUX_DIR)/arch/arm64/crypto/ghash-ce.ko
-  AUTOLOAD:=$(call AutoLoad,09,ghash-ce)
+  FILES+= $(LINUX_DIR)/arch/arm64/crypto/ghash-ce.ko
+  AUTOLOAD+=ghash-ce
 endef
 
 KernelPackage/crypto-ghash/mediatek/filogic=$(KernelPackage/crypto-ghash/aarch64-ce)
@@ -823,10 +830,12 @@ define KernelPackage/crypto-sha1
   DEPENDS:=+kmod-crypto-hash
   KCONFIG:= \
 	CONFIG_CRYPTO_SHA1
+  # 6.18+: sha1.ko + libsha1; 6.12: sha1_generic.ko
   FILES:= \
-	$(LINUX_DIR)/crypto/sha1.ko \
-	$(LINUX_DIR)/lib/crypto/libsha1.ko
-  AUTOLOAD:=$(call AutoLoad,09,sha1)
+	$(LINUX_DIR)/crypto/sha1.ko@ge6.18 \
+	$(LINUX_DIR)/lib/crypto/libsha1.ko@ge6.18 \
+	$(LINUX_DIR)/crypto/sha1_generic.ko@lt6.18
+  AUTOLOAD:=$(call AutoLoad,09,sha1@ge6.18 sha1_generic@lt6.18)
   $(call AddDepends/crypto)
 endef
 
@@ -838,12 +847,13 @@ define KernelPackage/crypto-sha3
   DEPENDS:=+kmod-crypto-hash
   KCONFIG:= \
 	CONFIG_CRYPTO_SHA3 \
-	CONFIG_CRYPTO_LIB_SHA3
-  # Linux 7.x: sha3.ko + libsha3 (was sha3_generic.ko).
+	CONFIG_CRYPTO_LIB_SHA3@ge7.3
+  # Linux 7.x: sha3.ko + libsha3; older: sha3_generic.ko
   FILES:= \
-	$(LINUX_DIR)/crypto/sha3.ko \
-	$(LINUX_DIR)/lib/crypto/libsha3.ko
-  AUTOLOAD:=$(call AutoLoad,09,sha3)
+	$(LINUX_DIR)/crypto/sha3.ko@ge7.3 \
+	$(LINUX_DIR)/lib/crypto/libsha3.ko@ge7.3 \
+	$(LINUX_DIR)/crypto/sha3_generic.ko@lt7.3
+  AUTOLOAD:=$(call AutoLoad,09,sha3@ge7.3 sha3_generic@lt7.3)
   $(call AddDepends/crypto)
 endef
 
@@ -856,9 +866,10 @@ define KernelPackage/crypto-sha256
   KCONFIG:= \
 	CONFIG_CRYPTO_SHA256
   FILES:= \
-	$(LINUX_DIR)/crypto/sha256.ko \
-	$(LINUX_DIR)/lib/crypto/libsha256.ko
-  AUTOLOAD:=$(call AutoLoad,09,sha256)
+	$(LINUX_DIR)/crypto/sha256.ko@ge6.18 \
+	$(LINUX_DIR)/lib/crypto/libsha256.ko@ge6.18 \
+	$(LINUX_DIR)/crypto/sha256_generic.ko@lt6.18
+  AUTOLOAD:=$(call AutoLoad,09,sha256@ge6.18 sha256_generic@lt6.18)
   $(call AddDepends/crypto)
 endef
 
@@ -871,9 +882,10 @@ define KernelPackage/crypto-sha512
   KCONFIG:= \
 	CONFIG_CRYPTO_SHA512
   FILES:= \
-	$(LINUX_DIR)/crypto/sha512.ko \
-	$(LINUX_DIR)/lib/crypto/libsha512.ko
-  AUTOLOAD:=$(call AutoLoad,09,sha512)
+	$(LINUX_DIR)/crypto/sha512.ko@ge6.18 \
+	$(LINUX_DIR)/lib/crypto/libsha512.ko@ge6.18 \
+	$(LINUX_DIR)/crypto/sha512_generic.ko@lt6.18
+  AUTOLOAD:=$(call AutoLoad,09,sha512@ge6.18 sha512_generic@lt6.18)
   $(call AddDepends/crypto)
 endef
 

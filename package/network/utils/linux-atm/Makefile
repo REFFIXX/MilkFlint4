@@ -36,8 +36,10 @@ define Package/linux-atm
   CATEGORY:=Libraries
   TITLE:=Linux ATM library
   URL:=http://linux-atm.sourceforge.net/
-  # Unused on Filogic/BE14000; host patches fail on this track — keep out of world.
-  DEPENDS:=@BROKEN
+  # Host patches fail on the MediaTek Linux 7.3 track only; keep ATM for
+  # other targets (e.g. x86 Geode PPPoA). milkflint/diffconfig also leaves
+  # PACKAGE_linux-atm unset for Filogic world builds.
+  DEPENDS:=@!TARGET_mediatek
 endef
 
 define Package/linux-atm/description

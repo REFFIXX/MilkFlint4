@@ -11,7 +11,8 @@ define KernelPackage/lib-crc-ccitt
   SUBMENU:=$(LIB_MENU)
   TITLE:=CRC-CCITT support
   KCONFIG:=CONFIG_CRC_CCITT
-  FILES:=$(LINUX_DIR)/lib/crc/crc-ccitt.ko
+  # Linux 6.18+ moved CRC helpers under lib/crc/
+  FILES:=$(LINUX_DIR)/lib/crc/crc-ccitt.ko@ge6.18 $(LINUX_DIR)/lib/crc-ccitt.ko@lt6.18
   AUTOLOAD:=$(call AutoProbe,crc-ccitt)
 endef
 
@@ -26,7 +27,7 @@ define KernelPackage/lib-crc-itu-t
   SUBMENU:=$(LIB_MENU)
   TITLE:=CRC ITU-T V.41 support
   KCONFIG:=CONFIG_CRC_ITU_T
-  FILES:=$(LINUX_DIR)/lib/crc/crc-itu-t.ko
+  FILES:=$(LINUX_DIR)/lib/crc/crc-itu-t.ko@ge6.18 $(LINUX_DIR)/lib/crc-itu-t.ko@lt6.18
   AUTOLOAD:=$(call AutoProbe,crc-itu-t)
 endef
 
@@ -41,7 +42,7 @@ define KernelPackage/lib-crc7
   SUBMENU:=$(LIB_MENU)
   TITLE:=CRC7 support
   KCONFIG:=CONFIG_CRC7
-  FILES:=$(LINUX_DIR)/lib/crc/crc7.ko
+  FILES:=$(LINUX_DIR)/lib/crc/crc7.ko@ge6.18 $(LINUX_DIR)/lib/crc7.ko@lt6.18
   AUTOLOAD:=$(call AutoProbe,crc7)
 endef
 
@@ -56,7 +57,7 @@ define KernelPackage/lib-crc8
   SUBMENU:=$(LIB_MENU)
   TITLE:=CRC8 support
   KCONFIG:=CONFIG_CRC8
-  FILES:=$(LINUX_DIR)/lib/crc/crc8.ko
+  FILES:=$(LINUX_DIR)/lib/crc/crc8.ko@ge6.18 $(LINUX_DIR)/lib/crc8.ko@lt6.18
   AUTOLOAD:=$(call AutoProbe,crc8)
 endef
 
@@ -71,7 +72,7 @@ define KernelPackage/lib-crc16
   SUBMENU:=$(LIB_MENU)
   TITLE:=CRC16 support
   KCONFIG:=CONFIG_CRC16
-  FILES:=$(LINUX_DIR)/lib/crc/crc16.ko
+  FILES:=$(LINUX_DIR)/lib/crc/crc16.ko@ge6.18 $(LINUX_DIR)/lib/crc16.ko@lt6.18
   AUTOLOAD:=$(call AutoLoad,20,crc16,1)
 endef
 
