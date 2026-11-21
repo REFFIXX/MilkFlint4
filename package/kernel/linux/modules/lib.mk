@@ -213,6 +213,25 @@ endef
 $(eval $(call KernelPackage,lib-842))
 
 
+
+define KernelPackage/lib-crc32c
+  SUBMENU:=$(LIB_MENU)
+  TITLE:=CRC32c support library
+  HIDDEN:=1
+  KCONFIG:=CONFIG_LIBCRC32C
+  # Builtin on modern kernels; package still exists so nft/md DEPENDS resolve.
+ifneq ($(wildcard $(LINUX_DIR)/lib/libcrc32c.ko),)
+  FILES:=$(LINUX_DIR)/lib/libcrc32c.ko
+  AUTOLOAD:=$(call AutoLoad,20,libcrc32c,1)
+endif
+endef
+
+define KernelPackage/lib-crc32c/description
+ Kernel module for CRC32c support (may be empty when builtin)
+endef
+
+$(eval $(call KernelPackage,lib-crc32c))
+
 define KernelPackage/lib-raid6
   SUBMENU:=$(LIB_MENU)
   TITLE:=RAID6 algorithm support
