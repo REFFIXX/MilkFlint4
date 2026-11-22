@@ -249,58 +249,12 @@ cd milkflint/ui && pnpm install --frozen-lockfile --config.trust-policy=off && p
 
 Development is on **`main`**.
 
-## License
-
-Same as OpenWrt / MilkFlint — see `COPYING` and `LICENSES/`.
-
----
-
-*The rest of this README is OpenWrt’s.*
-
-![OpenWrt logo](include/logo.png)
-
-OpenWrt Project is a Linux operating system targeting embedded devices. Instead
-of trying to create a single, static firmware, OpenWrt provides a fully
-writable filesystem with package management. This frees you from the
-application selection and configuration provided by the vendor and allows you
-to customize the device through the use of packages to suit any application.
-For developers, OpenWrt is the framework to build an application without having
-to build a complete firmware around it; for users this means the ability for
-full customization, to use the device in ways never envisioned.
-
-Sunshine!
-
-## Download
-
-* [OpenWrt Firmware Selector](https://firmware-selector.openwrt.org/)
-* [OpenWrt Wiki Download](https://openwrt.org/downloads)
-
-## Development
-
-GNU/Linux, BSD or macOS (case-sensitive filesystem). See
-[Build System Setup](https://openwrt.org/docs/guide-developer/build-system/install-buildsystem).
-
-```
-binutils bzip2 diff find flex gawk gcc-6+ getopt grep install libc-dev libz-dev
-make4.1+ perl python3.7+ rsync subversion unzip which
-```
-
-1. `./scripts/feeds update -a`
-2. `./scripts/feeds install -a`
-3. `make menuconfig`
-4. `make`
-
-Related: [LuCI](https://github.com/openwrt/luci),
-[Packages](https://github.com/openwrt/packages),
-[Routing](https://github.com/openwrt/routing),
-[Video](https://github.com/openwrt/video).
-
 ## Support
 
-* [Hardware database](https://openwrt.org/supported_devices)
-* [Forum](https://forum.openwrt.org) · `#openwrt` on oftc.net
-* [Bugs](https://bugs.openwrt.org) · [dev list](https://lists.openwrt.org/mailman/listinfo/openwrt-devel)
+* [Releases](https://github.com/REFFIXX/MilkFlint4/releases) — flash the `…-sysupgrade.bin`
+* [OpenWrt Forum](https://forum.openwrt.org) — good place for MilkFlint4 / Flint 4 discussion
+* Upstream: [OpenWrt](https://openwrt.org) · [MilkFlint](https://github.com/OddBlueDog/MilkFlint)
 
 ## License
 
-OpenWrt is licensed under GPL-2.0
+Same as OpenWrt / MilkFlint — GPL-2.0; see `COPYING` and `LICENSES/`.
