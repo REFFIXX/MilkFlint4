@@ -1,0 +1,95 @@
+From: MilkFlint4 <noreply@milkflint4.local>
+Subject: [PATCH] wifi: mt76: mt7915: UL MU-MIMO off by default
+
+Upstream mt76 hard-wires mimo_ul_en for every non-MT7915 chip
+(MT7916 / MT7986). That makes the firmware schedule uplink MU-MIMO
+trigger bursts; on the MT7986 those bursts leave AC_BE queued for
+tens to hundreds of milliseconds while VO keeps flowing (OddBlueDog /
+MilkFlint testing on the Flint 2).
+
+MT7915 already left mimo_ul_en clear since 2022 for the same class of
+latency / TX hang. Match that default for MT798x, and expose a
+muru_mimo_ul module parameter (0644) so home users who want scheduled
+multi-client uplink can opt in. Existing stations keep the flag the
+firmware first saw for the band until they rejoin.
+
+Signed-off-by: MilkFlint4 <noreply@milkflint4.local>
+---
+--- a/mt7915/mcu.c	2026-11-21 19:42:15.144976007 +0000
++++ b/mt7915/mcu.c	2026-11-21 23:41:45.814234648 +0000
+@@ -65,6 +65,15 @@
+ module_param(muru_ofdma_ul, bool, 0644);
+ MODULE_PARM_DESC(muru_ofdma_ul, "Let the firmware schedule UL OFDMA for HE stations (default off, as stock mt76; the firmware keeps the first station's setting per band, so set it before stations join)");
+ 
++/* Off by default: stock mt76 enables UL MU-MIMO on MT798x, which schedules
++ * uplink trigger bursts that can stall best-effort TX for ~65-300 ms on the
++ * MT7986 while voice keeps flowing. Opt in when several Wi-Fi 6 devices
++ * upload heavily at once and you accept the occasional pause.
++ */
++static bool muru_mimo_ul;
++module_param(muru_mimo_ul, bool, 0644);
++MODULE_PARM_DESC(muru_mimo_ul, "Let the firmware schedule UL MU-MIMO for HE stations on MT798x (default off; the firmware keeps the first station's setting per band, so set it before stations join)");
++
+ static int muru_platform_type = -1;
+ module_param(muru_platform_type, int, 0444);
+ MODULE_PARM_DESC(muru_platform_type, "MU/RU platform type sent at boot: -1 by chip (2 on the MT7915, none on the MT798x), 0 none, 1 or 2 that value");
+@@ -1240,8 +1249,9 @@
+ 	 */
+ 	muru->cfg.mimo_dl_en = mvif->cap.he_mu_ebfer ||
+ 			       mvif->cap.vht_mu_ebfer;
++	/* MT7915 stays off (upstream); MT798x follows muru_mimo_ul */
+ 	if (!is_mt7915(&dev->mt76))
+-		muru->cfg.mimo_ul_en = true;
++		muru->cfg.mimo_ul_en = READ_ONCE(muru_mimo_ul);
+ 	muru->cfg.ofdma_dl_en = true;
+ 	muru->cfg.ofdma_ul_en = READ_ONCE(muru_ofdma_ul);
+ 
+--- a/mt7915/tests/mcu-test.c	2026-11-21 19:42:15.144976007 +0000
++++ b/mt7915/tests/mcu-test.c	2026-11-21 23:41:45.818234664 +0000
+@@ -3091,9 +3091,14 @@
+ 	muru_ofdma_ul = false;
+ }
+ 
+-/* MU settings for APs and stations: DL OFDMA always, UL OFDMA only with
+- * the muru_ofdma_ul switch on, UL MU-MIMO on this chip, DL MU-MIMO if we
+- * can MU beamform, and the station's HE MU capabilities.
++static void mt7915_test_muru_mimo_ul_off(void *data)
++{
++	muru_mimo_ul = false;
++}
++
++/* MU settings for APs and stations: DL OFDMA always, UL OFDMA / UL MU-MIMO
++ * only with their switches on, DL MU-MIMO if we can MU beamform, and the
++ * station's HE MU capabilities.
+  */
+ static void mt7915_test_sta_muru(struct kunit *test)
+ {
+@@ -3107,6 +3112,7 @@
+ 	KUNIT_ASSERT_NOT_NULL(test, muru);
+ 	KUNIT_EXPECT_TRUE(test, muru->cfg.ofdma_dl_en);
+ 	KUNIT_EXPECT_FALSE(test, muru->cfg.ofdma_ul_en);
++	KUNIT_EXPECT_FALSE(test, muru->cfg.mimo_ul_en);
+ 
+ 	/* switched on: UL OFDMA too */
+ 	KUNIT_ASSERT_EQ(test, kunit_add_action_or_reset(test,
+@@ -3118,10 +3124,19 @@
+ 	KUNIT_EXPECT_TRUE(test, muru->cfg.ofdma_dl_en);
+ 	muru_ofdma_ul = false;
+ 	KUNIT_EXPECT_TRUE(test, muru->cfg.mimo_dl_en);
+-	KUNIT_EXPECT_TRUE(test, muru->cfg.mimo_ul_en);
++	KUNIT_EXPECT_FALSE(test, muru->cfg.mimo_ul_en);
+ 	KUNIT_EXPECT_FALSE(test, muru->mimo_dl.vht_mu_bfee);
+ 	KUNIT_EXPECT_FALSE(test, muru->ofdma_ul.mu_cascading);
+ 
++	/* switched on: UL MU-MIMO too (MT798x path in this fixture) */
++	KUNIT_ASSERT_EQ(test, kunit_add_action_or_reset(test,
++			mt7915_test_muru_mimo_ul_off, NULL), 0);
++	muru_mimo_ul = true;
++	muru = mt7915_test_muru_tlv(test, &c);
++	KUNIT_ASSERT_NOT_NULL(test, muru);
++	KUNIT_EXPECT_TRUE(test, muru->cfg.mimo_ul_en);
++	muru_mimo_ul = false;
++
+ 	/* DL MU-MIMO needs one of our MU beamforming capabilities */
+ 	memset(&c.mvif->cap, 0, sizeof(c.mvif->cap));
+ 	muru = mt7915_test_muru_tlv(test, &c);

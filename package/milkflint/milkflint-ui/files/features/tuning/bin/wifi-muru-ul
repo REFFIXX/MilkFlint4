@@ -6,21 +6,33 @@
 #
 # Both default off. On MT7986, stock mt76 hard-wires UL MU-MIMO on and that
 # schedules uplink trigger bursts that can stall best-effort TX for ~65-300 ms
-# (OddBlueDog / MilkFlint). MT7996 already left the flags clear; these params
-# keep that default and let the Performance Tuning / Wi-Fi page opt in.
+# (OddBlueDog / MilkFlint). MT7996 left the flags clear; MilkFlint patch
+# 0191 exposes muru_mimo_ul / muru_ofdma_ul on mt7996e (default off) so the
+# Performance Tuning / Wi-Fi page can opt in.
 #
 # The firmware keeps the first station's setting per band, so a change applies
 # to devices that join after it; already-associated clients keep the old flag
 # until they rejoin. milkflint-tuning runs this at boot and on reload; the
-# ieee80211 hotplug (30-milkflint-aql) runs it as a radio appears.
+# ieee80211 hotplug runs it as a radio appears.
 #
 #   wifi-muru-ul
 
 set_param() {
 	local mod=$1 name=$2 want=$3 p
 	p=/sys/module/$mod/parameters/$name
-	[ -w "$p" ] || return 0
-	echo "$want" > "$p"
+	if [ ! -e "$p" ]; then
+		logger -t milkflint-muru "$mod: missing parameter $name (driver build lacks module_param)"
+		return 1
+	fi
+	if [ ! -w "$p" ]; then
+		logger -t milkflint-muru "$mod: $name not writable"
+		return 1
+	fi
+	echo "$want" > "$p" || {
+		logger -t milkflint-muru "$mod: failed to set $name=$want"
+		return 1
+	}
+	return 0
 }
 
 mimo=0
@@ -28,10 +40,14 @@ ofdma=0
 [ "$(uci -q get milkflint.wifi.muru_mimo_ul)" = 1 ] && mimo=1
 [ "$(uci -q get milkflint.wifi.muru_ofdma_ul)" = 1 ] && ofdma=1
 
+ec=0
+saw=0
 for mod in mt7996e mt7915e; do
 	[ -d "/sys/module/$mod" ] || continue
-	set_param "$mod" muru_mimo_ul "$mimo"
-	set_param "$mod" muru_ofdma_ul "$ofdma"
+	saw=1
+	set_param "$mod" muru_mimo_ul "$mimo" || ec=1
+	set_param "$mod" muru_ofdma_ul "$ofdma" || ec=1
 done
 
-exit 0
+[ "$saw" = 1 ] || logger -t milkflint-muru "no mt7996e/mt7915e module loaded yet"
+exit "$ec"
