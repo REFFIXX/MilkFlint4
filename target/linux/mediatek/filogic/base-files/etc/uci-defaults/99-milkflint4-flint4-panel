@@ -1,0 +1,8 @@
+#!/bin/sh
+# Enable panel backlight/fb bring-up on Flint 4 first boot.
+
+[ "$(board_name)" = glinet,gl-be14000 ] || exit 0
+
+[ -x /etc/init.d/milkflint4-panel ] && /etc/init.d/milkflint4-panel enable
+
+exit 0

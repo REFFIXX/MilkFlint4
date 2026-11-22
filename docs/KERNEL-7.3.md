@@ -40,13 +40,14 @@ make -j$(nproc) world V=s
 
 ## Success criteria
 
-- [x] `make target/linux/prepare` applies clean on filogic  
-- [x] Kernel + modules build for `glinet_gl-be14000`  
-- [x] `make world` → `milkflint4-*-glinet_gl-be14000-squashfs-sysupgrade.bin` (first green: 0.4a-k7 r33311, ~30 MiB)  
-- [ ] WAN 10G + tri-band Wi‑Fi bring-up  
-- [ ] Drop redundant `990-*` if upstream RSS/LRO covers MT7988  
-- [ ] Document vermagic / ALL_KMODS same as 0.3a  
-- [ ] Optional: MilkFlint4 **0.4a-k7** release tag (not main until proven) 
+- [x] `make target/linux/prepare` applies clean on filogic
+- [x] Kernel + modules build for `glinet_gl-be14000` (prior 0.4a-k7 green)
+- [ ] **0.7a-k7** world → flashable `…-sysupgrade.bin` (this pass)
+- [x] Upstream 7.3 RSS → MilkFlint `990-*` quarantined
+- [x] YT9224 DSA + 4-byte tag + PPE bridge patches in `pending-7.3`
+- [x] Panel/touch packages + backlight/`fb0` bring-up init
+- [x] MilkFlint UI synced from main; UL MU-MIMO off; WAN radio fan-pulse
+- [ ] On-device: WAN 10G + LAN switch + tri-band Wi‑Fi + panel + UI
 
 ## Non-goals (yet)
 
@@ -64,3 +65,15 @@ are not upstream, plus YT922x DSA (refreshed) and RTL8261x cold-boot retry.
 ## Config
 Kernel configure runs `olddefconfig` after merging OpenWrt config fragments so incomplete `config-7.3` does not trip interactive syncconfig on NEW symbols.
 
+
+
+## 0.7a-k7 bring-up (this pass)
+
+| Area | What we ship |
+|---|---|
+| **UI** | `milkflint-ui` htdocs/package synced from main `0.6a` |
+| **Wi‑Fi** | WED on; UL MU-MIMO/OFDMA pinned off; US country; 6 GHz PSC 37; `#26690` ieee80211 fan-pulse |
+| **Switch** | YT9224 DSA series in `pending-7.3`; gmac1 10G fixed-link to CPU port; LAN `192.168.8.1` |
+| **Display** | `panel-mipi-dbi` + CST3530 + `milkflint4-panel` backlight/`fb0` paint |
+| **PHY FW** | `mt7988-2p5g-phy-firmware` + `rtl8261c-firmware` |
+| **Build** | Host LLVM BPF (`/usr/lib/llvm-18`); `IGNORE_ERRORS='n m'`; no `ALL_KMODS` |

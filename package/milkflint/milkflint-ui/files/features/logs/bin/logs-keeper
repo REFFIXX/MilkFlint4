@@ -992,7 +992,7 @@ function irq_counts() {
 			cpus = length(match(l, /CPU[0-9]+/g) ?? []);
 			continue;
 		}
-		if (!match(l, /ethernet|mt7915e/))
+		if (!match(l, /ethernet|mt7915e|mt7996e/))
 			continue;
 		const f = split(trim(l), / +/);
 		let n = 0;
@@ -1003,7 +1003,7 @@ function irq_counts() {
 	return out;
 }
 
-// "ethernet 93 203, mt7915e 191" per second
+// "ethernet 93 203, mt7915e 191" / "mt7996e 191" per second
 function irq_text(a, b, secs) {
 	const by = {}, order = [];
 	for (let k in sort(keys(b), (x, y) => int(x) - int(y))) {

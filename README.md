@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/badge/version-0.4a--k7-b45309" alt="Version 0.4a-k7"></a>
+  <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/badge/version-0.7a--k7-b45309" alt="Version 0.7a-k7"></a>
   <a href="https://github.com/REFFIXX/MilkFlint4/tree/cursor/flint4-kernel-7.3-ec1a"><img src="https://img.shields.io/badge/kernel-7.3.5-8b1a1a" alt="Kernel 7.3.5"></a>
   <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/badge/target-mediatek%2Ffilogic-0f766e" alt="Target"></a>
   <a href="https://openwrt.org"><img src="https://img.shields.io/badge/base-OpenWrt%20main%20%2B%207.3-1a7f4b" alt="OpenWrt"></a>
@@ -19,9 +19,9 @@
 
 ---
 
-> **Experimental kernel 7.3 track** — OpenWrt main still builds Filogic on **6.18**. This branch bumps MilkFlint4 to **Linux 7.3.5** ourselves to pick up MediaTek **mt76 / mtk_eth** work from the 7.x cycle (MT7996 NPU offload path, MLO fixes, RSS/LRO-era ethernet). Stable flashing remains **0.3a / 6.18** until this boots clean. See [`docs/KERNEL-7.3.md`](docs/KERNEL-7.3.md).
+> **Experimental kernel 7.3 track** — OpenWrt main still builds Filogic on **6.18**. This branch bumps MilkFlint4 to **Linux 7.3.5** ourselves to pick up MediaTek **mt76 / mtk_eth** work from the 7.x cycle (MT7996 NPU offload path, MLO fixes, RSS/LRO-era ethernet). Stable flashing remains **0.5a/0.6a · 6.18** until this boots clean. See [`docs/KERNEL-7.3.md`](docs/KERNEL-7.3.md).
 
-**MilkFlint4 0.4a-k7** = the same MilkFlint4 userspace as **0.3a** (Monokai milk UI, RSS defaults, US country, max-perf / WED tweaks) on **Linux 7.3.5**. Daily drivers should stay on **[0.3a](https://github.com/REFFIXX/MilkFlint4/releases/tag/0.3a)** until this track is flash-validated.
+**MilkFlint4 0.7a-k7** = MilkFlint4 userspace from **main** (Monokai milk UI, RSS defaults, US country, max-perf / WED / panel bring-up) on **Linux 7.3.5**. Daily drivers should stay on **[0.5a](https://github.com/REFFIXX/MilkFlint4/releases/tag/0.5a)** (or 0.6a when bins land) until this track is flash-validated.
 
 MilkFlint4 is MilkFlint, rebuilt for the **Flint 4**: the same dashboard, guest Wi‑Fi, AdGuard Home, banIP, Smart Queue (CAKE), WireGuard, themes, and Performance Tuning — wired to MT7988 / MT7996 / YT9224 instead of the Flint 2’s MT7986 stack.
 
@@ -135,7 +135,7 @@ Keeps every original MilkFlint Performance Tuning path (WED, AQL, steering UI, C
 
 Applied by `99-milkflint4-flint4-perf` (once; clear `milkflint.defaults.flint4_perf` to re-seed), `/etc/sysctl.d/22-milkflint4-be14000.conf`, and `milkflint4-perf` at boot. Change anything later under **Performance Tuning** / LuCI — those edits stick.
 
-### Flint 4 kernel / board fixes in this release (0.4a-k7)
+### Flint 4 kernel / board fixes in this release (0.7a-k7)
 
 First-party bump of mediatek/filogic to **Linux 7.3.5** (OpenWrt main is still on 6.18). Details: [`docs/KERNEL-7.3.md`](docs/KERNEL-7.3.md).
 
@@ -150,7 +150,7 @@ First-party bump of mediatek/filogic to **Linux 7.3.5** (OpenWrt main is still o
 
 ### 10G WAN mitigations (openwrt#26690 / #26691)
 
-Same board + driver workarounds as **0.3a**, carried on 7.3.5 for the RTL8261C/D issues still open upstream:
+Same board + driver workarounds as **main**, carried on 7.3.5 for the RTL8261C/D issues still open upstream:
 
 - **#26691 (empty PMA / `-EINVAL` on cold boot)** — `rtl8261x_get_features` loads firmware early (before `config_init`), soft-resets and re-reads abilities up to 5×, and fails the probe instead of attaching a blank PHY; longer PHY reset deassert in DTS (`991-*` in `patches-7.3`).
 - **#26690 (WAN flaps / wedges when a second radio comes up)** — USXGMII PCS flap skip + RTL8261 SerDes reset, MDIO at 2.5 MHz, `eee-broken-*` on the WAN PHY, 45 °C fan trip, and a `wan` hotplug that pulses the fan + bounces the link on rapid multi-radio flaps.
@@ -161,7 +161,7 @@ If WAN still misbehaves after a hard wedge, power-cycle the router (warm reboot 
 
 **Do not install `kmod-*` from downloads.openwrt.org** into a MilkFlint4 image — vermagic will not match (custom 7.3.5 tree + MilkFlint patches).
 
-On **0.4a-k7**, `CONFIG_ALL_KMODS` is intentionally **unset** so overnight / CI world builds stay green; everything the BE14000 needs for boot, switch, Wi‑Fi 7, panel, and 10G PHY is still selected in `milkflint/diffconfig`. The MilkFlint **UI and tweaks are userspace** (`package/milkflint/`, board uci-defaults) and match **0.3a**.
+On **0.7a-k7**, `CONFIG_ALL_KMODS` is intentionally **unset** so overnight / CI world builds stay green; everything the BE14000 needs for boot, switch, Wi‑Fi 7, panel, and 10G PHY is still selected in `milkflint/diffconfig`. The MilkFlint **UI and tweaks are userspace** (`package/milkflint/`, board uci-defaults) and match **main (0.6a userspace)**.
 
 ## Build
 
@@ -182,7 +182,7 @@ IGNORE_ERRORS='n m' make -j$(nproc) world
 Image:
 
 ```text
-bin/targets/mediatek/filogic/milkflint4-0.4a-k7-*-glinet_gl-be14000-squashfs-sysupgrade.bin
+bin/targets/mediatek/filogic/milkflint4-0.7a-k7-*-glinet_gl-be14000-squashfs-sysupgrade.bin
 ```
 
 UI rebuild (Node **24.11** + pnpm):
@@ -201,9 +201,9 @@ cd milkflint/ui && pnpm install --frozen-lockfile --config.trust-policy=off && p
 | `package/firmware/` | `rtl8261c-firmware`, `rtl826x-firmware`, MIPI DBI panel sequences |
 | `package/milkflint/` | UI + MilkFlint packages (WED aware of `mt7996e`) |
 | `milkflint/ui/` | React UI source |
-| `milkflint/diffconfig` | Flint 4 build seed (`VERSION_DIST=MilkFlint4`, `VERSION_NUMBER=0.4a-k7`, kernel 7.3, no `ALL_KMODS`) |
+| `milkflint/diffconfig` | Flint 4 build seed (`VERSION_DIST=MilkFlint4`, `VERSION_NUMBER=0.7a-k7`, kernel 7.3, no `ALL_KMODS`) |
 
-Stable **0.3a / kernel 6.18** lives on **`main`**. This branch (`cursor/flint4-kernel-7.3-ec1a`) is the experimental **0.4a-k7** track.
+Stable **main · kernel 6.18** lives on **`main`**. This branch (`cursor/flint4-kernel-7.3-ec1a`) is the experimental **0.7a-k7** track.
 
 ## License
 

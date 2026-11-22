@@ -105,7 +105,7 @@ mediatek_setup_interfaces()
 		# wan = 10G RJ45 (openwrt,netdev-name); lan2-lan9 + sfp on LAN
 		ucidef_set_interfaces_lan_wan \
 			"lan2 lan3 lan4 lan5 lan6 lan7 lan8 lan9 sfp" wan
-		ucidef_set_interface "lan" ipaddr "192.168.1.1" netmask "255.255.255.0"
+		ucidef_set_interface "lan" ipaddr "192.168.8.1" netmask "255.255.255.0"
 		;;
 	bananapi,bpi-r3)
 		ucidef_set_interfaces_lan_wan "lan1 lan2 lan3 lan4 sfp2" "sfp1 wan"

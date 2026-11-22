@@ -8,6 +8,9 @@
 
 # MilkFlint's Performance Tuning WED path (mt7996e). On by default for this
 # board so Wi-Fi <-> WAN can leave the CPU once flow offloading is enabled.
+# First-boot module load is seeded earlier by lib/preinit/80_milkflint4-flint4-wed
+# (uci-defaults run after kmodloader); this marks the once-default and keeps
+# modules.conf in step if preinit could not run (e.g. recovered config).
 if [ -z "$(uci -q get milkflint.defaults.flint4_wed)" ]; then
 	uci -q get milkflint.wifi >/dev/null || uci set milkflint.wifi=wifi
 	uci set milkflint.wifi.wed=1
@@ -17,6 +20,21 @@ if [ -z "$(uci -q get milkflint.defaults.flint4_wed)" ]; then
 		commit milkflint
 	UCI
 	[ -x /usr/libexec/milkflint/wed ] && /usr/libexec/milkflint/wed conf
+fi
+
+# Uplink MU-MIMO / OFDMA off by default (OddBlueDog): mt76 UL MU-MIMO can
+# stall best-effort TX ~65–300 ms. Module params default off; pin UCI so the
+# Tuning page and wifi-muru-ul helper stay explicit on first boot.
+if [ -z "$(uci -q get milkflint.defaults.flint4_muru_ul)" ]; then
+	uci -q get milkflint.wifi >/dev/null || uci set milkflint.wifi=wifi
+	uci -q delete milkflint.wifi.muru_mimo_ul
+	uci -q delete milkflint.wifi.muru_ofdma_ul
+	uci -q batch <<-UCI
+		set milkflint.defaults=defaults
+		set milkflint.defaults.flint4_muru_ul='1'
+		commit milkflint
+	UCI
+	[ -x /usr/libexec/milkflint/wifi-muru-ul ] && /usr/libexec/milkflint/wifi-muru-ul
 fi
 
 # Best-effort latency tweak (MilkFlint wifi_be) also on 6 GHz: same long
@@ -54,8 +72,6 @@ if [ -z "$(uci -q get milkflint.defaults.flint4_psc6)" ]; then
 	UCI
 fi
 
-exit 0
-
 # Default Wi-Fi country US on first boot (MilkFlint4). Only when every radio
 # is still empty/00 so a user choice sticks. US 6 GHz LPI AP works with our
 # wireless-regdb patch (510-us-6ghz-lpi-allow-ap).
@@ -72,3 +88,5 @@ if [ -z "$(uci -q get milkflint.defaults.flint4_country_us)" ]; then
 		commit milkflint
 	UCI
 fi
+
+exit 0

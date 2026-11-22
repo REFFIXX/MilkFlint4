@@ -193,6 +193,15 @@ function knobs() {
 		cake_loaded: access('/sys/module/sch_cake') == true,
 		wifi_retries: param('/sys/module/mt76_connac_lib/parameters/data_tx_count'),
 		wifi_vo_aggr: flag('/sys/module/mt76_connac_lib/parameters/vo_aggr'),
+		// Prefer the board's Wi-Fi driver; null when neither param exists yet
+		wifi_muru_mimo_ul: (() => {
+			const a = flag('/sys/module/mt7996e/parameters/muru_mimo_ul');
+			return a !== null ? a : flag('/sys/module/mt7915e/parameters/muru_mimo_ul');
+		})(),
+		wifi_muru_ofdma_ul: (() => {
+			const a = flag('/sys/module/mt7996e/parameters/muru_ofdma_ul');
+			return a !== null ? a : flag('/sys/module/mt7915e/parameters/muru_ofdma_ul');
+		})(),
 	};
 }
 

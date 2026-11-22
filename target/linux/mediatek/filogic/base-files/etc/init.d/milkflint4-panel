@@ -1,0 +1,32 @@
+#!/bin/sh /etc/rc.common
+# Flint 4 (GL-BE14000) panel bring-up: turn the backlight on and paint
+# /dev/fb0 when DRM fbdev emulation from panel-mipi-dbi is ready.
+# Keeps the screen from staying blank without a full DRM userspace app.
+
+START=99
+
+boot() {
+	. /lib/functions.sh
+	[ "$(board_name)" = glinet,gl-be14000 ] || return 0
+
+	for bl in /sys/class/backlight/*/brightness; do
+		[ -w "$bl" ] || continue
+		max=$(cat "$(dirname "$bl")/max_brightness" 2>/dev/null || echo 255)
+		echo "$max" > "$bl" 2>/dev/null || true
+	done
+
+	i=0
+	while [ ! -c /dev/fb0 ] && [ "$i" -lt 40 ]; do
+		sleep 1
+		i=$((i + 1))
+	done
+	[ -c /dev/fb0 ] || {
+		logger -t milkflint4-panel "no /dev/fb0 (panel-mipi-dbi / DRM fbdev not ready)"
+		return 0
+	}
+
+	# ST7789P3 is 320×240 RGB565 (~150 KiB). A non-black fill proves life.
+	dd if=/dev/zero bs=1024 count=160 2>/dev/null | \
+		tr '\000' '\377' > /dev/fb0 2>/dev/null || true
+	logger -t milkflint4-panel "backlight on; fb0 painted"
+}
