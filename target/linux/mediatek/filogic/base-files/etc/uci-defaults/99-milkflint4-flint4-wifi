@@ -22,6 +22,21 @@ if [ -z "$(uci -q get milkflint.defaults.flint4_wed)" ]; then
 	[ -x /usr/libexec/milkflint/wed ] && /usr/libexec/milkflint/wed conf
 fi
 
+# Uplink MU-MIMO / OFDMA off by default (OddBlueDog): mt76 UL MU-MIMO can
+# stall best-effort TX ~65–300 ms. Module params default off; pin UCI so the
+# Tuning page and wifi-muru-ul helper stay explicit on first boot.
+if [ -z "$(uci -q get milkflint.defaults.flint4_muru_ul)" ]; then
+	uci -q get milkflint.wifi >/dev/null || uci set milkflint.wifi=wifi
+	uci -q delete milkflint.wifi.muru_mimo_ul
+	uci -q delete milkflint.wifi.muru_ofdma_ul
+	uci -q batch <<-UCI
+		set milkflint.defaults=defaults
+		set milkflint.defaults.flint4_muru_ul='1'
+		commit milkflint
+	UCI
+	[ -x /usr/libexec/milkflint/wifi-muru-ul ] && /usr/libexec/milkflint/wifi-muru-ul
+fi
+
 # Best-effort latency tweak (MilkFlint wifi_be) also on 6 GHz: same long
 # TXOP / short backoff problem under download as on 5 GHz.
 if [ -z "$(uci -q get milkflint.defaults.flint4_wifi_be6)" ]; then

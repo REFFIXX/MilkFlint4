@@ -1,0 +1,32 @@
+#!/bin/sh
+# GL-BE14000 (openwrt#26690): bringing up a second wireless radio can wedge
+# the RTL8261 10G WAN. A short fan pulse often latches the link before it
+# starts flapping — do that preventively when a radio appears and another
+# is already up.
+
+[ "$(board_name)" = glinet,gl-be14000 ] || exit 0
+[ "$ACTION" = add ] || exit 0
+
+radios=0
+for d in /sys/class/ieee80211/phy*/device/net/*/operstate; do
+	[ -f "$d" ] || continue
+	[ "$(cat "$d" 2>/dev/null)" = up ] && radios=$((radios + 1))
+done
+
+# Also count phys that just registered (operstate may still be down)
+phys=$(ls -d /sys/class/ieee80211/phy* 2>/dev/null | wc -l)
+
+[ "$radios" -ge 2 ] || [ "$phys" -ge 2 ] || exit 0
+
+cd=/sys/class/thermal/cooling_device0
+[ -w "$cd/cur_state" ] || exit 0
+prev=$(cat "$cd/cur_state" 2>/dev/null || echo 0)
+[ "$prev" -ge 1 ] 2>/dev/null || echo 1 > "$cd/cur_state" 2>/dev/null || true
+logger -t milkflint4-wan "second radio present (radios=$radios phys=$phys); fan pulse for WAN"
+(
+	sleep 10
+	now=$(cat "$cd/cur_state" 2>/dev/null || echo 0)
+	[ "$prev" = 0 ] && [ "$now" = 1 ] && echo 0 > "$cd/cur_state" 2>/dev/null || true
+) &
+
+exit 0
