@@ -2,18 +2,29 @@
 /**
  * High-res MilkFlint4 0.5a forum screenshots: serve built UI + rich ubus mock
  * shaped like a busy GL-BE14000 on Monokai milk, capture with Playwright.
+ *
+ * Run from milkflint/ui after `pnpm package` (copies dist → package/.../htdocs):
+ *   node scripts/forum-screenshots.mjs
+ * Optional: FORUM_SHOTS_OUT=/path/to/dir  FORUM_SHOTS_PORT=5299
  */
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 
-const HTDOCS = '/workspace/package/milkflint/milkflint-ui/htdocs';
-const OUT = '/opt/cursor/artifacts';
-const PORT = 5299;
+const HTDOCS = fileURLToPath(new URL('../../../package/milkflint/milkflint-ui/htdocs/', import.meta.url));
+const OUT = process.env.FORUM_SHOTS_OUT || path.join(process.cwd(), 'forum-shots');
+const PORT = Number(process.env.FORUM_SHOTS_PORT || 5299);
 const SESSION = 'a1b2c3d4e5f60718293a4b5c6d7e8f90';
 const NOW = Math.floor(Date.now() / 1000);
 
+if (!fs.existsSync(path.join(HTDOCS, 'index.html'))) {
+  console.error(
+    `Built UI not found at ${HTDOCS}\nRun \`pnpm package\` from milkflint/ui first (copies dist/ into the OpenWrt package htdocs).`,
+  );
+  process.exit(1);
+}
 fs.mkdirSync(OUT, { recursive: true });
 
 const mime = {
