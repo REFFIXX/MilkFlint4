@@ -300,12 +300,86 @@ function handle(object, method, params) {
       );
     }
     if (config === 'firewall') {
+      // Busy Flint 4: OpenWrt builtins (Allow-Ping off), guest zones, DNS intercept,
+      // device-control pause, custom rules, port forwards — so Rules + Zones look full.
       return ok(
         uci([
-          ['defaults', 'defaults', { synflood_protect: '1', flow_offloading: '1', flow_offloading_hw: '1' }],
+          ['defaults', 'defaults', { synflood_protect: '1', flow_offloading: '1', flow_offloading_hw: '1', input: 'REJECT', output: 'ACCEPT', forward: 'REJECT' }],
           ['lan_zone', 'zone', { name: 'lan', network: ['lan'], input: 'ACCEPT', output: 'ACCEPT', forward: 'ACCEPT' }],
-          ['wan_zone', 'zone', { name: 'wan', network: ['wan', 'wan6'], input: 'DROP', output: 'ACCEPT', forward: 'DROP', masq: '1' }],
+          ['wan_zone', 'zone', { name: 'wan', network: ['wan', 'wan6'], input: 'REJECT', output: 'ACCEPT', forward: 'REJECT', masq: '1', mtu_fix: '1' }],
+          ...GUESTS.flatMap((g) => [
+            [g.id, 'zone', { name: g.id, network: [g.id], input: 'REJECT', output: 'ACCEPT', forward: 'REJECT' }],
+            [`${g.id}_wan`, 'forwarding', { src: g.id, dest: 'wan' }],
+            [`${g.id}_dns`, 'rule', { name: `Allow-DNS-${g.label}`, src: g.id, dest_port: '53', proto: 'tcp udp', target: 'ACCEPT' }],
+            [`${g.id}_dhcp`, 'rule', { name: `Allow-DHCP-${g.label}`, src: g.id, dest_port: '67', proto: 'udp', target: 'ACCEPT', family: 'ipv4' }],
+          ]),
           ['lan_wan', 'forwarding', { src: 'lan', dest: 'wan' }],
+          // OpenWrt standard (Allow-Ping disabled — MilkFlint stealth)
+          ['allow_dhcp_renew', 'rule', { name: 'Allow-DHCP-Renew', src: 'wan', proto: 'udp', dest_port: '68', target: 'ACCEPT', family: 'ipv4' }],
+          ['allow_ping', 'rule', { name: 'Allow-Ping', src: 'wan', proto: 'icmp', icmp_type: 'echo-request', family: 'ipv4', target: 'ACCEPT', enabled: '0' }],
+          ['allow_igmp', 'rule', { name: 'Allow-IGMP', src: 'wan', proto: 'igmp', family: 'ipv4', target: 'ACCEPT' }],
+          ['allow_dhcpv6', 'rule', { name: 'Allow-DHCPv6', src: 'wan', proto: 'udp', dest_port: '546', family: 'ipv6', target: 'ACCEPT' }],
+          ['allow_mld', 'rule', { name: 'Allow-MLD', src: 'wan', proto: 'icmp', src_ip: 'fe80::/10', icmp_type: '130/0', family: 'ipv6', target: 'ACCEPT' }],
+          [
+            'allow_icmpv6_input',
+            'rule',
+            {
+              name: 'Allow-ICMPv6-Input',
+              src: 'wan',
+              proto: 'icmp',
+              family: 'ipv6',
+              target: 'ACCEPT',
+              limit: '1000/sec',
+              icmp_type: ['destination-unreachable', 'packet-too-big', 'time-exceeded', 'bad-header', 'unknown-header-type', 'router-solicitation', 'neighbour-solicitation', 'router-advertisement', 'neighbour-advertisement'],
+            },
+          ],
+          [
+            'allow_icmpv6_forward',
+            'rule',
+            {
+              name: 'Allow-ICMPv6-Forward',
+              src: 'wan',
+              dest: '*',
+              proto: 'icmp',
+              family: 'ipv6',
+              target: 'ACCEPT',
+              limit: '1000/sec',
+              icmp_type: ['destination-unreachable', 'packet-too-big', 'time-exceeded', 'bad-header', 'unknown-header-type'],
+            },
+          ],
+          ['allow_ipsec_esp', 'rule', { name: 'Allow-IPSec-ESP', src: 'wan', dest: 'lan', proto: 'esp', target: 'ACCEPT' }],
+          ['allow_isakmp', 'rule', { name: 'Allow-ISAKMP', src: 'wan', dest: 'lan', dest_port: '500', proto: 'udp', target: 'ACCEPT' }],
+          // DNS intercept (MilkFlint)
+          ['milkflint_dns_intercept', 'redirect', { name: 'Intercept DNS (MilkFlint)', src: 'lan', src_dport: '53', proto: 'tcp udp', target: 'DNAT', family: 'any' }],
+          ['milkflint_dns_intercept_guest', 'redirect', { name: 'Intercept DNS Guest (MilkFlint)', src: 'guest', src_dport: '53', proto: 'tcp udp', target: 'DNAT', family: 'any' }],
+          ['milkflint_dns_intercept_guest2', 'redirect', { name: 'Intercept DNS Guest2 (MilkFlint)', src: 'guest2', src_dport: '53', proto: 'tcp udp', target: 'DNAT', family: 'any' }],
+          // Device control
+          ['devctl_paused', 'ipset', { name: 'devctl_paused', family: 'any', match: ['src_mac'], timeout: '0' }],
+          ['devctl_extra', 'ipset', { name: 'devctl_extra', family: 'any', match: ['src_mac'], timeout: '0' }],
+          ['devctl_pause', 'rule', { name: 'Device control: paused', src: '*', dest: 'wan', ipset: 'devctl_paused', proto: 'all', target: 'REJECT' }],
+          ['devctl_kids_always', 'rule', { name: 'Kids — always off', src: 'lan', dest: 'wan', src_mac: CLIENTS[5].mac, proto: 'all', target: 'REJECT', enabled: '0' }],
+          [
+            'devctl_kids_w1',
+            'rule',
+            {
+              name: 'Kids — school nights',
+              src: 'lan',
+              dest: 'wan',
+              src_mac: CLIENTS[5].mac,
+              proto: 'all',
+              target: 'REJECT',
+              start_time: '21:00:00',
+              stop_time: '07:00:00',
+              weekdays: 'mon tue wed thu fri',
+            },
+          ],
+          // Custom rules / forwards that look impressive
+          ['rule_nas', 'rule', { name: 'NAS — Synology DSM', src: 'wan', dest: 'lan', dest_ip: '192.168.1.20', dest_port: '5001', proto: 'tcp', target: 'ACCEPT' }],
+          ['rule_ssh_sam', 'rule', { name: 'SSH — Sam’s MacBook', src: 'wan', dest: 'lan', dest_ip: '192.168.1.117', dest_port: '22', proto: 'tcp', target: 'ACCEPT' }],
+          ['rule_block_iot', 'rule', { name: 'Kitchen Echo — no WAN at night', src: 'lan', dest: 'wan', src_mac: CLIENTS[5].mac, proto: 'all', target: 'REJECT', start_time: '23:00:00', stop_time: '06:30:00' }],
+          ['fwd_plex', 'redirect', { name: 'Plex', src: 'wan', src_dport: '32400', dest: 'lan', dest_ip: '192.168.1.100', dest_port: '32400', proto: 'tcp', target: 'DNAT' }],
+          ['fwd_game', 'redirect', { name: 'PlayStation Network', src: 'wan', src_dport: '3478-3480', dest: 'lan', dest_ip: '192.168.1.219', dest_port: '3478-3480', proto: 'udp', target: 'DNAT' }],
+          ['fwd_https_sam', 'redirect', { name: 'Home lab HTTPS', src: 'wan', src_dport: '443', dest: 'lan', dest_ip: '192.168.1.117', dest_port: '8443', proto: 'tcp', target: 'DNAT' }],
         ]),
       );
     }
@@ -314,9 +388,15 @@ function handle(object, method, params) {
         uci([
           ['lan', 'dhcp', { interface: 'lan', start: '100', limit: '150', leasetime: '12h' }],
           ['tv', 'host', { name: 'lounge-apple-tv-4k', mac: ['5c:e9:1e:00:00:a0'], ip: '192.168.1.100' }],
-          ['sam', 'host', { name: 'sams-macbook', mac: ['5c:e9:1e:00:01:a1'], ip: '192.168.1.117' }],
+          ['sam', 'host', { name: "Sam’s MacBook Pro (16-inch, 2024)", mac: ['5c:e9:1e:00:01:a1'], ip: '192.168.1.117' }],
+          ['ps5', 'host', { name: 'PlayStation-5', mac: ['5c:e9:1e:00:07:a7'], ip: '192.168.1.219' }],
+          ['nas', 'host', { name: 'synology-nas', mac: ['5c:e9:1e:10:00:01'], ip: '192.168.1.20' }],
+          ['echo', 'host', { name: 'kitchen-echo-show-8', mac: ['5c:e9:1e:00:05:a5'], ip: '192.168.1.185' }],
         ]),
       );
+    }
+    if (config === 'upnpd') {
+      return ok(uci([['config', 'upnpd', { enabled: '1', external_iface: 'wan', internal_iface: 'lan' }]]));
     }
     return ok({ values: {} });
   }
@@ -590,6 +670,60 @@ function handle(object, method, params) {
     return ok({ data: '' });
   }
 
+  if (key === 'file exec') {
+    const cmd = String(params.command ?? '');
+    if (cmd.includes('nft')) {
+      // Minimal fw4-shaped counters so the Rules table shows hit counts
+      const named = [
+        'Allow-DHCP-Renew',
+        'Allow-IGMP',
+        'Allow-DHCPv6',
+        'NAS — Synology DSM',
+        'SSH — Sam’s MacBook',
+        'Device control: paused',
+        'Kids — school nights',
+        'Plex',
+        'PlayStation Network',
+        'Home lab HTTPS',
+        'Intercept DNS (MilkFlint)',
+      ];
+      const nftables = named.map((name, i) => ({
+        rule: {
+          table: 'fw4',
+          chain: name.includes('Plex') || name.includes('PlayStation') || name.includes('HTTPS') || name.includes('Intercept') ? 'dstnat_wan' : 'input_wan',
+          comment: `!fw4: ${name}`,
+          expr: [{ counter: { packets: 1200 + i * 340, bytes: 80_000 + i * 12_000 } }],
+        },
+      }));
+      return ok({ code: 0, stdout: JSON.stringify({ nftables }) });
+    }
+    if (cmd.includes('fw4')) return ok({ code: 0, stdout: '', stderr: '' });
+    return ok({ code: 0, stdout: '', stderr: '' });
+  }
+
+  if (key === 'milkflint.upnp mappings') {
+    return ok({
+      mappings: [
+        {
+          proto: 'tcp',
+          ext_port: 32400,
+          int_addr: '192.168.1.100',
+          int_port: 32400,
+          remaining: 7200,
+          description: 'Plex Media Server',
+        },
+        {
+          proto: 'udp',
+          ext_port: 3074,
+          int_addr: '192.168.1.219',
+          int_port: 3074,
+          remaining: 3600,
+          description: 'PlayStation Network',
+        },
+      ],
+    });
+  }
+
   if (key === 'milkflint neighbors') return ok({ neighbors: [] });
 
   if (key === 'milkflint.wifi regulatory') {
@@ -830,6 +964,9 @@ shots.push(tuningFull);
 shots.push(await shot(light, 'milkflint4-0.5a-wifi.png', '#/wifi', { wait: 3000, scheme: 'light' }));
 shots.push(await shot(light, 'milkflint4-0.5a-sqm.png', '#/sqm', { wait: 3000, scheme: 'light' }));
 shots.push(await shot(light, 'milkflint4-0.5a-devices.png', '#/clients', { wait: 3000, scheme: 'light' }));
+shots.push(await shot(light, 'milkflint4-0.5a-firewall.png', '#/firewall', { wait: 3500, scheme: 'light' }));
+shots.push(await shot(light, 'milkflint4-0.5a-firewall-zones.png', '#/firewall/zones', { wait: 3000, scheme: 'light' }));
+shots.push(await shot(light, 'milkflint4-0.5a-port-forwards.png', '#/port-forwards', { wait: 3000, scheme: 'light' }));
 shots.push(await shot(light, 'milkflint4-0.5a-themes.png', '#/themes', { wait: 2500, scheme: 'light' }));
 
 // Light 4K hero
@@ -859,8 +996,19 @@ const tuningDark = path.join(OUT, 'milkflint4-0.5a-tuning-ul-mimo-dark.png');
 await dark.screenshot({ path: tuningDark, fullPage: false, type: 'png' });
 console.log('wrote', tuningDark, fs.statSync(tuningDark).size);
 shots.push(tuningDark);
+await dark.evaluate(() => window.scrollTo(0, 0));
+await dark.waitForTimeout(400);
+const tuningFullDark = path.join(OUT, 'milkflint4-0.5a-tuning-expert-full-dark.png');
+await dark.screenshot({ path: tuningFullDark, fullPage: true, type: 'png' });
+console.log('wrote', tuningFullDark, fs.statSync(tuningFullDark).size);
+shots.push(tuningFullDark);
 
 shots.push(await shot(dark, 'milkflint4-0.5a-wifi-dark.png', '#/wifi', { wait: 3000, scheme: 'dark' }));
+shots.push(await shot(dark, 'milkflint4-0.5a-sqm-dark.png', '#/sqm', { wait: 3000, scheme: 'dark' }));
+shots.push(await shot(dark, 'milkflint4-0.5a-devices-dark.png', '#/clients', { wait: 3000, scheme: 'dark' }));
+shots.push(await shot(dark, 'milkflint4-0.5a-firewall-dark.png', '#/firewall', { wait: 3500, scheme: 'dark' }));
+shots.push(await shot(dark, 'milkflint4-0.5a-firewall-zones-dark.png', '#/firewall/zones', { wait: 3000, scheme: 'dark' }));
+shots.push(await shot(dark, 'milkflint4-0.5a-port-forwards-dark.png', '#/port-forwards', { wait: 3000, scheme: 'dark' }));
 shots.push(await shot(dark, 'milkflint4-0.5a-themes-dark.png', '#/themes', { wait: 2500, scheme: 'dark' }));
 
 const cinemaDark = await preparePage('dark');

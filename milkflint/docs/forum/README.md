@@ -1,6 +1,6 @@
 # MilkFlint4 0.5a — OpenWrt forum screenshots
 
-Retina captures of the MilkFlint UI on a busy **GL-BE14000** mock, **Monokai milk** theme (charcoal flint / milk / pink `#ff6188`).
+Retina captures of the MilkFlint UI on a busy **GL-BE14000** mock, **Monokai milk** theme (charcoal flint / milk / pink `#ff6188`). Every page below has a **light** and **dark** shot.
 
 Regenerate from a packaged UI:
 
@@ -10,7 +10,7 @@ pnpm package
 FORUM_SHOTS_OUT=/tmp/forum-shots node scripts/forum-screenshots.mjs
 ```
 
-Then copy the `forum-*.png` files you want into this folder.
+Then copy the `forum-*.png` / `milkflint4-0.5a-*.png` files you want into this folder.
 
 ---
 
@@ -48,12 +48,38 @@ Then copy the `forum-*.png` files you want into this folder.
 
 ![UL MU-MIMO detail](forum-03b-ul-mimo-off-detail.png)
 
+![UL MU-MIMO detail — dark](forum-03d-ul-mimo-off-detail-dark.png)
+
 ![Tuning expert full](forum-03-tuning-expert-full.png)
+
+![Tuning expert full — dark](forum-03c-tuning-expert-full-dark.png)
 
 ## Devices / SQM / Themes
 
 ![Devices](forum-05-devices.png)
 
+![Devices — dark](forum-05b-devices-dark.png)
+
 ![SQM](forum-06-sqm.png)
 
+![SQM — dark](forum-06b-sqm-dark.png)
+
 ![Themes gallery](forum-08-themes-gallery.png)
+
+![Themes gallery — dark](forum-08b-themes-gallery-dark.png)
+
+## Firewall
+
+Busy rules + zones (guests, OpenWrt builtins with Allow-Ping off, DNS intercept, device control, custom accepts, port forwards / UPnP):
+
+![Firewall — Rules](forum-09-firewall.png)
+
+![Firewall — Rules dark](forum-09b-firewall-dark.png)
+
+![Firewall — Zones](forum-09c-firewall-zones.png)
+
+![Firewall — Zones dark](forum-09d-firewall-zones-dark.png)
+
+![Port forwards](forum-10-port-forwards.png)
+
+![Port forwards — dark](forum-10b-port-forwards-dark.png)

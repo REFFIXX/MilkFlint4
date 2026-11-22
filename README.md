@@ -27,7 +27,7 @@ Experimental alpha. Keep a stock GL.iNet recovery image before you flash.
 
 ## Screenshots
 
-MilkFlint UI on a busy Flint 4, **Monokai milk** (default). Full pack: [`milkflint/docs/forum/`](milkflint/docs/forum/).
+MilkFlint UI on a busy Flint 4, **Monokai milk** (default) — light and dark. Full pack: [`milkflint/docs/forum/`](milkflint/docs/forum/).
 
 <p align="center">
   <img src="milkflint/docs/forum/forum-01-home-monokai-milk.png" width="900" alt="Home — Monokai milk">
@@ -38,17 +38,33 @@ MilkFlint UI on a busy Flint 4, **Monokai milk** (default). Full pack: [`milkfli
 </p>
 
 <p align="center">
-  <img src="milkflint/docs/forum/forum-02-wifi-triband.png" width="900" alt="Wi-Fi tri-band — 2.4 / 5 / 6 GHz">
-</p>
-
-<p align="center">
-  <img src="milkflint/docs/forum/forum-03-tuning-ul-mimo-off.png" width="900" alt="Performance Tuning — Uplink MU-MIMO Off">
-</p>
-
-<p align="center">
-  <img src="milkflint/docs/forum/forum-05-devices.png" width="440" alt="Devices">
+  <img src="milkflint/docs/forum/forum-02-wifi-triband.png" width="440" alt="Wi-Fi tri-band light">
   &nbsp;
-  <img src="milkflint/docs/forum/forum-06-sqm.png" width="440" alt="Smart Queue">
+  <img src="milkflint/docs/forum/forum-02b-wifi-dark.png" width="440" alt="Wi-Fi tri-band dark">
+</p>
+
+<p align="center">
+  <img src="milkflint/docs/forum/forum-03-tuning-ul-mimo-off.png" width="440" alt="Tuning — UL MU-MIMO Off light">
+  &nbsp;
+  <img src="milkflint/docs/forum/forum-03b-tuning-ul-mimo-dark.png" width="440" alt="Tuning — UL MU-MIMO Off dark">
+</p>
+
+<p align="center">
+  <img src="milkflint/docs/forum/forum-09-firewall.png" width="440" alt="Firewall — Rules light">
+  &nbsp;
+  <img src="milkflint/docs/forum/forum-09b-firewall-dark.png" width="440" alt="Firewall — Rules dark">
+</p>
+
+<p align="center">
+  <img src="milkflint/docs/forum/forum-05-devices.png" width="440" alt="Devices light">
+  &nbsp;
+  <img src="milkflint/docs/forum/forum-05b-devices-dark.png" width="440" alt="Devices dark">
+</p>
+
+<p align="center">
+  <img src="milkflint/docs/forum/forum-06-sqm.png" width="440" alt="Smart Queue light">
+  &nbsp;
+  <img src="milkflint/docs/forum/forum-06b-sqm-dark.png" width="440" alt="Smart Queue dark">
 </p>
 
 ## Install (sysupgrade)
