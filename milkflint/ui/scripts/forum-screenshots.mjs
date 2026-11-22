@@ -442,19 +442,23 @@ function handle(object, method, params) {
   }
 
   if (key === 'iwinfo info') {
+    const device = String(params.device ?? '');
+    const byPhy = {
+      phy0: { phy: 'phy0', ssid: 'MilkFlint', channel: 6, frequency: 2437, htmode: 'HE40', bitrate: 573_000 },
+      phy1: { phy: 'phy1', ssid: 'MilkFlint-5G', channel: 36, frequency: 5180, htmode: 'EHT80', bitrate: 2_401_000 },
+      phy2: { phy: 'phy2', ssid: 'MilkFlint-6G', channel: 5, frequency: 5975, htmode: 'EHT80', bitrate: 2_881_000 },
+    };
+    const phy = device.startsWith('phy2') ? 'phy2' : device.startsWith('phy1') ? 'phy1' : 'phy0';
+    const base = byPhy[phy];
     return ok({
-      phy: 'phy0',
-      ssid: 'MilkFlint',
+      ...base,
       mode: 'Master',
-      channel: 6,
-      frequency: 2437,
       txpower: 20,
       quality: 70,
       quality_max: 70,
       signal: -40,
       noise: -92,
-      bitrate: 573_000,
-      encryption: { enabled: true, wpa: [2, 3], authentication: ['psk'], ciphers: ['ccmp'] },
+      encryption: { enabled: true, wpa: phy === 'phy2' ? [3] : [2, 3], authentication: ['psk'], ciphers: ['ccmp'] },
     });
   }
 
@@ -706,54 +710,70 @@ console.log(`demo on http://127.0.0.1:${PORT}/milkflint/`);
 
 const browser = await chromium.launch({
   headless: true,
-  args: ['--font-render-hinting=none', '--disable-lcd-text'],
+  args: ['--font-render-hinting=none', '--disable-lcd-text', '--force-color-profile=srgb'],
 });
 
-async function shot(page, name, hash, { wait = 2500, fullPage = true, settle } = {}) {
+/**
+ * MilkFlint themes key off data-theme + data-darkmode (not class="dark").
+ * Seed localStorage before first paint so apply() picks Monokai milk.
+ */
+async function preparePage(scheme) {
+  const page = await browser.newPage({
+    viewport: { width: 1600, height: 1000 },
+    deviceScaleFactor: 2,
+    colorScheme: scheme === 'dark' ? 'dark' : 'light',
+  });
+  await page.addInitScript(
+    ({ sid, scheme: s }) => {
+      localStorage.setItem('milkflint.theme-id', 'monokai-milk');
+      localStorage.setItem('milkflint.theme', s);
+      sessionStorage.setItem(
+        'milkflint.session',
+        JSON.stringify({ id: sid, username: 'root', adminPassword: 'set' }),
+      );
+    },
+    { sid: SESSION, scheme },
+  );
+  return page;
+}
+
+async function assertMonokai(page, scheme) {
+  const info = await page.evaluate((wantDark) => {
+    const root = document.documentElement;
+    root.setAttribute('data-theme', 'monokai-milk');
+    root.setAttribute('data-darkmode', wantDark ? 'true' : 'false');
+    root.classList.remove('dark');
+    const cs = getComputedStyle(root);
+    return {
+      theme: root.getAttribute('data-theme'),
+      darkmode: root.getAttribute('data-darkmode'),
+      // shadcn/tailwind tokens used by monokai-milk (not --mf-color-*)
+      primary: cs.getPropertyValue('--primary').trim(),
+      background: cs.getPropertyValue('--background').trim(),
+      sidebar: cs.getPropertyValue('--sidebar').trim(),
+    };
+  }, scheme === 'dark');
+  if (info.theme !== 'monokai-milk') throw new Error(`theme attr ${info.theme}`);
+  if (info.darkmode !== (scheme === 'dark' ? 'true' : 'false')) {
+    throw new Error(`darkmode attr ${info.darkmode}`);
+  }
+  console.log('theme', scheme, info);
+  return info;
+}
+
+async function shot(page, name, hash, { wait = 2500, fullPage = true, settle, scheme = 'light' } = {}) {
   await page.goto(`http://127.0.0.1:${PORT}/milkflint/${hash}`, { waitUntil: 'networkidle' });
   if (settle) await settle(page);
   await page.waitForTimeout(wait);
-  // hide any leftover loaders
-  await page.evaluate(() => {
-    document.documentElement.dataset.theme = 'monokai-milk';
-    document.documentElement.classList.remove('dark');
-  }).catch(() => {});
-  await page.waitForTimeout(400);
+  await assertMonokai(page, scheme);
+  await page.waitForTimeout(300);
   const file = path.join(OUT, name);
   await page.screenshot({ path: file, fullPage, type: 'png' });
   console.log('wrote', file, fs.statSync(file).size);
   return file;
 }
 
-async function login(page) {
-  await page.goto(`http://127.0.0.1:${PORT}/milkflint/`, { waitUntil: 'networkidle' });
-  // Prefer empty-password / any password login
-  const user = page.locator('input[name="username"], input[type="text"]').first();
-  const pass = page.locator('input[name="password"], input[type="password"]').first();
-  if (await user.count()) await user.fill('root');
-  if (await pass.count()) await pass.fill('milkflint');
-  const btn = page.getByRole('button', { name: /sign in|log in|login|continue/i }).first();
-  if (await btn.count()) await btn.click();
-  else await page.keyboard.press('Enter');
-  await page.waitForTimeout(2000);
-  // Force session if login UI still up
-  await page.evaluate((sid) => {
-    sessionStorage.setItem('milkflint.session', JSON.stringify({ id: sid, username: 'root', adminPassword: 'set' }));
-  }, SESSION);
-  await page.goto(`http://127.0.0.1:${PORT}/milkflint/#/dashboard`, { waitUntil: 'networkidle' });
-  await page.waitForTimeout(2500);
-}
-
-const desktop = await browser.newPage({
-  viewport: { width: 1600, height: 1000 },
-  deviceScaleFactor: 2, // retina → 3200×2000 px
-});
-await login(desktop);
-
-const shots = [];
-shots.push(await shot(desktop, 'milkflint4-0.5a-home-monokai.png', '#/dashboard', { wait: 3500 }));
 async function expandExpert(page, { scrollToMimo = true } = {}) {
-  // getByRole misses this button in headless Chromium here; DOM click is reliable
   const opened = await page.evaluate(() => {
     const b = [...document.querySelectorAll('button')].find((el) =>
       /show expert options/i.test(el.textContent || ''),
@@ -783,52 +803,77 @@ async function expandExpert(page, { scrollToMimo = true } = {}) {
   await page.waitForTimeout(400);
 }
 
-// One Tuning visit: expand once, viewport crop on MU-MIMO, then full-page
-await desktop.goto(`http://127.0.0.1:${PORT}/milkflint/#/tuning`, { waitUntil: 'networkidle' });
-await desktop.waitForTimeout(2000);
-await expandExpert(desktop, { scrollToMimo: true });
-await desktop.waitForTimeout(600);
+const shots = [];
+
+// --- Light Monokai milk (soft milk + pink / cyan / green) ---
+const light = await preparePage('light');
+await light.goto(`http://127.0.0.1:${PORT}/milkflint/#/dashboard`, { waitUntil: 'networkidle' });
+await light.waitForTimeout(2500);
+shots.push(await shot(light, 'milkflint4-0.5a-home-monokai.png', '#/dashboard', { wait: 3500, scheme: 'light' }));
+
+await light.goto(`http://127.0.0.1:${PORT}/milkflint/#/tuning`, { waitUntil: 'networkidle' });
+await light.waitForTimeout(2000);
+await expandExpert(light, { scrollToMimo: true });
+await assertMonokai(light, 'light');
+await light.waitForTimeout(500);
 const tuningUl = path.join(OUT, 'milkflint4-0.5a-tuning-ul-mimo.png');
-await desktop.screenshot({ path: tuningUl, fullPage: false, type: 'png' });
+await light.screenshot({ path: tuningUl, fullPage: false, type: 'png' });
 console.log('wrote', tuningUl, fs.statSync(tuningUl).size);
 shots.push(tuningUl);
-await desktop.evaluate(() => window.scrollTo(0, 0));
-await desktop.waitForTimeout(400);
+await light.evaluate(() => window.scrollTo(0, 0));
+await light.waitForTimeout(400);
 const tuningFull = path.join(OUT, 'milkflint4-0.5a-tuning-expert-full.png');
-await desktop.screenshot({ path: tuningFull, fullPage: true, type: 'png' });
+await light.screenshot({ path: tuningFull, fullPage: true, type: 'png' });
 console.log('wrote', tuningFull, fs.statSync(tuningFull).size);
 shots.push(tuningFull);
-shots.push(await shot(desktop, 'milkflint4-0.5a-wifi.png', '#/wifi', { wait: 3000 }));
-shots.push(await shot(desktop, 'milkflint4-0.5a-sqm.png', '#/sqm', { wait: 3000 }));
-shots.push(await shot(desktop, 'milkflint4-0.5a-devices.png', '#/clients', { wait: 3000 }));
 
-// Dark scheme hero
-await desktop.evaluate(() => {
-  document.documentElement.classList.add('dark');
-  document.documentElement.dataset.theme = 'monokai-milk';
-});
-shots.push(await shot(desktop, 'milkflint4-0.5a-home-monokai-dark.png', '#/dashboard', { wait: 3500 }));
+shots.push(await shot(light, 'milkflint4-0.5a-wifi.png', '#/wifi', { wait: 3000, scheme: 'light' }));
+shots.push(await shot(light, 'milkflint4-0.5a-sqm.png', '#/sqm', { wait: 3000, scheme: 'light' }));
+shots.push(await shot(light, 'milkflint4-0.5a-devices.png', '#/clients', { wait: 3000, scheme: 'light' }));
+shots.push(await shot(light, 'milkflint4-0.5a-themes.png', '#/themes', { wait: 2500, scheme: 'light' }));
 
-// Ultra-wide cinematic home
-const cinema = await browser.newPage({
-  viewport: { width: 1920, height: 1080 },
-  deviceScaleFactor: 2,
-});
-await cinema.goto(`http://127.0.0.1:${PORT}/milkflint/`, { waitUntil: 'domcontentloaded' });
-await cinema.evaluate((sid) => {
-  sessionStorage.setItem('milkflint.session', JSON.stringify({ id: sid, username: 'root', adminPassword: 'set' }));
-}, SESSION);
-await cinema.goto(`http://127.0.0.1:${PORT}/milkflint/#/dashboard`, { waitUntil: 'networkidle' });
-await cinema.waitForTimeout(3500);
-await cinema.evaluate(() => {
-  document.documentElement.dataset.theme = 'monokai-milk';
-  document.documentElement.classList.remove('dark');
-});
-await cinema.waitForTimeout(500);
-const hero = path.join(OUT, 'milkflint4-0.5a-home-hero-4k.png');
-await cinema.screenshot({ path: hero, fullPage: false, type: 'png' });
-shots.push(hero);
-console.log('wrote', hero, fs.statSync(hero).size);
+// Light 4K hero
+const cinemaLight = await preparePage('light');
+await cinemaLight.setViewportSize({ width: 1920, height: 1080 });
+await cinemaLight.goto(`http://127.0.0.1:${PORT}/milkflint/#/dashboard`, { waitUntil: 'networkidle' });
+await cinemaLight.waitForTimeout(3500);
+await assertMonokai(cinemaLight, 'light');
+const heroLight = path.join(OUT, 'milkflint4-0.5a-home-hero-4k.png');
+await cinemaLight.screenshot({ path: heroLight, fullPage: false, type: 'png' });
+console.log('wrote', heroLight, fs.statSync(heroLight).size);
+shots.push(heroLight);
+await cinemaLight.close();
+await light.close();
+
+// --- Dark Monokai milk (charcoal + Monokai Pro pink / cyan / green) ---
+const dark = await preparePage('dark');
+shots.push(
+  await shot(dark, 'milkflint4-0.5a-home-monokai-dark.png', '#/dashboard', { wait: 3500, scheme: 'dark' }),
+);
+await dark.goto(`http://127.0.0.1:${PORT}/milkflint/#/tuning`, { waitUntil: 'networkidle' });
+await dark.waitForTimeout(2000);
+await expandExpert(dark, { scrollToMimo: true });
+await assertMonokai(dark, 'dark');
+await dark.waitForTimeout(500);
+const tuningDark = path.join(OUT, 'milkflint4-0.5a-tuning-ul-mimo-dark.png');
+await dark.screenshot({ path: tuningDark, fullPage: false, type: 'png' });
+console.log('wrote', tuningDark, fs.statSync(tuningDark).size);
+shots.push(tuningDark);
+
+shots.push(await shot(dark, 'milkflint4-0.5a-wifi-dark.png', '#/wifi', { wait: 3000, scheme: 'dark' }));
+shots.push(await shot(dark, 'milkflint4-0.5a-themes-dark.png', '#/themes', { wait: 2500, scheme: 'dark' }));
+
+const cinemaDark = await preparePage('dark');
+await cinemaDark.setViewportSize({ width: 1920, height: 1080 });
+await cinemaDark.goto(`http://127.0.0.1:${PORT}/milkflint/#/dashboard`, { waitUntil: 'networkidle' });
+await cinemaDark.waitForTimeout(3500);
+await assertMonokai(cinemaDark, 'dark');
+const heroDark = path.join(OUT, 'milkflint4-0.5a-home-hero-4k-dark.png');
+await cinemaDark.screenshot({ path: heroDark, fullPage: false, type: 'png' });
+console.log('wrote', heroDark, fs.statSync(heroDark).size);
+shots.push(heroDark);
+await cinemaDark.close();
+await dark.close();
 
 await browser.close();
 server.close();
