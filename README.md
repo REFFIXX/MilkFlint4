@@ -25,6 +25,32 @@ MilkFlint4 is MilkFlint, rebuilt for the **Flint 4**: the same dashboard, guest 
 
 Experimental alpha. Keep a stock GL.iNet recovery image before you flash.
 
+## Screenshots
+
+MilkFlint UI on a busy Flint 4, **Monokai milk** (default). Full pack: [`milkflint/docs/forum/`](milkflint/docs/forum/).
+
+<p align="center">
+  <img src="milkflint/docs/forum/forum-01-home-monokai-milk.png" width="900" alt="Home — Monokai milk">
+</p>
+
+<p align="center">
+  <img src="milkflint/docs/forum/forum-01b-home-monokai-dark.png" width="900" alt="Home — Monokai milk dark">
+</p>
+
+<p align="center">
+  <img src="milkflint/docs/forum/forum-02-wifi-triband.png" width="900" alt="Wi-Fi tri-band — 2.4 / 5 / 6 GHz">
+</p>
+
+<p align="center">
+  <img src="milkflint/docs/forum/forum-03-tuning-ul-mimo-off.png" width="900" alt="Performance Tuning — Uplink MU-MIMO Off">
+</p>
+
+<p align="center">
+  <img src="milkflint/docs/forum/forum-05-devices.png" width="440" alt="Devices">
+  &nbsp;
+  <img src="milkflint/docs/forum/forum-06-sqm.png" width="440" alt="Smart Queue">
+</p>
+
 ## Install (sysupgrade)
 
 Flash only this file from [Releases](https://github.com/REFFIXX/MilkFlint4/releases):
