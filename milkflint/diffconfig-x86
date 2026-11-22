@@ -1,0 +1,53 @@
+# MilkFlint4 0.5a — lean x86_64 image for QEMU UI screenshots.
+#   cp milkflint/diffconfig-x86 .config && make defconfig
+# Not for flashing routers. Keeps MilkFlint UI + LuCI; skips Flint 4
+# hardware packages and ALL_KMODS so the build finishes in reasonable time.
+
+CONFIG_TARGET_x86=y
+CONFIG_TARGET_x86_64=y
+CONFIG_TARGET_x86_64_DEVICE_generic=y
+
+CONFIG_IMAGEOPT=y
+CONFIG_VERSIONOPT=y
+CONFIG_VERSION_DIST="MilkFlint4"
+CONFIG_VERSION_NUMBER="0.5a-x86"
+CONFIG_VERSION_CODE_FILENAMES=y
+CONFIG_VERSION_MANUFACTURER="MilkFlint4"
+CONFIG_VERSION_MANUFACTURER_URL="https://github.com/REFFIXX/MilkFlint4"
+CONFIG_VERSION_HOME_URL="https://github.com/REFFIXX/MilkFlint4"
+CONFIG_VERSION_FIRMWARE_URL="https://github.com/REFFIXX/MilkFlint4/releases"
+
+CONFIG_TARGET_ROOTFS_EXT4FS=y
+CONFIG_TARGET_EXT4_JOURNAL=y
+CONFIG_TARGET_ROOTFS_PARTSIZE=256
+CONFIG_GRUB_IMAGES=y
+CONFIG_GRUB_EFI_IMAGES=y
+CONFIG_VDI_IMAGES=y
+# CONFIG_TARGET_ROOTFS_SQUASHFS is not set
+
+CONFIG_PACKAGE_luci=y
+CONFIG_PACKAGE_luci-ssl=y
+CONFIG_PACKAGE_luci-theme-footstrap=y
+# CONFIG_PACKAGE_luci-theme-bootstrap is not set
+
+CONFIG_PACKAGE_milkflint-ui=y
+CONFIG_PACKAGE_milkflint-rtprio=y
+CONFIG_PACKAGE_sqm-scripts=y
+CONFIG_PACKAGE_luci-app-sqm=y
+CONFIG_PACKAGE_milkflint-bcrypt=y
+CONFIG_PACKAGE_banip=y
+CONFIG_PACKAGE_miniupnpd-nftables=y
+CONFIG_PACKAGE_nlbwmon=y
+CONFIG_PACKAGE_kmod-wireguard=y
+CONFIG_PACKAGE_wireguard-tools=y
+CONFIG_PACKAGE_luci-proto-wireguard=y
+
+# Skip heavy golang packages for a faster screenshot image; DNS pages will
+# show install/absent state. Add later if needed:
+# CONFIG_PACKAGE_dnsproxy is not set
+# CONFIG_PACKAGE_adguardhome is not set
+
+# Virtio NICs for QEMU
+CONFIG_PACKAGE_kmod-virtio-net=y
+CONFIG_PACKAGE_kmod-virtio-balloon=y
+CONFIG_PACKAGE_kmod-vsock-virtio=y
