@@ -46,8 +46,6 @@ jobs:
           make defconfig
 
       - name: Build
-        env:
-          PATH: /usr/lib/llvm-18/bin:$PATH
         run: |
           . milkflint/host-env.sh
           make -j"$(nproc)" world V=s IGNORE_ERRORS='n m'
