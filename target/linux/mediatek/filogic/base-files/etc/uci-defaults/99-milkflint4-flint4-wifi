@@ -8,7 +8,7 @@
 
 # MilkFlint's Performance Tuning WED path (mt7996e). On by default for this
 # board so Wi-Fi <-> WAN can leave the CPU once flow offloading is enabled.
-# First-boot module load is seeded earlier by lib/preinit/80_milkflint4-flint4-wed
+# First-boot module load is seeded earlier by lib/preinit/81_milkflint-tuning
 # (uci-defaults run after kmodloader); this marks the once-default and keeps
 # modules.conf in step if preinit could not run (e.g. recovered config).
 if [ -z "$(uci -q get milkflint.defaults.flint4_wed)" ]; then

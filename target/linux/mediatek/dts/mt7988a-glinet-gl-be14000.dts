@@ -633,21 +633,8 @@
 		};
 	};
 
-	pcie0_pins: pcie0-pins {
-		mux {
-			function = "pcie";
-			groups = "pcie_2l_0_pereset", "pcie_clk_req_n0_0",
-				 "pcie_wake_n0_0";
-		};
-	};
-
-	pcie1_pins: pcie1-pins {
-		mux {
-			function = "pcie";
-			groups = "pcie_2l_1_pereset", "pcie_clk_req_n1",
-				 "pcie_wake_n1_0";
-		};
-	};
+	/* pcie0_pins / pcie1_pins / spi1_pins are already defined by the 7.3.5
+	 * mt7988a.dtsi; redefining them here is a duplicate_label error. */
 
 	pwm_pins: pwm-pins {
 		mux {
@@ -660,13 +647,6 @@
 		mux {
 			function = "pwm";
 			groups = "pwm3_0";
-		};
-	};
-
-	spi1_pins: spi1-pins {
-		mux {
-			function = "spi";
-			groups = "spi1";
 		};
 	};
 };

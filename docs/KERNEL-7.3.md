@@ -40,10 +40,10 @@ make -j$(nproc) world V=s
 
 ## Success criteria
 
-- [x] `make target/linux/prepare` applies clean on filogic
-- [x] Kernel + modules build for `glinet_gl-be14000` (prior 0.4a-k7 green)
-- [ ] **0.7a-k7** world → flashable `…-sysupgrade.bin` (this pass)
-- [x] Upstream 7.3 RSS → MilkFlint `990-*` quarantined
+- [x] `make target/linux/prepare` patch-application blockers fixed (0.7b-k7: `741` moved to `-broken`; duplicate `pcie*_pins`/`spi1_pins` removed from board DTS) — needs CI re-verification
+- [ ] Kernel + modules build for `glinet_gl-be14000` (verify via `.github/workflows/build-firmware.yml`)
+- [ ] **0.7b-k7** world → flashable `…-sysupgrade.bin` (this pass)
+- [ ] mtk_eth_soc RSS `990-*` series refreshed + re-instated (NOT in 7.3.5 as first assumed)
 - [x] YT9224 DSA + 4-byte tag + PPE bridge patches in `pending-7.3`
 - [x] Panel/touch packages + backlight/`fb0` bring-up init
 - [x] MilkFlint UI synced from main; UL MU-MIMO off; WAN radio fan-pulse
@@ -54,13 +54,25 @@ make -j$(nproc) world V=s
 - Replacing the **0.3a / 6.18** release track on `main`  
 - Official openwrt.org kmods (vermagic will never match)  
 
-## Upstream win (confirmed on 7.3.5)
+## Upstream status (re-verified against the 7.3.5 tarball, 2026-11-26)
 
-Linux **7.3.5** already includes MediaTek **hardware RSS** in `mtk_eth_soc`
-(`MTK_RSS`, `mtk_rss_init`, indirection table, MT7988 caps). MilkFlint's
-out-of-tree `990-*` RSS patch series is **quarantined** on this branch as
-redundant. Remaining work is board defaults + any MilkFlint UX knobs that
-are not upstream, plus YT922x DSA (refreshed) and RTL8261x cold-boot retry.
+> **Correction — the earlier "RSS is already in 7.3.5" note was wrong.** A
+> direct check of `drivers/net/ethernet/mediatek/mtk_eth_soc.c` in `linux-7.3.5`
+> shows **zero** RSS/LRO code (`MTK_RSS`/`mtk_rss_init` are absent). The
+> `990-*` RSS series is therefore **still required** and is quarantined in
+> `target/linux/generic/broken-7.3/` (14 patches) — it must be refreshed and
+> re-instated for packet steering / multi-queue CAKE.
+
+Two driver stacks are entirely absent from mainline 7.3.5 and are the real
+remaining work (both are out-of-tree in OpenWrt):
+
+1. **MT7988 USXGMII PCS** — `drivers/net/pcs/pcs-mtk-usxgmii.c` does not exist
+   in 7.3.5, `mtk_eth_soc.c` has no USXGMII handling, and `mt7988a.dtsi` has no
+   `usxgmiisys*` nodes. Without it, `gmac1` (YT9224 trunk) and `gmac2` (10G WAN)
+   never link; only the built-in 1G switch on `gmac0` works. Forward-port chain:
+   `737` (phylink PCS-provider) → `739-04/05` (USXGMII PCS driver) →
+   `978` (fixed-10g) + `975` (link-flap), plus the `usxgmiisys` DT nodes.
+2. **mtk_eth_soc hardware RSS** — the `990-*` SDK series (above).
 
 ## Config
 Kernel configure runs `olddefconfig` after merging OpenWrt config fragments so incomplete `config-7.3` does not trip interactive syncconfig on NEW symbols.

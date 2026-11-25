@@ -1,6 +1,6 @@
 #!/bin/sh
 # Flint 4 (GL-BE14000) SQM / CAKE defaults: MT7988 has four A73 cores and
-# (with MilkFlint RSS eth patches) four RX rings on eth2. Prefer multi-queue
+# (with upstream 7.3 mtk_eth RSS) four RX rings on the wan MAC. Prefer multi-queue
 # CAKE earlier than MilkFlint's generic 500 Mbit threshold, keep download
 # no-split-gso ready for multi-gig lines, and pin fairness opts for a busy
 # home / lab gateway.
@@ -37,7 +37,7 @@ fi
 # slower profiles the UI may write later.
 if [ -z "$(uci -q get milkflint.defaults.flint4_sqm_gso)" ]; then
 	for queue in $(uci -q show sqm | sed -n "s/^sqm\.\([^.=]*\)=queue$/\1/p"); do
-		case "$(uci -q get "sqm.$queue.interface")" in wan | eth2 | sfp) ;; *) continue ;; esac
+		case "$(uci -q get "sqm.$queue.interface")" in wan) ;; *) continue ;; esac
 		dl=$(uci -q get "sqm.$queue.download")
 		[ -n "$dl" ] && [ "$dl" -ge 100000 ] 2>/dev/null || continue
 		opts=$(uci -q get "sqm.$queue.iqdisc_opts")
@@ -59,7 +59,7 @@ fi
 # dual-srchost on upload. Leave queues that already set nat/nonat alone.
 if [ -z "$(uci -q get milkflint.defaults.flint4_cake_host)" ]; then
 	for queue in $(uci -q show sqm | sed -n "s/^sqm\.\([^.=]*\)=queue$/\1/p"); do
-		case "$(uci -q get "sqm.$queue.interface")" in wan | eth2 | sfp) ;; *) continue ;; esac
+		case "$(uci -q get "sqm.$queue.interface")" in wan) ;; *) continue ;; esac
 		iopts=$(uci -q get "sqm.$queue.iqdisc_opts")
 		eopts=$(uci -q get "sqm.$queue.eqdisc_opts")
 		case " $iopts " in *" nat "* | *" nonat "* | *" dual-dsthost "* | *" triple-isolate "*) ;; *)

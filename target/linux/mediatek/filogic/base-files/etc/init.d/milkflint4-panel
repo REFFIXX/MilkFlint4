@@ -25,8 +25,9 @@ boot() {
 		return 0
 	}
 
-	# ST7789P3 is 320×240 RGB565 (~150 KiB). A non-black fill proves life.
-	dd if=/dev/zero bs=1024 count=160 2>/dev/null | \
+	# ST7789P3 is 320×240 RGB565 (153600 bytes ≈ 150 KiB). A non-black fill
+	# proves life; write exactly the framebuffer size, not more.
+	dd if=/dev/zero bs=1024 count=150 2>/dev/null | \
 		tr '\000' '\377' > /dev/fb0 2>/dev/null || true
 	logger -t milkflint4-panel "backlight on; fb0 painted"
 }

@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/badge/version-0.7a--k7-b45309" alt="Version 0.7a-k7"></a>
+  <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/badge/version-0.7b--k7-b45309" alt="Version 0.7b-k7"></a>
   <a href="https://github.com/REFFIXX/MilkFlint4/tree/cursor/flint4-kernel-7.3-ec1a"><img src="https://img.shields.io/badge/kernel-7.3.5-8b1a1a" alt="Kernel 7.3.5"></a>
   <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/badge/target-mediatek%2Ffilogic-0f766e" alt="Target"></a>
   <a href="https://openwrt.org"><img src="https://img.shields.io/badge/base-OpenWrt%20main%20%2B%207.3-1a7f4b" alt="OpenWrt"></a>
@@ -21,7 +21,7 @@
 
 > **Experimental kernel 7.3 track** — OpenWrt main still builds Filogic on **6.18**. This branch bumps MilkFlint4 to **Linux 7.3.5** ourselves to pick up MediaTek **mt76 / mtk_eth** work from the 7.x cycle (MT7996 NPU offload path, MLO fixes, RSS/LRO-era ethernet). Stable flashing remains **0.5a/0.6a · 6.18** until this boots clean. See [`docs/KERNEL-7.3.md`](docs/KERNEL-7.3.md).
 
-**MilkFlint4 0.7a-k7** = MilkFlint4 userspace from **main** (Monokai milk UI, RSS defaults, US country, max-perf / WED / panel bring-up) on **Linux 7.3.5**. Daily drivers should stay on **[0.5a](https://github.com/REFFIXX/MilkFlint4/releases/tag/0.5a)** (or 0.6a when bins land) until this track is flash-validated.
+**MilkFlint4 0.7b-k7** = MilkFlint4 userspace from **main** (Monokai milk UI, RSS defaults, US country, max-perf / WED / panel bring-up) on **Linux 7.3.5**, with the patch-application fix and board-default cleanups from the 0.7a-k7 review. Daily drivers should stay on **[0.5a](https://github.com/REFFIXX/MilkFlint4/releases/tag/0.5a)** (or 0.6a when bins land) until this track is flash-validated.
 
 MilkFlint4 is MilkFlint, rebuilt for the **Flint 4**: the same dashboard, guest Wi‑Fi, AdGuard Home, banIP, Smart Queue (CAKE), WireGuard, themes, and Performance Tuning — wired to MT7988 / MT7996 / YT9224 instead of the Flint 2’s MT7986 stack.
 
