@@ -18,9 +18,13 @@ echo
 while read -r path version dir; do
 	echo "--- $path $version"
 	found=
-	for f in $(ls "$dir" | grep -i -E '^(licen[cs]e|copying|notice)([._-].*)?$' | sort); do
-		[ -f "$dir/$f" ] || continue
-		cat "$dir/$f"
+	# Iterate with a glob so license filenames containing spaces are not
+	# word-split (e.g. "LICENSE (MIT).txt").
+	for f in "$dir"/[Ll][Ii][Cc][Ee][Nn][CcSs][Ee]* \
+		 "$dir"/[Cc][Oo][Pp][Yy][Ii][Nn][Gg]* \
+		 "$dir"/[Nn][Oo][Tt][Ii][Cc][Ee]*; do
+		[ -f "$f" ] || continue
+		cat "$f"
 		echo
 		found=1
 	done

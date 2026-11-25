@@ -232,7 +232,7 @@ export async function loadTuning(): Promise<TuningData> {
       followQueue: true,
       gro: groMode === 'fraglist' || groMode === 'plain' || groMode === 'off' ? groMode : 'auto',
       udpFwd: udpFwd === '1' ? 'on' : udpFwd === '0' ? 'off' : 'auto',
-      groMax: /^\d{4,5}$/.test(groMax) ? groMax : '',
+      groMax: /^\d{4,5}$/.test(groMax) && Number(groMax) >= 4096 && Number(groMax) <= 65536 ? groMax : '',
       // what the queue does, when LuCI changed it (../sqm/gso.ts)
       whole: wholeOf(
         str(gro, 'whole'),

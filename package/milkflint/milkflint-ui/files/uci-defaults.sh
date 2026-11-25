@@ -71,8 +71,10 @@ if [ -z "$(uci -q get milkflint.defaults.stealth_ipv6)" ]; then
 	done
 	if [ -z "$ping" ]; then
 		for rule in $(uci -q show firewall | sed -n "s/^firewall\.\([^.]*\)\.name='Allow-ICMPv6-[A-Za-z]*'$/\1/p"); do
-			# no types left would mean every type
-			[ "$(uci -q get "firewall.$rule.icmp_type")" = echo-request ] && continue
+			# Leave echo-request when it is the rule's only type: an empty
+			# list means "all types". Count entries (uci get lists are
+			# space-separated) rather than comparing the first element.
+			[ "$(uci -q get "firewall.$rule.icmp_type" | wc -w)" -gt 1 ] || continue
 			uci -q del_list "firewall.$rule.icmp_type=echo-request"
 		done
 	fi

@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/badge/version-0.6a-b45309" alt="Version 0.6a"></a>
+  <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/badge/version-0.6b-b45309" alt="Version 0.6b"></a>
   <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/badge/kernel-6.18-1a7f4b" alt="Kernel 6.18"></a>
   <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/badge/target-mediatek%2Ffilogic-0f766e" alt="Target"></a>
   <a href="https://openwrt.org"><img src="https://img.shields.io/badge/base-OpenWrt%20main-1a7f4b" alt="OpenWrt"></a>
@@ -19,7 +19,7 @@
 
 ---
 
-**MilkFlint4 0.6a** runs **OpenWrt main / kernel 6.18** on the Flint 4 — full **RTL8261C/D** 10G PHY, hardware **RSS** on `wan`, default Wi‑Fi country **US** (6 GHz LPI + WPA3), uplink MU‑MIMO off by default, MT7988 **2.5G PHY firmware**, and **`CONFIG_ALL_KMODS`** so extras match this image’s vermagic (do not pull snapshot `kmod-*` from downloads.openwrt.org).
+**MilkFlint4 0.6b** runs **OpenWrt main / kernel 6.18** on the Flint 4 — full **RTL8261C/D** 10G PHY, hardware **RSS** on `wan`, default Wi‑Fi country **US** (6 GHz LPI + WPA3), uplink MU‑MIMO off by default, MT7988 **2.5G PHY firmware**, and **`CONFIG_ALL_KMODS`** so extras match this image’s vermagic (do not pull snapshot `kmod-*` from downloads.openwrt.org).
 
 MilkFlint4 is MilkFlint, rebuilt for the **Flint 4**: the same dashboard, guest Wi‑Fi, AdGuard Home, banIP, Smart Queue (CAKE), WireGuard, themes, and Performance Tuning — wired to MT7988 / MT7996 / YT9224 instead of the Flint 2’s MT7986 stack.
 
@@ -174,6 +174,14 @@ Keeps every original MilkFlint Performance Tuning path (WED, AQL, steering UI, C
 | **VM** | `swappiness=0`, milder `vfs_cache_pressure` |
 
 Applied by `99-milkflint4-flint4-perf` (once; clear `milkflint.defaults.flint4_perf` to re-seed), `/etc/sysctl.d/22-milkflint4-be14000.conf`, and `milkflint4-perf` at boot. Change anything later under **Performance Tuning** / LuCI — those edits stick.
+
+### What’s new in 0.6b
+
+- **SQM** WAN shaper defaults now target `wan` only (no stray `eth2`/`sfp` references)
+- **IPv6 stealth** firewall default fixed: `Allow-ICMPv6-*` echo-request removal now counts the list instead of comparing only the first entry
+- **AdGuard Home** `THIRD-PARTY-NOTICES` no longer drops license files whose names contain spaces
+- **UI** fixes: the LAN-address / HTTPS move now shows the “Applying…” state; firewall counters no longer error on an empty `nft` response; the GRO max field honours the backend’s 4096–65536 range
+- **CI**: new `build-firmware.yml` builds `glinet_gl-be14000` and attaches the `sysupgrade.bin` to a draft release on `v*` tags
 
 ### What’s new in 0.6a
 
