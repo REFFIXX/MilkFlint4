@@ -62,7 +62,15 @@ jobs:
       - name: Collect artifacts
         run: |
           mkdir -p out
-          cp bin/targets/mediatek/filogic/*glinet_gl-be14000*/*.bin out/ 2>/dev/null || true
+          # Images land flat under filogic/, not in a nested board dir
+          shopt -s nullglob
+          bins=(bin/targets/mediatek/filogic/*glinet_gl-be14000*.bin)
+          if [ ${#bins[@]} -eq 0 ]; then
+            echo "::error::No glinet_gl-be14000 images under bin/targets/mediatek/filogic/"
+            ls -la bin/targets/mediatek/filogic/ || true
+            exit 1
+          fi
+          cp -v "${bins[@]}" out/
           ls -lh out/
 
       - name: Upload firmware artifact
