@@ -66,10 +66,9 @@ export function wifi_daemon(tag) {
 // a failed reset, mac80211 restarting the radios. The pattern's match (its
 // first group: what the driver said), or null. Every such line names the
 // driver or the restart, so any other line is told apart by two searches.
-const FW_TROUBLE = /mt(?:7915|7996)e [^ ]+: (Message [0-9a-f]+ \(seq [0-9]+\) timeout|.*firmware crash|L1 SER|chip full reset|band[0-9]: PLE error)|Hardware restart was requested/;
+const FW_TROUBLE = /mt7915e [^ ]+: (Message [0-9a-f]+ \(seq [0-9]+\) timeout|.*firmware crash|L1 SER|chip full reset|band[0-9]: PLE error)|Hardware restart was requested/;
 export function fw_trouble(rest) {
-	if (index(rest, 'mt7915e ') < 0 && index(rest, 'mt7996e ') < 0 &&
-	    index(rest, 'Hardware restart was requested') < 0)
+	if (index(rest, 'mt7915e ') < 0 && index(rest, 'Hardware restart was requested') < 0)
 		return null;
 	return match(rest, FW_TROUBLE);
 };

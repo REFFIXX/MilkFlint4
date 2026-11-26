@@ -74,7 +74,6 @@ export function useApply(onApplied?: () => void): {
   // Changes that move the router (new LAN address): the user continues at
   // the new address.
   const applyAndMove = useCallback(async (changes: readonly Change[], newUrl: string): Promise<void> => {
-    setState({ phase: 'applying' });
     try {
       await stage(changes);
       await applyUnchecked();

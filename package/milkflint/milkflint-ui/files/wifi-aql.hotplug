@@ -33,5 +33,4 @@
 	/usr/libexec/milkflint/wifi-aql "$phy"
 	/usr/libexec/milkflint/wifi-retries
 	/usr/libexec/milkflint/wifi-vo-aggr
-	/usr/libexec/milkflint/wifi-muru-ul
 ) > /dev/null 2>&1 &

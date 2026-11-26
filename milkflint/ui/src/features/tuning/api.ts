@@ -66,21 +66,8 @@ const statusSchema = z.object({
       wifi_retries: z.number().nullable(),
       /** whether the Wi-Fi driver aggregates the voice queue; null without the setting, or on an older router */
       wifi_vo_aggr: z.boolean().nullable().default(null),
-      /** uplink MU-MIMO (STA_REC_MURU mimo_ul_en); null without the module param */
-      wifi_muru_mimo_ul: z.boolean().nullable().default(null),
-      /** uplink OFDMA (STA_REC_MURU ofdma_ul_en); null without the module param */
-      wifi_muru_ofdma_ul: z.boolean().nullable().default(null),
     })
-    .default({
-      rx_delay: null,
-      cake_ecn: null,
-      cake_l4s: null,
-      cake_loaded: false,
-      wifi_retries: null,
-      wifi_vo_aggr: null,
-      wifi_muru_mimo_ul: null,
-      wifi_muru_ofdma_ul: null,
-    }),
+    .default({ rx_delay: null, cake_ecn: null, cake_l4s: null, cake_loaded: false, wifi_retries: null, wifi_vo_aggr: null }),
   /** hardware offloading with WED (./wed.ts); an older router doesn't say */
   wed: z
     .object({

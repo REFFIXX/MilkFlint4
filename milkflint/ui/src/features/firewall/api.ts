@@ -195,17 +195,8 @@ export async function getCounters(): Promise<Counters> {
   );
   const rules = new Map<string, number>();
   const nat = new Map<string, number>();
-  let items: unknown[] = [];
-  const stdout = (res.stdout ?? '').trim();
-  if (res.code === 0 && stdout !== '') {
-    try {
-      const parsed = z.object({ nftables: z.array(z.unknown()) }).safeParse(JSON.parse(stdout));
-      items = parsed.success ? parsed.data.nftables : [];
-    } catch {
-      items = [];
-    }
-  }
-  for (const item of items) {
+  const parsed = z.object({ nftables: z.array(z.unknown()) }).safeParse(JSON.parse(res.stdout ?? '{}'));
+  for (const item of parsed.success ? parsed.data.nftables : []) {
     const r = nftRule.safeParse(item);
     if (!r.success || r.data.rule.table !== 'fw4') continue;
     const { chain, comment, expr } = r.data.rule;

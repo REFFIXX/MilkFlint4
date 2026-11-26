@@ -4,13 +4,13 @@ CONFIG_TARGET_mediatek=y
 CONFIG_TARGET_mediatek_filogic=y
 CONFIG_TARGET_mediatek_filogic_DEVICE_glinet_gl-be14000=y
 
-# MilkFlint4 0.6a on OpenWrt main-line mediatek (kernel 6.18) with
+# MilkFlint4 0.9 (beta) on OpenWrt main-line mediatek (kernel 6.18) with
 # Flint 4 hardware RSS, RTL8261C/D PHY firmware, and a full kmod set so
 # opkg/apk extras match this image's vermagic (not downloads.openwrt.org).
 CONFIG_IMAGEOPT=y
 CONFIG_VERSIONOPT=y
 CONFIG_VERSION_DIST="MilkFlint4"
-CONFIG_VERSION_NUMBER="0.6b"
+CONFIG_VERSION_NUMBER="0.9"
 CONFIG_VERSION_CODE_FILENAMES=y
 CONFIG_VERSION_MANUFACTURER="MilkFlint4"
 CONFIG_VERSION_MANUFACTURER_URL="https://github.com/REFFIXX/MilkFlint4"

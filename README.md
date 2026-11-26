@@ -11,7 +11,8 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/badge/version-0.6b-b45309" alt="Version 0.6b"></a>
+  <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/badge/version-0.9-0f766e" alt="Version 0.9"></a>
+  <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/badge/status-beta-1d4ed8" alt="Beta"></a>
   <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/badge/kernel-6.18-1a7f4b" alt="Kernel 6.18"></a>
   <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/badge/target-mediatek%2Ffilogic-0f766e" alt="Target"></a>
   <a href="https://openwrt.org"><img src="https://img.shields.io/badge/base-OpenWrt%20main-1a7f4b" alt="OpenWrt"></a>
@@ -19,11 +20,11 @@
 
 ---
 
-**MilkFlint4 0.6b** runs **OpenWrt main / kernel 6.18** on the Flint 4 — full **RTL8261C/D** 10G PHY, hardware **RSS** on `wan`, default Wi‑Fi country **US** (6 GHz LPI + WPA3), uplink MU‑MIMO off by default, MT7988 **2.5G PHY firmware**, and **`CONFIG_ALL_KMODS`** so extras match this image’s vermagic (do not pull snapshot `kmod-*` from downloads.openwrt.org).
+**MilkFlint4 0.9 (beta)** runs **OpenWrt main / kernel 6.18** on the Flint 4 — full **RTL8261C/D** 10G PHY, hardware **RSS** on `wan`, default Wi‑Fi country **US** (6 GHz LPI + WPA3), uplink MU‑MIMO off by default, MT7988 **2.5G PHY firmware**, and **`CONFIG_ALL_KMODS`** so extras match this image’s vermagic (do not pull snapshot `kmod-*` from downloads.openwrt.org).
 
-MilkFlint4 is MilkFlint, rebuilt for the **Flint 4**: the same dashboard, guest Wi‑Fi, AdGuard Home, banIP, Smart Queue (CAKE), WireGuard, themes, and Performance Tuning — wired to MT7988 / MT7996 / YT9224 instead of the Flint 2’s MT7986 stack.
+MilkFlint4 is MilkFlint, rebuilt for the **Flint 4**: the same dashboard, guest Wi‑Fi, AdGuard Home, banIP, Smart Queue (CAKE), WireGuard, themes, and Performance Tuning — wired to MT7988 / MT7996 / YT9224 instead of the Flint 2’s MT7986 stack. Userspace includes OddBlueDog **MilkFlint 0.87a** fixes (VPN DNS, 1 Gbit CAKE threshold, queue-per-CPU IFBs).
 
-Experimental alpha. Keep a stock GL.iNet recovery image before you flash.
+**Beta.** Keep a stock GL.iNet recovery image before you flash.
 
 ## Screenshots
 
@@ -143,7 +144,7 @@ Everything below ships in the image. Generic MilkFlint behaviour is kept; defaul
 |---|---|
 | **MilkFlint UI** | Dashboard, Wi‑Fi, guests, DNS, AdGuard Home, banIP, SQM, VPN, schedules, device control, themes, upgrade, Performance Tuning — LuCI under **Advanced** |
 | **Theme** | Default **Monokai milk** (milky Monokai Pro: pink / cyan / green on soft milk panels). Honey milk stays available. LuCI Advanced uses Footstrap’s matching Monokai milk palette |
-| **Upstream MilkFlint** | Includes OddBlueDog **MilkFlint 0.85a** (device control, crontab schedules, CAKE/Wi‑Fi fixes, AdGuard/ubus fixes) — Flint 2–only bits left aside; Flint 4 WED/Wi‑Fi/switch overlays on top |
+| **Upstream MilkFlint** | Includes OddBlueDog **MilkFlint 0.87a** userspace (VPN “Use VPN’s DNS”, 1 Gbit multi-queue CAKE, queue-per-CPU IFBs, Test Bench delay/stall fixes) — Flint 2–only / 6.12 kernel bits left aside; Flint 4 WED/Wi‑Fi/switch overlays on top |
 | **uhttpd** | `milkflint.html` is the index page; UI assets under `/milkflint/` |
 | **Packet steering** | Hardware **RSS** on `wan` (four PDMA rings / GIC 221–224), not software RPS — MilkFlint layout via `ports rss`; forced on in Flint 4 defaults |
 | **Smart Queue** | Multi‑queue CAKE on by default for Flint 4; ingress `cake_mq` + `no-split-gso` on multi‑gig WAN; per‑host fairness (`nat dual-dsthost` / `dual-srchost`); egress stays single CAKE on `mtk_soc_eth` |
@@ -175,13 +176,26 @@ Keeps every original MilkFlint Performance Tuning path (WED, AQL, steering UI, C
 
 Applied by `99-milkflint4-flint4-perf` (once; clear `milkflint.defaults.flint4_perf` to re-seed), `/etc/sysctl.d/22-milkflint4-be14000.conf`, and `milkflint4-perf` at boot. Change anything later under **Performance Tuning** / LuCI — those edits stick.
 
+### What’s new in 0.9 (beta)
+
+- **Status:** first **beta** (no longer experimental alpha)
+- **MilkFlint 0.87a userspace** ported for kernel 6.18 / Flint 4:
+  - VPN **Use VPN’s DNS** (tunnel DNS for VPN-routed devices only)
+  - Multi-queue CAKE Automatic from **1 Gbit/s Ethernet** / **500 Mbit/s PPPoE**
+  - Queue-per-CPU IFBs when RPS spreads a download (sqm patch 110)
+  - CAKE ECN/DSCP retry on reload; Test Bench delay figures + “stalled”
+- **Theme unchanged:** default **Monokai milk**; Honey milk available; LuCI Footstrap Monokai milk
+- **Board bits kept:** `ports` / WED `mt7996e` / RSS on `wan` (ODB’s MT6000-only paths not copied)
+
+Full notes: [`docs/RELEASE-0.9.md`](docs/RELEASE-0.9.md).
+
 ### What’s new in 0.6b
 
 - **SQM** WAN shaper defaults now target `wan` only (no stray `eth2`/`sfp` references)
 - **IPv6 stealth** firewall default fixed: `Allow-ICMPv6-*` echo-request removal now counts the list instead of comparing only the first entry
 - **AdGuard Home** `THIRD-PARTY-NOTICES` no longer drops license files whose names contain spaces
 - **UI** fixes: the LAN-address / HTTPS move now shows the “Applying…” state; firewall counters no longer error on an empty `nft` response; the GRO max field honours the backend’s 4096–65536 range
-- **CI**: new `build-firmware.yml` builds `glinet_gl-be14000` and attaches the `sysupgrade.bin` to a draft release on `v*` tags
+- **CI**: `build-firmware.yml` builds `glinet_gl-be14000` and attaches the `sysupgrade.bin` on `v*` tags
 
 ### What’s new in 0.6a
 

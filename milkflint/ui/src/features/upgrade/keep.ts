@@ -14,12 +14,9 @@ export type ImageKind = 'milkflint' | 'openwrt' | 'glinet' | 'unknown';
 export function imageKind(name: string): ImageKind {
   const n = name.trim().toLowerCase();
   if (n.includes('milkflint')) return 'milkflint';
-  // GL.iNet's own: openwrt-mt6000-4.7.4-0925-….bin or openwrt-be14000-… /
-  // glinet_gl-be14000-… vendor images. Stock OpenWrt names the model after
-  // the target instead (openwrt-25.12.0-mediatek-filogic-glinet_gl-mt6000-…).
-  if (/^(?:openwrt-)?(?:gl-)?(?:mt6000|be14000)-\d+\.\d+/.test(n)) return 'glinet';
-  if (/(?:^|[._-])gl(?:inet)?[_-]?(?:gl-)?(?:mt6000|be14000)/.test(n) && !n.includes('mediatek-filogic'))
-    return 'glinet';
+  // GL.iNet's own: openwrt-mt6000-4.7.4-0925-….bin; stock OpenWrt's name the
+  // model after the target instead (openwrt-25.12.0-mediatek-filogic-glinet_gl-mt6000-…)
+  if (/^(?:openwrt-)?(?:gl-)?mt6000-\d+\.\d+/.test(n)) return 'glinet';
   if (n.startsWith('openwrt-')) return 'openwrt';
   return 'unknown';
 }
@@ -51,8 +48,7 @@ export function keepChoice({
 }): KeepChoice {
   const kind = imageKind(image);
   if (allowBackup === false) return { keep: false, allowed: false, kind, reason: 'This image can’t keep the current settings.' };
-  const dist = running?.trim().toLowerCase() ?? '';
-  const fromMilkFlint = dist === 'milkflint' || dist === 'milkflint4';
+  const fromMilkFlint = running?.trim().toLowerCase() === 'milkflint';
   if (!fromMilkFlint) {
     return {
       keep: false,
@@ -61,12 +57,12 @@ export function keepChoice({
       reason:
         running === undefined
           ? 'Couldn’t read which firmware the router runs now, so settings are erased unless you turn this on.'
-          : `The router runs ${running} now, not MilkFlint4: start the new firmware with factory settings.`,
+          : `The router runs ${running} now, not MilkFlint: start the new firmware with factory settings.`,
     };
   }
   switch (kind) {
     case 'milkflint':
-      return { keep: true, allowed: true, kind, reason: 'A MilkFlint4 image: upgrading from MilkFlint4 keeps your settings.' };
+      return { keep: true, allowed: true, kind, reason: 'A MilkFlint image: upgrading from MilkFlint keeps your settings.' };
     case 'openwrt':
       return {
         keep: false,

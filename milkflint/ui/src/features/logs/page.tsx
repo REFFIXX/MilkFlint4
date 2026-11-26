@@ -26,7 +26,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { TabPanel, Tabs } from '@/components/ui/tabs';
 import { usePoll } from '@/hooks/use-poll';
 import { formatBytes } from '@/lib/format';
-import { href } from '@/lib/router';
+import { href, tabFrom, tabHref, useSubPath } from '@/lib/router';
 import { cn } from '@/lib/utils';
 import { getLogStatus, type LogKind, type LogStatus, readLog } from './api';
 import { LogSettingsCard } from './settings';
@@ -50,7 +50,7 @@ const placeholders: Record<LogKind, string> = {
   debug: 'Filter, e.g. snapshot, cake or RESTART',
   dns: 'Filter, e.g. slow, a device or a site',
   banip: 'Filter, e.g. failed, a list or err',
-  crash: 'Filter, e.g. Oops, KFENCE or mt7996',
+  crash: 'Filter, e.g. Oops, KFENCE or mt7915',
 };
 
 const DIAGNOSTICS = `${href('tuning')}/diagnostics`;
@@ -156,7 +156,11 @@ function OffNote({ kind, status, empty }: { kind: LogKind; status: LogStatus | u
 }
 
 export function LogsPage(): ReactElement {
-  const [kind, setKind] = useState<LogKind>('system');
+  // the log shown is in the address (#/logs/radar), so a link or the menu's search opens its tab
+  const kind = tabFrom(useSubPath(), kinds, 'system');
+  const setKind = (k: LogKind): void => {
+    window.location.hash = tabHref('logs', k, 'system');
+  };
   const [lines, setLines] = useState('500');
   const [query, setQuery] = useState('');
   const [follow, setFollow] = useState(true);

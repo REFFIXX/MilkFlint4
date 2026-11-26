@@ -17,9 +17,6 @@
 //   before it gives up, 1 to 31; unset 15;
 // - wifi.vo_aggr: whether the Wi-Fi driver aggregates the voice queue, "0" not,
 //   as stock OpenWrt's mt76; unset or anything else, it does.
-// - wifi.muru_mimo_ul / muru_ofdma_ul: uplink MU-MIMO / uplink OFDMA in the
-//   driver's STA_REC_MURU, "1" on; unset off (default). On so scheduled
-//   uplink can stall best-effort TX for tens to hundreds of ms.
 // And the Wi-Fi queue's total, which goes with its limits (aql_be, on the page):
 // - wifi.aql_threshold: the radio's total that holds devices to their low
 //   limit, from the high limit to 50,000 µs; unset 1.2 times the high limit,
@@ -39,23 +36,9 @@ export interface Knobs {
   retries: string;
   /** '1' on, '0' off; '' for automatic, on with Smart Queue's restored DSCP */
   voAggr: string;
-  /** '1' on; '' off (default) — uplink MU-MIMO */
-  muruMimoUl: string;
-  /** '1' on; '' off (default) — uplink OFDMA */
-  muruOfdmaUl: string;
 }
 
-export const knobDefaults: Knobs = {
-  wifiAll: true,
-  ringsRt: true,
-  rxDelay: '',
-  ecnDrop: '',
-  l4s: '',
-  retries: '',
-  voAggr: '',
-  muruMimoUl: '',
-  muruOfdmaUl: '',
-};
+export const knobDefaults: Knobs = { wifiAll: true, ringsRt: true, rxDelay: '', ecnDrop: '', l4s: '', retries: '', voAggr: '' };
 
 export const RX_DELAY_DEFAULT = 40;
 export const RETRIES_DEFAULT = 15;
@@ -73,8 +56,6 @@ export const l4sChoices = ['', '60', '200', '0'];
 
 /** Whether to aggregate the voice queue: '' is the default */
 export const voAggrChoices = ['', '0'];
-/** Uplink MU scheduling: '' off (default), '1' on */
-export const muruUlChoices = ['', '1'];
 
 /** A milkflint option: section and option name to its value, undefined if unset */
 export type Get = (section: string, option: string) => string | undefined;
@@ -107,11 +88,6 @@ function voAggrOf(value: string | undefined): string {
   return value === '0' ? value : '';
 }
 
-/** wifi.muru_*_ul as wifi-muru-ul reads it: "1"; '' otherwise */
-function muruUlOf(value: string | undefined): string {
-  return value === '1' ? value : '';
-}
-
 /** The settings as the router's scripts read them: whatever they'd ignore is the default. */
 export function readKnobs(get: Get): Knobs {
   return {
@@ -122,8 +98,6 @@ export function readKnobs(get: Get): Knobs {
     l4s: l4sOf(get('cake', 'l4s')),
     retries: numberOrDefault(get('wifi', 'retries'), 1, 31, RETRIES_DEFAULT),
     voAggr: voAggrOf(get('wifi', 'vo_aggr')),
-    muruMimoUl: muruUlOf(get('wifi', 'muru_mimo_ul')),
-    muruOfdmaUl: muruUlOf(get('wifi', 'muru_ofdma_ul')),
   };
 }
 
@@ -131,12 +105,7 @@ export function readKnobs(get: Get): Knobs {
 export interface KnobOptions {
   steering: { wifi_all: string | undefined; rings_rt: string | undefined; rx_delay: string | undefined };
   cake: { ecn_drop: string | undefined; l4s: string | undefined };
-  wifi: {
-    retries: string | undefined;
-    vo_aggr: string | undefined;
-    muru_mimo_ul: string | undefined;
-    muru_ofdma_ul: string | undefined;
-  };
+  wifi: { retries: string | undefined; vo_aggr: string | undefined };
 }
 
 export function knobOptions(k: Knobs): KnobOptions {
@@ -147,12 +116,7 @@ export function knobOptions(k: Knobs): KnobOptions {
       rx_delay: k.rxDelay === '' ? undefined : k.rxDelay,
     },
     cake: { ecn_drop: k.ecnDrop === '' ? undefined : k.ecnDrop, l4s: k.l4s === '' ? undefined : k.l4s },
-    wifi: {
-      retries: k.retries === '' ? undefined : k.retries,
-      vo_aggr: k.voAggr === '' ? undefined : k.voAggr,
-      muru_mimo_ul: k.muruMimoUl === '' ? undefined : k.muruMimoUl,
-      muru_ofdma_ul: k.muruOfdmaUl === '' ? undefined : k.muruOfdmaUl,
-    },
+    wifi: { retries: k.retries === '' ? undefined : k.retries, vo_aggr: k.voAggr === '' ? undefined : k.voAggr },
   };
 }
 
@@ -177,11 +141,6 @@ export function rxDelayLabel(value: string | number): string {
 /** A choice of voice queue aggregation */
 export function voAggrLabel(value: string): string {
   return value === '0' ? 'Off, as stock OpenWrt' : 'On (default)';
-}
-
-/** Uplink MU-MIMO / OFDMA: off by default */
-export function muruUlLabel(value: string): string {
-  return value === '1' ? 'On' : 'Off (default)';
 }
 
 export function retriesLabel(value: string | number): string {

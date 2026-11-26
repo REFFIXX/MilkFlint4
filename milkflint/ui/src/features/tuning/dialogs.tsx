@@ -4,7 +4,7 @@ import type { ReactElement } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { isGuestShaper } from '../wifi-guest/guest';
-import { aqlTotalValue, ecnDropLabel, l4sLabel, muruUlLabel, retriesLabel, rxDelayLabel, voAggrLabel } from './knobs';
+import { aqlTotalValue, ecnDropLabel, l4sLabel, retriesLabel, rxDelayLabel, voAggrLabel } from './knobs';
 import {
   aqlLabel,
   aqlTotalLabel,
@@ -204,16 +204,6 @@ export function RestoreDialog({
               label="Voice queue aggregation"
               to={voAggrLabel(defaults.voAggr)}
               from={data.form.voAggr === defaults.voAggr ? undefined : voAggrLabel(data.form.voAggr)}
-            />
-            <RestoreItem
-              label="Uplink MU-MIMO"
-              to={muruUlLabel(defaults.muruMimoUl)}
-              from={data.form.muruMimoUl === defaults.muruMimoUl ? undefined : muruUlLabel(data.form.muruMimoUl)}
-            />
-            <RestoreItem
-              label="Uplink OFDMA"
-              to={muruUlLabel(defaults.muruOfdmaUl)}
-              from={data.form.muruOfdmaUl === defaults.muruOfdmaUl ? undefined : muruUlLabel(data.form.muruOfdmaUl)}
             />
             <RestoreItem
               label="Packet steering"

@@ -20,16 +20,16 @@ import {
 } from '@/theme/custom';
 import { DEFAULT_THEME_ID, themes } from '@/theme/themes';
 
-const monokai = themes.find((t) => t.id === 'monokai-milk');
 const honey = themes.find((t) => t.id === 'honey-milk');
 const plain = themes.find((t) => t.id === 'plain-milk');
-assert.ok(monokai !== undefined && honey !== undefined && plain !== undefined);
+assert.ok(honey !== undefined && plain !== undefined);
 
-test('built-in themes: Monokai milk is the default, Plain milk beside it', () => {
+test('built-in themes: Monokai milk is the default, Honey milk beside it', () => {
   assert.equal(DEFAULT_THEME_ID, 'monokai-milk');
-  assert.equal(monokai.name, 'Monokai milk');
+  assert.equal(honey.name, 'Honey milk');
   assert.equal(plain.name, 'Plain milk');
   assert.equal(themes[0]?.id, 'monokai-milk', 'the first answers for :root');
+  assert.ok(themes.some((t) => t.id === 'honey-milk'));
 });
 
 test('colour maths: hex round trips, mixing and lightness move the way they say', () => {
@@ -97,7 +97,7 @@ test('a custom theme is its base with its colours changed, and the rest of the b
   // a base that's gone: the first built-in
   assert.equal(
     resolveCustom({ id: 'custom-a', name: 'A', base: 'gone', colors: { light: {}, dark: {} } }, themes).type,
-    monokai.type,
+    honey.type,
   );
 });
 
@@ -116,12 +116,12 @@ test('custom CSS: only the custom themes, no :root, every colour', () => {
 test('picking the accent brings its hover, tints, focus rings and ramp; a pick back to the base is no change', () => {
   const main = MAIN_COLORS.find((m) => m.token === 'primary');
   assert.ok(main !== undefined);
-  const changes = pickMain(main, '#0a5f8e', 'light', monokai, {});
+  const changes = pickMain(main, '#0a5f8e', 'light', honey, {});
   for (const token of ['primary', 'primary-hover', 'primary-subtle', 'ring', 'sidebar-ring', 'selection', 'ramp-5'] as const)
     assert.ok(changes[token] !== undefined, token);
-  const colors = colorsOf(monokai, 'light', changes);
+  const colors = colorsOf(honey, 'light', changes);
   assert.ok(contrast(colors['primary-subtle-foreground'], colors['primary-subtle']) >= 4.5);
-  const back = pickOne('primary', toHex(schemesOf(monokai).light.color.primary), 'light', monokai, { primary: '#0a5f8e' });
+  const back = pickOne('primary', toHex(schemesOf(honey).light.color.primary), 'light', honey, { primary: '#0a5f8e' });
   assert.deepEqual(back, {});
 });
 
@@ -134,12 +134,12 @@ test('the editor covers every colour but the scrim, each with a name, once', () 
 });
 
 test('the contrast report: none for the built-in themes, and a failing pick named', () => {
-  for (const t of [monokai, plain]) {
+  for (const t of [honey, plain]) {
     const { light, dark } = schemesOf(t);
     assert.deepEqual(contrastFailures(light.color), [], `${t.id} light`);
     assert.deepEqual(contrastFailures(dark.color), [], `${t.id} dark`);
   }
-  const pale = colorsOf(monokai, 'light', { 'muted-foreground': '#bbbbbb' });
+  const pale = colorsOf(honey, 'light', { 'muted-foreground': '#bbbbbb' });
   assert.ok(contrastFailures(pale).some((f) => f.fg === 'muted-foreground' && f.bg === 'card' && f.min === 4.5));
 });
 

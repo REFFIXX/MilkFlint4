@@ -3,7 +3,7 @@
 // that the page reads each setting the same way.
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, test } from 'node:test';
@@ -26,10 +26,18 @@ mkdirSync(ctParams);
 mkdirSync(wifiParams);
 mkdirSync(radio, { recursive: true });
 mkdirSync(join(root, 'bin'));
-// uci -q get <option>: from the environment, failing if unset, as uci does
+// uci -q get <option>: from the environment, failing if unset, as uci does;
+// uci -q show <config>.<section>: every option of it that's set
 writeFileSync(
   join(root, 'bin', 'uci'),
   `#!/bin/sh
+if [ "$2" = show ]; then
+	p="UCI_$(echo "$3" | tr . _)_"
+	env | while IFS='=' read -r k v; do
+		case "$k" in "$p"*) printf "%s.%s='%s'\\n" "$3" "\${k#"$p"}" "$v" ;; esac
+	done
+	exit 0
+fi
 n=$(echo "$3" | tr . _)
 eval "[ -n \\"\\\${UCI_$n+x}\\" ]" || exit 1
 eval "printf '%s\\n' \\"\\$UCI_$n\\""
@@ -51,18 +59,28 @@ chmodSync(join(root, 'bin', 'uci'), 0o755);
 chmodSync(join(root, 'bin', 'logger'), 0o755);
 chmodSync(join(root, 'bin', 'iw'), 0o755);
 
-/** Runs a script with /sys pointing at the pretend files; settings are uci option to value */
-function run(name: string, settings: Record<string, string>, args: string[] = [], dir = scripts): void {
+/** A script's copy with /sys pointing at the pretend files; its path */
+function stage(name: string, dir = scripts): string {
   const text = readFileSync(join(dir, name), 'utf8')
     .replaceAll('/sys/module/sch_cake/parameters', cakeParams)
     .replaceAll('/sys/module/nf_conntrack/parameters', ctParams)
     .replaceAll('/sys/module/mt76_connac_lib/parameters', wifiParams)
     .replaceAll('/sys/kernel/debug/ieee80211', join(root, 'ieee80211'));
-  const env: Record<string, string> = { PATH: `${join(root, 'bin')}:${process.env['PATH'] ?? ''}` };
-  for (const [option, value] of Object.entries(settings)) env[`UCI_${option.replaceAll('.', '_')}`] = value;
   const path = join(root, name);
   writeFileSync(path, text);
-  execFileSync('sh', [path, ...args], { env, stdio: 'pipe' });
+  return path;
+}
+
+/** The environment a script runs in: the pretend tools first; settings are uci option to value */
+function envOf(settings: Record<string, string>, more: Record<string, string> = {}): Record<string, string> {
+  const env: Record<string, string> = { PATH: `${join(root, 'bin')}:${process.env['PATH'] ?? ''}`, ...more };
+  for (const [option, value] of Object.entries(settings)) env[`UCI_${option.replaceAll('.', '_')}`] = value;
+  return env;
+}
+
+/** Runs a script with /sys pointing at the pretend files; settings are uci option to value */
+function run(name: string, settings: Record<string, string>, args: string[] = [], dir = scripts): void {
+  execFileSync('sh', [stage(name, dir), ...args], { env: envOf(settings), stdio: 'pipe' });
 }
 
 function aql(settings: Record<string, string>): { limits: string; total: number } {
@@ -232,6 +250,122 @@ test('cake-dscp: sch_cake not loaded yet, or an image without the parameters', (
   run('cake-dscp', { 'milkflint.cake.dscp_restore': '1' });
 });
 
+/** A script's exit status, run as run() runs it */
+function status(name: string, settings: Record<string, string>): number {
+  try {
+    run(name, settings);
+    return 0;
+  } catch (err) {
+    return (err as { status?: number }).status ?? -1;
+  }
+}
+
+/** Runs @f with sch_cake not loaded: its parameters folder gone, back after */
+function withoutCake(f: () => void): void {
+  const away = `${cakeParams}.away`;
+  renameSync(cakeParams, away);
+  try {
+    f();
+  } finally {
+    renameSync(away, cakeParams);
+  }
+}
+
+test('cake-ecn and cake-dscp: sch_cake not loaded, they say nothing of it was set (exit 1); conntrack’s side still is', () => {
+  withoutCake(() => {
+    writeFileSync(join(ctParams, 'dscp_learn'), '');
+    assert.equal(status('cake-ecn', { 'milkflint.cake.ecn_drop': '16', 'milkflint.cake.l4s': '60' }), 1);
+    assert.equal(status('cake-dscp', { 'milkflint.cake.dscp_restore': '1' }), 1);
+    assert.equal(readFileSync(join(ctParams, 'dscp_learn'), 'utf8').trim(), '1');
+  });
+  // loaded: done
+  writeFileSync(join(cakeParams, 'ecn_fail_count'), '');
+  writeFileSync(join(cakeParams, 'l4s_ramp'), '');
+  writeFileSync(join(cakeParams, 'dscp_restore'), '');
+  assert.equal(status('cake-ecn', { 'milkflint.cake.ecn_drop': '16' }), 0);
+  assert.equal(status('cake-dscp', {}), 0);
+});
+
+const tuningInit = fileURLToPath(new URL('../../../package/milkflint/milkflint-ui/files/features/tuning/init', import.meta.url));
+
+/**
+ * milkflint-tuning's apply(), as a start (force) or a reload runs it: the
+ * real cake-ecn and cake-dscp against the pretend /sys, every other command
+ * it runs a stand-in that does nothing
+ */
+function tuningApply(settings: Record<string, string>, force = false): void {
+  const libexec = join(root, 'libexec');
+  const initd = join(root, 'init.d');
+  mkdirSync(libexec, { recursive: true });
+  mkdirSync(initd, { recursive: true });
+  for (const name of ['cake-ecn', 'cake-dscp']) {
+    writeFileSync(join(libexec, name), readFileSync(stage(name), 'utf8'));
+    chmodSync(join(libexec, name), 0o755);
+  }
+  for (const name of [
+    'wed',
+    'wifi-aql',
+    'rx-delay',
+    'wifi-vo-aggr',
+    'wifi-spr',
+    'wifi-twt',
+    'wifi-muru',
+    'wifi-retries',
+    'gro',
+  ]) {
+    writeFileSync(join(libexec, name), '#!/bin/sh\nexit 0\n');
+    chmodSync(join(libexec, name), 0o755);
+  }
+  // packet_steering disabled: nothing reloaded
+  writeFileSync(join(initd, 'packet_steering'), '#!/bin/sh\nexit 1\n');
+  chmodSync(join(initd, 'packet_steering'), 0o755);
+  const text = readFileSync(tuningInit, 'utf8')
+    .replaceAll('/var/run/milkflint-tuning', join(root, 'tuning-run'))
+    .replaceAll('/usr/libexec/milkflint/', `${libexec}/`)
+    .replaceAll('/etc/init.d/', `${initd}/`);
+  writeFileSync(join(root, 'tuning-init'), text);
+  execFileSync('sh', ['-c', `. "${join(root, 'tuning-init')}"; ${force ? 'FORCE=1; ' : ''}apply`], {
+    env: envOf(settings),
+    stdio: 'pipe',
+  });
+}
+
+/** sch_cake's three parameters, as the module has them */
+function cakeNow(): string[] {
+  return ['ecn_fail_count', 'l4s_ramp', 'dscp_restore'].map((p) => readFileSync(join(cakeParams, p), 'utf8').trim());
+}
+
+// sch_cake loads at boot (/etc/modules.d/sched-cake), before milkflint-tuning;
+// were it loaded later, a run before then must not count as done
+test('milkflint-tuning: CAKE’s settings from a run without sch_cake aren’t kept as done; the next reload puts them in', () => {
+  const settings = { 'milkflint.cake.ecn_drop': '16', 'milkflint.cake.l4s': '60', 'milkflint.cake.dscp_restore': '1' };
+  rmSync(join(root, 'tuning-run'), { recursive: true, force: true });
+  withoutCake(() => {
+    tuningApply(settings, true);
+  });
+  assert.equal(existsSync(join(root, 'tuning-run', 'cake_ecn')), false);
+  assert.equal(existsSync(join(root, 'tuning-run', 'cake_dscp')), false);
+  // another setting it ran is kept as done, as before
+  assert.equal(existsSync(join(root, 'tuning-run', 'rx_delay')), true);
+
+  // sch_cake loaded, with its defaults; a reload (the same settings) puts them in
+  writeFileSync(join(cakeParams, 'ecn_fail_count'), '8');
+  writeFileSync(join(cakeParams, 'l4s_ramp'), '100');
+  writeFileSync(join(cakeParams, 'dscp_restore'), '0');
+  tuningApply(settings);
+  assert.deepEqual(cakeNow(), ['16', '60', '1']);
+  assert.equal(readFileSync(join(root, 'tuning-run', 'cake_ecn'), 'utf8').trim(), '16 60');
+  assert.equal(readFileSync(join(root, 'tuning-run', 'cake_dscp'), 'utf8').trim(), '1');
+
+  // done: a reload with nothing changed leaves sch_cake alone
+  writeFileSync(join(cakeParams, 'ecn_fail_count'), 'untouched');
+  tuningApply(settings);
+  assert.equal(readFileSync(join(cakeParams, 'ecn_fail_count'), 'utf8').trim(), 'untouched');
+  // a changed setting goes in at the next reload
+  tuningApply({ ...settings, 'milkflint.cake.ecn_drop': '32' });
+  assert.equal(cakeNow()[0], '32');
+});
+
 const wifiBin = fileURLToPath(new URL('../../../package/milkflint/milkflint-ui/files/features/wifi/bin/', import.meta.url));
 
 function sprFile(phy: string): string {
@@ -354,6 +488,126 @@ test('wifi-twt: a driver without the file is left alone', () => {
   mkdirSync(join(root, 'ieee80211', 'phy1'));
   run('wifi-twt', { 'milkflint.wifi.twt_5g_flows': '4' }, ['phy1'], wifiBin);
   assert.throws(() => readFileSync(join(root, 'ieee80211', 'phy1', 'mt76', 'twt_policy')));
+});
+
+function muruFile(phy: string): string {
+  const dir = join(root, 'ieee80211', phy, 'mt76');
+  mkdirSync(dir, { recursive: true });
+  return join(dir, 'muru');
+}
+
+function muru(settings: Record<string, string>, args: string[] = []): Record<string, string> {
+  const phys = ['phy0', 'phy1', 'phy2'];
+  for (const phy of phys) writeFileSync(muruFile(phy), 'untouched');
+  run('wifi-muru', settings, args, wifiBin);
+  return Object.fromEntries(phys.map((phy) => [phy, readFileSync(muruFile(phy), 'utf8').trim()]));
+}
+
+const MURU_DEFAULT_LINE = 'ofdma_dl=1 ofdma_ul=0 mimo_dl=1 mimo_ul=0';
+
+test('wifi-muru: defaults have download on and upload off, per band', () => {
+  assert.deepEqual(muru({}), {
+    phy0: MURU_DEFAULT_LINE,
+    phy1: MURU_DEFAULT_LINE,
+    phy2: MURU_DEFAULT_LINE,
+  });
+  assert.deepEqual(
+    muru({
+      'milkflint.wifi.muru_5g_ofdma_dl': '0',
+      'milkflint.wifi.muru_5g_mimo_dl': '0',
+      'milkflint.wifi.muru_2g_mimo_ul': '1',
+      'milkflint.wifi.muru_6g_ofdma_ul': '1',
+    }),
+    {
+      phy0: 'ofdma_dl=1 ofdma_ul=0 mimo_dl=1 mimo_ul=1',
+      phy1: 'ofdma_dl=0 ofdma_ul=0 mimo_dl=0 mimo_ul=0',
+      phy2: 'ofdma_dl=1 ofdma_ul=1 mimo_dl=1 mimo_ul=0',
+    },
+  );
+});
+
+test('wifi-muru: invalid values fall back to safe defaults', () => {
+  assert.deepEqual(
+    muru({
+      'milkflint.wifi.muru_5g_ofdma_dl': '0; reboot',
+      'milkflint.wifi.muru_5g_mimo_ul': '1; reboot',
+      'milkflint.wifi.muru_5g_ofdma_ul': 'yes',
+    }),
+    { phy0: MURU_DEFAULT_LINE, phy1: MURU_DEFAULT_LINE, phy2: MURU_DEFAULT_LINE },
+  );
+});
+
+test('wifi-muru: only the radios named, and a driver refusal does not stop the others', () => {
+  assert.deepEqual(muru({ 'milkflint.wifi.muru_5g_mimo_dl': '0' }, ['phy1']), {
+    phy0: 'untouched',
+    phy1: 'ofdma_dl=1 ofdma_ul=0 mimo_dl=0 mimo_ul=0',
+    phy2: 'untouched',
+  });
+  for (const phy of ['phy1', 'phy2']) writeFileSync(muruFile(phy), 'untouched');
+  rmSync(muruFile('phy0'), { force: true });
+  mkdirSync(muruFile('phy0'));
+  run('wifi-muru', { 'milkflint.wifi.muru_5g_ofdma_dl': '0', 'milkflint.wifi.muru_6g_mimo_ul': '1' }, [], wifiBin);
+  assert.equal(readFileSync(muruFile('phy1'), 'utf8').trim(), 'ofdma_dl=0 ofdma_ul=0 mimo_dl=1 mimo_ul=0');
+  assert.equal(readFileSync(muruFile('phy2'), 'utf8').trim(), 'ofdma_dl=1 ofdma_ul=0 mimo_dl=1 mimo_ul=1');
+  rmSync(muruFile('phy0'), { recursive: true, force: true });
+});
+
+test('wifi-muru: a driver without the file is left alone', () => {
+  rmSync(join(root, 'ieee80211', 'phy1'), { recursive: true, force: true });
+  mkdirSync(join(root, 'ieee80211', 'phy1'));
+  run('wifi-muru', { 'milkflint.wifi.muru_5g_mimo_dl': '0' }, ['phy1'], wifiBin);
+  assert.throws(() => readFileSync(join(root, 'ieee80211', 'phy1', 'mt76', 'muru')));
+});
+
+const wifiHotplug = fileURLToPath(
+  new URL('../../../package/milkflint/milkflint-ui/files/features/wifi/hotplug.d/ieee80211/', import.meta.url),
+);
+
+/**
+ * The ieee80211 hotplug, sourced as hotplug-call does, against the pretend /sys; it
+ * runs wifi-muru in the background, which here it does in the foreground.
+ * What each radio's muru file holds after.
+ */
+function muruHotplug(env: Record<string, string>, settings: Record<string, string> = {}): Record<string, string> {
+  const phys = ['phy0', 'phy1', 'phy2'];
+  for (const phy of phys) writeFileSync(muruFile(phy), 'untouched');
+  const helper = stage('wifi-muru', wifiBin);
+  const original = readFileSync(join(wifiHotplug, '35-milkflint-muru-flags'), 'utf8');
+  const text = original
+    .replaceAll('/sys/kernel/debug/ieee80211', join(root, 'ieee80211'))
+    .replaceAll('/usr/libexec/milkflint/wifi-muru', `sh ${helper}`)
+    .replace(') > /dev/null 2>&1 &\n', ') > /dev/null 2>&1\n');
+  assert.notEqual(text, original);
+  assert.ok(!text.includes('2>&1 &'), 'the hotplug still leaves its job in the background');
+  const path = join(root, 'muru.hotplug');
+  writeFileSync(path, text);
+  execFileSync('sh', ['-c', `. ${path}`], { env: envOf(settings, env), stdio: 'pipe' });
+  return Object.fromEntries(phys.map((phy) => [phy, readFileSync(muruFile(phy), 'utf8').trim()]));
+}
+
+const UNTOUCHED = { phy0: 'untouched', phy1: 'untouched', phy2: 'untouched' };
+
+test('muru hotplug: only a radio that appears, and only with a setting of its own', () => {
+  const set = { 'milkflint.wifi.muru_5g_mimo_dl': '0' };
+  assert.deepEqual(muruHotplug({ ACTION: 'remove', DEVICENAME: 'phy1' }, set), UNTOUCHED);
+  // none set: the driver starts on the defaults, nothing to write
+  assert.deepEqual(muruHotplug({ ACTION: 'add', DEVICENAME: 'phy1' }), UNTOUCHED);
+  // another feature's settings don't count
+  assert.deepEqual(muruHotplug({ ACTION: 'add', DEVICENAME: 'phy1' }, { 'milkflint.wifi.twt_5g_flows': '4' }), UNTOUCHED);
+  assert.deepEqual(muruHotplug({ ACTION: 'add', DEVICENAME: 'phy1' }, set), {
+    ...UNTOUCHED,
+    phy1: 'ofdma_dl=1 ofdma_ul=0 mimo_dl=0 mimo_ul=0',
+  });
+});
+
+test('muru hotplug: the radio from DEVPATH when there is no DEVICENAME', () => {
+  assert.deepEqual(
+    muruHotplug(
+      { ACTION: 'add', DEVPATH: '/devices/platform/soc/18000000.wifi/ieee80211/phy2' },
+      { 'milkflint.wifi.muru_6g_mimo_ul': '1' },
+    ),
+    { ...UNTOUCHED, phy2: 'ofdma_dl=1 ofdma_ul=0 mimo_dl=1 mimo_ul=1' },
+  );
 });
 
 /** gro show, against a pretend /etc/config/sqm (each section a queue) and a wan on eth1 */

@@ -12,12 +12,10 @@ import { ThemeToggle } from './theme-toggle';
 import { useDecorativeIcons } from '@/lib/presentation';
 
 const STONE =
-  'M33.8 5.2 51.8 16.8Q55.4 19.4 56 23.6L57.8 41Q58.4 45.4 55 48.4L42.2 58.8Q39 61.2 35 61.2H22.6Q18.4 61.2 15.6 57.8L7.6 47.4Q5 44.2 5.8 40L10.2 21Q11.2 17.2 15 15L29.8 5.6Q32 4.4 33.8 5.2Z';
-const MILK = 'M0 37C11 30.5 21 30 32 35.2S51 42 64 34V64H0Z';
-/** Open-top 4 — Monokai pink accent (matches milkflint/logo.svg). */
-const FOUR = 'M40.5 12.5 32.5 24.5h11.5M41.2 12.5V30';
+  'M39.1 6.6 51.9 17.4Q55 20 55.5 24L57.5 40Q58 44 55.2 46.8L44.8 57.2Q42 60 38 60H23Q19 60 16.5 56.9L8.5 47.1Q6 44 6.8 40.1L10.2 22.9Q11 19 14.4 16.9L32.6 6.1Q36 4 39.1 6.6Z';
+const MILK = 'M0 37C11 30.5 21 30.5 32 35.5S52 41 64 34V64H0Z';
 
-/** MilkFlint4's mark: flint half full of milk + Monokai pink 4 (milkflint/logo.svg). */
+/** MilkFlint's mark: a flint, chipped to a point, half full of milk (docs/logo.svg). */
 export function Logo({ className, ...props }: ComponentProps<'svg'>): ReactElement {
   const clip = useId();
   return (
@@ -25,17 +23,26 @@ export function Logo({ className, ...props }: ComponentProps<'svg'>): ReactEleme
       <clipPath id={clip}>
         <path d={STONE} />
       </clipPath>
-      <path d={STONE} strokeWidth="3" strokeLinejoin="round" className="fill-brand-stone stroke-brand-stone" />
+      <path d={STONE} strokeWidth="3.2" strokeLinejoin="round" className="fill-brand-stone stroke-brand-stone" />
       <path d={MILK} className="fill-brand-milk" clipPath={`url(#${clip})`} />
-      <path
-        d={FOUR}
-        fill="none"
-        strokeWidth="3.4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="stroke-primary"
-      />
     </svg>
+  );
+}
+
+/** MilkFlint's stylized wordmark: tight bold tracking with a primary circle spark over the i in Flint. */
+export function Wordmark({ className }: { className?: string }): ReactElement {
+  return (
+    <span className={cn('inline-flex items-baseline leading-none font-bold tracking-[-0.042em]', className)}>
+      <span className="sr-only">MilkFlint</span>
+      <span aria-hidden="true" className="inline-flex items-baseline">
+        MilkFl
+        <span className="relative inline-block">
+          {'\u0131'}
+          <span className="absolute top-[0.07em] left-1/2 size-[0.165em] -translate-x-1/2 rounded-full bg-primary" />
+        </span>
+        nt
+      </span>
+    </span>
   );
 }
 
@@ -45,14 +52,14 @@ export function Logo({ className, ...props }: ComponentProps<'svg'>): ReactEleme
  * (the one it comes with), which would say the name twice.
  */
 export function Brand({ board }: { board: Board | undefined }): ReactElement {
-  const product = board?.release?.distribution ?? 'MilkFlint4';
+  const product = board?.release?.distribution ?? 'MilkFlint';
   const named = board !== undefined && board.hostname.toLowerCase() !== product.toLowerCase() ? board.hostname : undefined;
   return (
     <a href={href('dashboard')} className="flex min-w-0 items-center gap-3 rounded-lg">
       <Logo className="size-8 shrink-0" />
-      <span className="min-w-0">
-        <span className="block truncate text-sm font-semibold">MilkFlint4</span>
-        <span className="block truncate text-xs text-sidebar-muted-foreground">{named ?? board?.model ?? 'Flint 4'}</span>
+      <span className="flex min-w-0 flex-col gap-0.5">
+        <Wordmark className="text-sm" />
+        <span className="block truncate text-xs text-sidebar-muted-foreground">{named ?? board?.model ?? 'Router'}</span>
       </span>
     </a>
   );
@@ -269,7 +276,7 @@ export function Sidebar({
           </button>
         </div>
         <ThemeToggle />
-        <p className="px-1 text-xs text-sidebar-muted-foreground">{firmwareName(board?.release) ?? 'MilkFlint4'}</p>
+        <p className="px-1 text-xs text-sidebar-muted-foreground">{firmwareName(board?.release) ?? 'MilkFlint'}</p>
       </div>
     </div>
   );
