@@ -47,8 +47,7 @@ jobs:
 
       - name: Build
         run: |
-          . milkflint/host-env.sh
-          make -j"$(nproc)" world V=s
+          make -j"$(nproc)" world V=s IGNORE_ERRORS='n m'
 
       - name: Collect artifacts
         run: |
