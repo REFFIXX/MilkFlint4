@@ -1,0 +1,30 @@
+#!/bin/sh /etc/rc.common
+# Paint MilkFlint4 logo on the Flint 4 front panel and leave it.
+
+START=99
+STOP=01
+USE_PROCD=
+
+boot() {
+	start
+}
+
+start() {
+	local i
+	# DRM panel may appear a moment after userspace starts.
+	for i in $(seq 1 40); do
+		[ -e /dev/fb0 ] && break
+		sleep 1
+	done
+	[ -e /dev/fb0 ] || return 1
+
+	/usr/libexec/milkflint/lcd-splash || return 1
+}
+
+stop() {
+	:
+}
+
+restart() {
+	start
+}

@@ -1762,6 +1762,7 @@ define Device/glinet_gl-be14000
   DEVICE_PACKAGES := kmod-mt7996-233-firmware kmod-hwmon-pwmfan kmod-usb3 \
 	kmod-backlight-pwm kmod-drm-panel-mipi-dbi mipi-dbi-glinet-gl-be14000 \
 	kmod-input-touchscreen-hynitron-cst3530 kmod-input-evdev \
+	milkflint4-lcd-splash \
 	mt7988-wo-firmware mt7988-2p5g-phy-firmware rtl8261c-firmware \
 	e2fsprogs f2fsck mkf2fs bridger kmod-sfp kmod-i2c-gpio \
 	blkid blockdev losetup kmod-fs-ext4 kmod-fs-f2fs kmod-fs-vfat \

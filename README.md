@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/badge/version-1.0-ff6188?style=flat-square&labelColor=2d2a2e" alt="1.0"></a>
+  <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/badge/version-1.0.1-ff6188?style=flat-square&labelColor=2d2a2e" alt="1.0.1"></a>
   <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/badge/status-stable-a9dc76?style=flat-square&labelColor=2d2a2e" alt="stable"></a>
   <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/badge/kernel-6.18-78dce8?style=flat-square&labelColor=2d2a2e" alt="kernel 6.18"></a>
   <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/badge/theme-Monokai%20milk-fcfcfa?style=flat-square&labelColor=2d2a2e&color=ff6188" alt="Monokai milk"></a>
@@ -24,7 +24,7 @@
 
 ---
 
-**MilkFlint4 1.0** is MilkFlint for the Flint 4: everyday UI, Smart Queue (CAKE), WireGuard, AdGuard Home, banIP, guest Wi‑Fi, device control, and Performance Tuning — on **OpenWrt main / kernel 6.18**, with MT7988 / MT7996 / YT9224 / RTL8261C wired in properly.
+**MilkFlint4 1.0.1** is MilkFlint for the Flint 4: everyday UI, Smart Queue (CAKE), WireGuard, AdGuard Home, banIP, guest Wi‑Fi, device control, and Performance Tuning — on **OpenWrt main / kernel 6.18**, with MT7988 / MT7996 / YT9224 / RTL8261C wired in properly. The front-panel LCD shows the MilkFlint4 logo after boot.
 
 Userspace includes OddBlueDog [**MilkFlint 0.87a**](https://github.com/OddBlueDog/openwrt/releases/tag/milkflint-0.87a) (VPN DNS, 1 Gbit CAKE threshold, queue-per-CPU IFBs). Flint 2–only and kernel **6.12** driver bits stay out; our board, WED, RSS, and theme stay in.
 
@@ -128,14 +128,12 @@ Reset + power-on → recovery at `http://192.168.1.1` (PC at `192.168.1.2/24`) �
 
 CPU `performance` · RSS forced · RX coalesce 20 µs · software + hardware flow offload + WED · large TCP buffers · high conntrack — seeded once by `99-milkflint4-flint4-perf`. Change later under **Performance Tuning**; edits stick.
 
-### 1.0 highlights
+### 1.0.1 highlights
 
-- **Stable 1.0** on Flint 4 / kernel 6.18  
-- Full **0.87a** userspace port (kernel-agnostic bits only)  
-- Fixed Flint 4 MU-RU first-boot path (`wifi-muru`, not the removed `wifi-muru-ul`)  
-- Monokai milk end-to-end (UI + LuCI Footstrap)  
+- **Front-panel LCD splash** — MilkFlint4 logo stays on after boot  
+- Everything from **1.0**: Flint 4 / kernel 6.18, Monokai milk, full 0.87a userspace, muru fix  
 
-Earlier notes: [`docs/RELEASE-1.0.md`](docs/RELEASE-1.0.md) · [`docs/RELEASE-0.9.md`](docs/RELEASE-0.9.md)
+Notes: [`docs/RELEASE-1.0.1.md`](docs/RELEASE-1.0.1.md) · [`docs/RELEASE-1.0.md`](docs/RELEASE-1.0.md) · [`docs/RELEASE-0.9.md`](docs/RELEASE-0.9.md)
 
 ### 10G WAN (openwrt#26690 / #26691)
 
