@@ -1,1 +1,0 @@
-import{i as e,t}from"./react-B6PPDU_E.js";import{C as n}from"./index-Bai9cxgL.js";var r=e(t(),1);function i(){return(0,r.useEffect)(()=>{window.location.replace(`${n(`admin-password`)}/https`)},[]),null}export{i as HttpsPage};

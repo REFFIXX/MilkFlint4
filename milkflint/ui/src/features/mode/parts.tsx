@@ -141,7 +141,7 @@ export function BridgeField({
       <span className="flex items-center gap-3">
         <Switch id="bridge-offload" checked={checked && available} disabled={disabled || !available} onCheckedChange={onChange} />
         <Badge variant="outline" className="font-normal">
-          Experimental
+          Preview
         </Badge>
       </span>
     </Field>

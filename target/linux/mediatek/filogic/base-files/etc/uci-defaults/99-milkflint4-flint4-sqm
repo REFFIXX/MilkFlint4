@@ -1,9 +1,9 @@
 #!/bin/sh
 # Flint 4 (GL-BE14000) SQM / CAKE defaults: MT7988 has four A73 cores and
 # (with MilkFlint RSS eth patches) four RX rings on the WAN MAC. Prefer
-# multi-queue CAKE earlier than MilkFlint's generic 500 Mbit threshold, keep
-# download no-split-gso ready for multi-gig lines, and pin fairness opts for
-# a busy home / lab gateway.
+# multi-queue CAKE on (Flint 4 has four A73s + RSS; overrides Automatic's
+# 1 Gbit Ethernet / 500 Mbit PPPoE threshold), keep download no-split-gso
+# ready for multi-gig lines, and pin fairness opts for a busy home gateway.
 
 [ "$(board_name)" = glinet,gl-be14000 ] || exit 0
 
@@ -28,9 +28,9 @@ if [ -z "$(uci -q get milkflint.defaults.flint4_sqm_wan)" ]; then
 	UCI
 fi
 
-# Keep Performance Tuning's multi-queue CAKE preference on: the UI will not
-# auto-disable cake_mq just because a queue is under 500 Mbit/s. Four cores
-# + RSS make cake_mq cheap enough for 100–500 Mbit fibre as well.
+# Keep multi-queue CAKE on for this board (milkflint.cake.multi_queue=1),
+# even under Automatic's 1 Gbit Ethernet threshold. Four cores + RSS make
+# cake_mq cheap enough on typical fibre too.
 if [ -z "$(uci -q get milkflint.defaults.flint4_cake_mq)" ]; then
 	uci -q get milkflint.cake >/dev/null || uci set milkflint.cake=cake
 	uci set milkflint.cake.multi_queue=1

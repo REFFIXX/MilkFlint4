@@ -67,9 +67,9 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           draft: false
-          prerelease: true
-          name: MilkFlint4 0.9 (beta)
+          prerelease: false
+          name: MilkFlint4 1.0
           files: out/*.bin
-          body_path: docs/RELEASE-0.9.md
+          body_path: docs/RELEASE-1.0.md
           fail_on_unmatched_files: true
           make_latest: true

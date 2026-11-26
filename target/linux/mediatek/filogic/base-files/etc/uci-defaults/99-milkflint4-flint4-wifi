@@ -22,19 +22,23 @@ if [ -z "$(uci -q get milkflint.defaults.flint4_wed)" ]; then
 	[ -x /usr/libexec/milkflint/wed ] && /usr/libexec/milkflint/wed conf
 fi
 
-# Uplink MU-MIMO / OFDMA off by default (OddBlueDog): mt76 UL MU-MIMO can
-# stall best-effort TX ~65–300 ms. Module params default off; pin UCI so the
-# Tuning page and wifi-muru-ul helper stay explicit on first boot.
+# Uplink MU-MIMO / OFDMA off by default (OddBlueDog / 0.87a muru): mt76 UL
+# MU-MIMO can stall best-effort TX ~65–300 ms. Unset muru_<band>_*_ul means
+# off in wifi-muru; clear legacy global keys and apply per band.
 if [ -z "$(uci -q get milkflint.defaults.flint4_muru_ul)" ]; then
 	uci -q get milkflint.wifi >/dev/null || uci set milkflint.wifi=wifi
 	uci -q delete milkflint.wifi.muru_mimo_ul
 	uci -q delete milkflint.wifi.muru_ofdma_ul
+	for band in 2g 5g 6g; do
+		uci -q delete "milkflint.wifi.muru_${band}_mimo_ul"
+		uci -q delete "milkflint.wifi.muru_${band}_ofdma_ul"
+	done
 	uci -q batch <<-UCI
 		set milkflint.defaults=defaults
 		set milkflint.defaults.flint4_muru_ul='1'
 		commit milkflint
 	UCI
-	[ -x /usr/libexec/milkflint/wifi-muru-ul ] && /usr/libexec/milkflint/wifi-muru-ul
+	[ -x /usr/libexec/milkflint/wifi-muru ] && /usr/libexec/milkflint/wifi-muru
 fi
 
 # Best-effort latency tweak (MilkFlint wifi_be) also on 6 GHz: same long
