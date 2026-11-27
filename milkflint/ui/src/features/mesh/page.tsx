@@ -40,20 +40,23 @@ import {
 interface Data {
   form: MeshForm;
   mesh: Awaited<ReturnType<typeof getConfig>>;
+  milkflint: Awaited<ReturnType<typeof getConfig>>;
   compatible: boolean;
   versionLabel: string;
 }
 
 async function load(): Promise<Data> {
-  const [mesh, board] = await Promise.all([
+  const [mesh, milkflint, board] = await Promise.all([
     getConfig('mesh11sd').catch(() => []),
+    getConfig('milkflint').catch(() => []),
     getBoard().catch(() => undefined),
   ]);
   const dist = board?.release?.distribution ?? 'OpenWrt';
   const ver = board?.release?.version ?? '?';
   return {
-    form: readForm(mesh),
+    form: readForm(mesh, milkflint),
     mesh,
+    milkflint,
     compatible: supports25RoamingMesh(board),
     versionLabel: `${dist} ${ver}`,
   };
@@ -84,9 +87,9 @@ function downloadText(filename: string, text: string): void {
 }
 
 const ROLE_HELP: Record<MeshRole, string> = {
-  'main-auto': 'WAN plugged → this node is the portal; unplugged → peer. Default mesh11sd behaviour.',
-  'main-fixed': 'Always the routed portal, even without a WAN link.',
-  peer: 'Access point peer (TPE). Leave WAN unplugged; joins the portal over 802.11s.',
+  'main-auto': 'WAN plugged → portal; unplugged → peer. Default mesh11sd auto-detect (portal_detect=1).',
+  'main-fixed': 'Always the routed portal, even without a WAN link (portal_detect=0).',
+  peer: 'Ordinary access-point peer. Leave WAN unplugged so auto-detect becomes Mesh Peer — not a VXLAN trunk peer.',
 };
 
 export function MeshPage(): ReactElement {
@@ -116,7 +119,7 @@ export function MeshPage(): ReactElement {
   }, [data?.form]);
 
   const formError = current === undefined ? undefined : validateForm(current);
-  const script = current === undefined ? '' : firstBootScript(current, true);
+  const script = current === undefined ? '' : firstBootScript(current);
 
   if (error !== undefined && data === undefined) {
     return (
@@ -386,7 +389,12 @@ export function MeshPage(): ReactElement {
             <p className="text-sm text-muted-foreground">
               On firmware-selector.openwrt.org, pick the AP model and OpenWrt 25.12+, customize packages (
               <code className="font-mono text-foreground">-wpad-basic-mbedtls wpad-mbedtls mesh11sd ip-full vxlan</code>
-              ), paste this script, request the build, and flash. One node with WAN → ISP is Main; others are peers.
+              ), paste this script, request the build, and flash. The script starts in{' '}
+              <strong className="text-foreground">confidence-test</strong> mode (
+              <code className="font-mono text-foreground">auto_config=0</code>
+              ). One node with WAN → ISP becomes Main; others leave WAN unplugged. After{' '}
+              <code className="font-mono text-foreground">mesh11sd status</code> looks healthy, set{' '}
+              <code className="font-mono text-foreground">auto_config=1</code>.
             </p>
             <pre className="max-h-56 overflow-auto rounded-lg border bg-muted/40 p-3 font-mono text-xs leading-5">
               {script}
@@ -433,7 +441,7 @@ export function MeshPage(): ReactElement {
         disabled={loading || formError !== undefined || !data.compatible}
         onSave={() => {
           if (formError !== undefined) return;
-          void apply(toChanges(current, data.mesh));
+          void apply(toChanges(current, data.mesh, data.milkflint));
           setForm(undefined);
         }}
         onDiscard={() => {

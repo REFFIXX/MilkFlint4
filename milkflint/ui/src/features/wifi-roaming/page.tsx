@@ -279,7 +279,7 @@ export function WifiRoamingPage(): ReactElement {
               <Switch id={`${id}-usteer`} checked={current.usteer} onCheckedChange={(v) => set('usteer', v)} />
             </Field>
             {status?.wpadFull === false && (
-              <p className="text-sm text-amber-600 dark:text-amber-400">
+              <p className="text-sm text-warning">
                 Full wpad was not detected. 802.11k may be missing — this image should ship wpad-mbedtls.
               </p>
             )}

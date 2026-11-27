@@ -165,9 +165,10 @@ MilkFlint4 ships **Wi‑Fi roaming** (802.11r/k/v + `usteer`) and **802.11s mesh
 
 1. Flash each AP with OpenWrt **25.12+** plus `mesh11sd` and full `wpad-mbedtls` (drop `wpad-basic-*`). Firmware Selector → customize packages, e.g. `-wpad-basic-mbedtls wpad-mbedtls mesh11sd ip-full vxlan`.
 2. On the Flint 4 **Mesh** page, copy the **first-boot script** (same `auto_mesh_id` / gate SSID / key) and paste it into Firmware Selector’s “Script to run on first boot”, or run it once on a fresh AP.
-3. One node with **WAN → ISP** = Main/portal (`portal_detect=1`). Other nodes = peers (WAN unplugged, or `portal_detect=5`).
-4. On every AP SSID used for clients: match the **mobility domain** and enable 802.11r/k/v; run `usteer` (or rely on the MilkFlint router + matching FT). Do **not** run dawn and usteer together.
-5. Stuck? Check channel tracking, flip `auto_config` 0→1 after a confidence test, power-cycle the peer, and don’t hand-edit wireless/network while mesh11sd auto-config owns the mesh.
+3. Keep **`portal_detect=1`** on every node. One node with **WAN → ISP** becomes Main/portal; other nodes leave WAN unplugged and become peers. (Do not use `portal_detect=5` unless you need a VXLAN trunk peer.)
+4. First-boot scripts start with **`auto_config=0`** (confidence test). After `mesh11sd status` looks healthy, set `auto_config=1` (or `mesh11sd auto_config enable`).
+5. On every AP SSID used for clients: match the **mobility domain** and enable 802.11r/k/v; run `usteer` (or rely on the MilkFlint router + matching FT). Do **not** run dawn and usteer together.
+6. Stuck? Check channel tracking, power-cycle a confidence-test peer, and don’t hand-edit wireless/network while mesh11sd auto-config owns the mesh.
 
 Roaming and Mesh live under **Wi‑Fi** in the MilkFlint UI. LuCI stays the escape hatch.
 

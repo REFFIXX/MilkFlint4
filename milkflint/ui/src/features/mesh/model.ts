@@ -29,19 +29,26 @@ const ENC_LABELS: Record<GateEncryption, string> = {
   '4': 'OWE',
 };
 
+const ROLES: readonly MeshRole[] = ['main-auto', 'main-fixed', 'peer'];
+
 export function encryptionLabel(v: GateEncryption): string {
   return ENC_LABELS[v];
 }
 
 export function roleFromPortalDetect(v: string | undefined): MeshRole {
   if (v === '0') return 'main-fixed';
+  // 5 (TPE) and legacy 2 are specialised peers; treat as Access point in the UI
+  // and migrate ordinary peers to auto-detect (1) on save.
   if (v === '5' || v === '2') return 'peer';
   return 'main-auto';
 }
 
+/**
+ * Ordinary home mesh: portal_detect=1 on every node (WAN up → portal, WAN down → peer).
+ * Fixed portal is 0. Do not use 5 (TPE / VXLAN trunk peer) for a normal AP.
+ */
 export function portalDetectFor(role: MeshRole): string {
   if (role === 'main-fixed') return '0';
-  if (role === 'peer') return '5';
   return '1';
 }
 
@@ -49,14 +56,21 @@ export function setupSection(mesh: Section[]): Section | undefined {
   return mesh.find((s) => s['.name'] === 'setup' || s['.type'] === 'mesh11sd');
 }
 
-export function readForm(mesh: Section[]): MeshForm {
+function parseRole(v: string | undefined): MeshRole | undefined {
+  return ROLES.includes(v as MeshRole) ? (v as MeshRole) : undefined;
+}
+
+export function readForm(mesh: Section[], milkflint: Section[] = []): MeshForm {
   const s = setupSection(mesh);
+  const meta = milkflint.find((x) => x['.name'] === 'mesh');
   const enc = (str(s, 'mesh_gate_encryption') ?? '4') as GateEncryption;
   const band = (str(s, 'auto_mesh_band') ?? '2g') as MeshBand;
+  const portal = str(s, 'portal_detect');
   return {
     enabled: (str(s, 'enabled') ?? '1') !== '0',
     autoConfig: (str(s, 'auto_config') ?? '0') !== '0',
-    role: roleFromPortalDetect(str(s, 'portal_detect')),
+    // Prefer the UI intent we saved; fall back to portal_detect.
+    role: parseRole(str(meta, 'role')) ?? roleFromPortalDetect(portal),
     autoMeshId: str(s, 'auto_mesh_id') ?? 'MilkFlint',
     autoMeshKey: str(s, 'auto_mesh_key') ?? '',
     band: band === '5g' || band === '6g' ? band : '2g',
@@ -74,12 +88,13 @@ export function validateForm(form: MeshForm): string | undefined {
     return `Gate SSID must be ≤${maxSsid} characters${form.ssidSuffix ? ' when the suffix is on' : ''}.`;
   }
   if (form.gateEncryption !== '0' && form.gateEncryption !== '4') {
-    if (form.gateKey.length > 0 && form.gateKey.length < 8) return 'Gate key must be at least 8 characters.';
+    if (form.gateKey.trim() === '') return 'Gate key is required for this encryption mode.';
+    if (form.gateKey.trim().length < 8) return 'Gate key must be at least 8 characters.';
   }
   return undefined;
 }
 
-export function toChanges(form: MeshForm, mesh: Section[]): Change[] {
+export function toChanges(form: MeshForm, mesh: Section[], milkflint: Section[] = []): Change[] {
   const values: Record<string, string | undefined> = {
     enabled: form.enabled ? '1' : '0',
     auto_config: form.autoConfig ? '1' : '0',
@@ -90,26 +105,34 @@ export function toChanges(form: MeshForm, mesh: Section[]): Change[] {
     mesh_gate_base_ssid: form.gateSsid.replace(/\s+/g, ''),
     mesh_gate_encryption: form.gateEncryption,
     mesh_gate_key:
-      form.gateEncryption === '0' || form.gateEncryption === '4'
-        ? undefined
-        : form.gateKey.trim() === ''
-          ? undefined
-          : form.gateKey.trim(),
+      form.gateEncryption === '0' || form.gateEncryption === '4' ? undefined : form.gateKey.trim(),
     ssid_suffix_enable: form.ssidSuffix ? '1' : '0',
     mesh_gate_enable: '1',
   };
-  return sectionChanges('mesh11sd', mesh, 'setup', values).map((c) =>
+  const setup = sectionChanges('mesh11sd', mesh, 'setup', values).map((c) =>
     c.op === 'add' ? { ...c, type: 'mesh11sd' } : c,
   );
+  // Persist UI role separately: main-auto and peer both use portal_detect=1.
+  const meta = sectionChanges('milkflint', milkflint, 'mesh', { role: form.role }).map((c) =>
+    c.op === 'add' ? { ...c, type: 'mesh' } : c,
+  );
+  return [...setup, ...meta];
 }
 
-/** First-boot uci-defaults snippet for another OpenWrt 25.x AP. */
-export function firstBootScript(form: MeshForm, peerRole: boolean): string {
+/**
+ * First-boot uci-defaults for another OpenWrt 25.x AP.
+ * Starts in confidence-test mode (auto_config=0); portal_detect=1 so WAN
+ * decides portal vs ordinary peer. Enable auto_config after the node proves healthy.
+ */
+export function firstBootScript(form: MeshForm): string {
   const lines = [
     '# MilkFlint4 mesh — paste into Firmware Selector "Script to run on first boot"',
-    '# Same auto_mesh_id / gate SSID / key on every node. OpenWrt 25.12+.',
-    "uci set mesh11sd.setup.auto_config='1'",
-    `uci set mesh11sd.setup.portal_detect='${peerRole ? '5' : '1'}'`,
+    '# OpenWrt 25.12+. Same auto_mesh_id / gate SSID / key on every node.',
+    '# auto_config=0 = confidence test (power-cycle recovers). After mesh11sd status looks good:',
+    "#   uci set mesh11sd.setup.auto_config='1' && uci commit mesh11sd",
+    "#   (or: mesh11sd auto_config enable)",
+    "uci set mesh11sd.setup.auto_config='0'",
+    "uci set mesh11sd.setup.portal_detect='1'",
     `uci set mesh11sd.setup.auto_mesh_id='${escapeUci(form.autoMeshId.trim())}'`,
   ];
   if (form.autoMeshKey.trim() !== '') {
@@ -120,7 +143,7 @@ export function firstBootScript(form: MeshForm, peerRole: boolean): string {
     `uci set mesh11sd.setup.mesh_gate_base_ssid='${escapeUci(form.gateSsid.replace(/\s+/g, ''))}'`,
     `uci set mesh11sd.setup.mesh_gate_encryption='${form.gateEncryption}'`,
   );
-  if (form.gateEncryption !== '0' && form.gateEncryption !== '4' && form.gateKey.trim() !== '') {
+  if (form.gateEncryption !== '0' && form.gateEncryption !== '4') {
     lines.push(`uci set mesh11sd.setup.mesh_gate_key='${escapeUci(form.gateKey.trim())}'`);
   }
   lines.push(

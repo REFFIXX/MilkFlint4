@@ -67,11 +67,21 @@ export function toChanges(form: RoamingForm, wireless: Section[], usteer: Sectio
   if (form.ieee80211r) {
     values.mobility_domain = form.mobilityDomain.toLowerCase();
     values.ft_over_ds = form.ftOverDs ? '1' : '0';
-    values.nasid = form.mobilityDomain.toLowerCase();
+    // Do not set nasid here: it must be unique per AP (PMK-R0 key holder).
+    // When unset, hostapd uses the interface BSSID, which is unique.
   }
 
   for (const name of targets) {
-    changes.push({ op: 'set', config: 'wireless', section: name, values });
+    const perIface = { ...values };
+    changes.push({ op: 'set', config: 'wireless', section: name, values: perIface });
+    if (form.ieee80211r) {
+      // Drop a shared mobility-domain nasid left by older MilkFlint builds.
+      const existing = wireless.find((s) => s['.name'] === name);
+      const nasid = str(existing, 'nasid');
+      if (nasid !== undefined && nasid.toLowerCase() === form.mobilityDomain.toLowerCase()) {
+        changes.push({ op: 'unset', config: 'wireless', section: name, options: ['nasid'] });
+      }
+    }
   }
 
   const usteerSec = usteer.find((s) => s['.name'] === 'usteer' || s['.type'] === 'usteer');

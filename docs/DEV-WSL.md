@@ -92,4 +92,4 @@ Copy the packaged `htdocs` into a running image’s `milkflint-ui` package tree 
 - `usteer` (not dawn)
 - `mesh11sd` plus `ip-full`, `vxlan`, `kmod-nft-bridge`
 
-Configure them from the MilkFlint **Wi‑Fi → Wi‑Fi roaming** and **Wi‑Fi → Mesh** pages (OpenWrt 25.x / MilkFlint4 only).
+Configure them from the MilkFlint **Wi‑Fi → Wi‑Fi roaming** and **Wi‑Fi → Mesh** pages (OpenWrt 25.x / MilkFlint4 only). Mesh first-boot scripts start with `auto_config=0` (confidence test) and `portal_detect=1` (ordinary portal/peer auto-detect).

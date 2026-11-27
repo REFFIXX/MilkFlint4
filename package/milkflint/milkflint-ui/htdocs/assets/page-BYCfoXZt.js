@@ -1,1 +1,0 @@
-import{i as e,t}from"./react-B6PPDU_E.js";import{C as n,m as r}from"./index-BOU98YyG.js";import{a as i}from"./button-B_lnITC0.js";var a=e(t(),1),o=i();function s(){return(0,a.useEffect)(()=>{window.location.replace(`${n(`wifi-scan`)}/radar`)},[]),(0,o.jsx)(r,{})}export{s as RadarScanPage};
