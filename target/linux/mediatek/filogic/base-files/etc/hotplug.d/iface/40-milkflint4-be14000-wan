@@ -3,10 +3,13 @@
 # (openwrt#26690) or fails to attach after cold boot (openwrt#26691).
 
 [ "$(board_name)" = glinet,gl-be14000 ] || exit 0
-[ "$INTERFACE" = wan ] || [ "$DEVICE" = wan ] || exit 0
+# Match INTERFACE only — DEVICE=wan also matches wan6 and would double-count.
+[ "$INTERFACE" = wan ] || exit 0
 
 STATE_DIR=/tmp/milkflint4-wan
 mkdir -p "$STATE_DIR"
+FLAP_WINDOW=60
+FLAP_NEED=3
 
 pulse_fan() {
 	# Reporter: briefly enabling cooling_device0 latches the link while
@@ -30,38 +33,70 @@ bounce_wan() {
 	ip link set wan up 2>/dev/null || true
 }
 
+# Phys with ≥1 UP BSS (not every guest/AP netdev).
+radios_up() {
+	n=0
+	for phy in /sys/class/ieee80211/phy*; do
+		[ -d "$phy" ] || continue
+		up=0
+		for d in "$phy"/device/net/*/operstate; do
+			[ -f "$d" ] || continue
+			[ "$(cat "$d" 2>/dev/null)" = up ] && up=1 && break
+		done
+		[ "$up" = 1 ] && n=$((n + 1))
+	done
+	echo "$n"
+}
+
+prune_flaps() {
+	now=$1
+	tmp="$STATE_DIR/flap_times.new"
+	: > "$tmp"
+	[ -f "$STATE_DIR/flap_times" ] || {
+		mv "$tmp" "$STATE_DIR/flap_times"
+		echo 0
+		return
+	}
+	while read -r ts; do
+		[ -n "$ts" ] || continue
+		[ $((now - ts)) -lt "$FLAP_WINDOW" ] && echo "$ts" >> "$tmp"
+	done < "$STATE_DIR/flap_times"
+	mv "$tmp" "$STATE_DIR/flap_times"
+	wc -l < "$STATE_DIR/flap_times" | tr -d ' '
+}
+
 case "$ACTION" in
 ifup)
-	# Cold-boot attach race: interface came up but has no carrier and
-	# ethtool shows Unknown — one bounce + fan pulse often recovers.
-	sleep 3
-	carrier=$(cat /sys/class/net/wan/carrier 2>/dev/null || echo 0)
-	if [ "$carrier" = 0 ]; then
-		logger -t milkflint4-wan "wan up without carrier; recovering"
-		pulse_fan
-		bounce_wan
+	# Cold-boot attach race: once per boot, if wan came up without carrier,
+	# try one fan pulse + bounce. Unplugged cable stays quiet after that.
+	if [ ! -f "$STATE_DIR/cold_boot_done" ]; then
+		sleep 3
+		carrier=$(cat /sys/class/net/wan/carrier 2>/dev/null || echo 0)
+		if [ "$carrier" = 0 ]; then
+			logger -t milkflint4-wan "wan up without carrier; recovering once"
+			pulse_fan
+			bounce_wan
+		fi
+		echo 1 > "$STATE_DIR/cold_boot_done"
 	fi
-	echo 0 > "$STATE_DIR/flaps"
+	# Do not reset the flap window on ifup — storms are ifdown↔ifup pairs.
 	;;
 ifdown)
-	# Count rapid flaps while more than one radio is up.
-	flaps=0
-	[ -f "$STATE_DIR/flaps" ] && flaps=$(cat "$STATE_DIR/flaps")
-	flaps=$((flaps + 1))
-	echo "$flaps" > "$STATE_DIR/flaps"
+	now=$(date +%s)
+	echo "$now" >> "$STATE_DIR/flap_times"
+	flaps=$(prune_flaps "$now")
+	radios=$(radios_up)
 
-	radios=0
-	for d in /sys/class/ieee80211/phy*/device/net/*/operstate; do
-		[ -f "$d" ] || continue
-		[ "$(cat "$d" 2>/dev/null)" = up ] && radios=$((radios + 1))
-	done
-
-	if [ "$radios" -ge 2 ] && [ "$flaps" -ge 3 ]; then
-		logger -t milkflint4-wan \
-			"wan flap #$flaps with $radios radios up; fan pulse + bounce"
-		pulse_fan
-		bounce_wan
-		echo 0 > "$STATE_DIR/flaps"
+	if [ "$radios" -ge 2 ] && [ "$flaps" -ge "$FLAP_NEED" ]; then
+		last=$(cat "$STATE_DIR/last_fix" 2>/dev/null || echo 0)
+		if [ $((now - last)) -ge 300 ]; then
+			logger -t milkflint4-wan \
+				"wan flap #$flaps in ${FLAP_WINDOW}s with $radios radios up; fan pulse + bounce"
+			pulse_fan
+			bounce_wan
+			echo "$now" > "$STATE_DIR/last_fix"
+			: > "$STATE_DIR/flap_times"
+		fi
 	fi
 	;;
 esac

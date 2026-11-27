@@ -48,7 +48,7 @@ Signed-off-by: Felix Fietkau <nbd@nbd.name>
  	if (!(link_sinfo->filled & BIT_ULL(NL80211_STA_INFO_AIRTIME_WEIGHT))) {
  		link_sinfo->airtime_weight = sta->airtime_weight;
  		link_sinfo->filled |= BIT_ULL(NL80211_STA_INFO_AIRTIME_WEIGHT);
-@@ -3135,9 +3123,35 @@ static u32 sta_estimate_expected_through
+@@ -3135,9 +3123,43 @@ static u32 sta_estimate_expected_through
  	return ((1024 * USEC_PER_SEC) / duration) * 8;
  }
  
@@ -92,7 +92,7 @@ Signed-off-by: Felix Fietkau <nbd@nbd.name>
  	struct ieee80211_sub_if_data *sdata = sta->sdata;
  	struct ieee80211_local *local = sdata->local;
  	u32 thr = 0;
-@@ -3235,12 +3249,14 @@ void sta_set_sinfo(struct sta_info *sta,
+@@ -3235,12 +3257,14 @@ void sta_set_sinfo(struct sta_info *sta,
  		for (ac = 0; ac < IEEE80211_NUM_ACS; ac++)
  			sinfo->rx_duration += sta->airtime[ac].rx_airtime;
  		sinfo->filled |= BIT_ULL(NL80211_STA_INFO_RX_DURATION);
@@ -107,7 +107,7 @@ Signed-off-by: Felix Fietkau <nbd@nbd.name>
  	}
  
  	if (!(sinfo->filled & BIT_ULL(NL80211_STA_INFO_AIRTIME_WEIGHT))) {
-@@ -3409,8 +3425,11 @@ void sta_set_sinfo(struct sta_info *sta,
+@@ -3409,8 +3433,11 @@ void sta_set_sinfo(struct sta_info *sta,
  			sta_set_link_sinfo(sta, sinfo->links[link_id],
  					   link, tidstats);
  		}

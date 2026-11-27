@@ -86,7 +86,7 @@ export async function loadClients(): Promise<ClientsData> {
     for (const s of ap.stations) {
       const d = get(s.mac);
       d.online = true;
-      d.wifi = {
+      const next = {
         band: bandOf(ap.info?.frequency),
         ssid: ap.ssid,
         signal: s.signal_avg ?? s.signal,
@@ -94,6 +94,8 @@ export async function loadClients(): Promise<ClientsData> {
         rate: s.tx?.rate === undefined ? undefined : s.tx.rate * 1000,
         connected: s.connected_time,
       };
+      // Same MAC on several radios (MLO / multi-AP): keep the strongest link.
+      if (d.wifi === undefined || (next.signal ?? -200) > (d.wifi.signal ?? -200)) d.wifi = next;
     }
   }
   for (const host of dhcp.filter((s) => s['.type'] === 'host')) {

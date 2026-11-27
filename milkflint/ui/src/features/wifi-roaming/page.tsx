@@ -21,14 +21,7 @@ import { href } from '@/lib/router';
 import { GoLink } from '@/components/page-kit';
 import { getRoamingStatus, reloadRoaming } from './api';
 import { supports25RoamingMesh } from './compat';
-import {
-  listApIfaces,
-  type RoamingForm,
-  readForm,
-  toChanges,
-  validateMobilityDomain,
-  validateSelection,
-} from './model';
+import { listApIfaces, type RoamingForm, readForm, toChanges, validateMobilityDomain, validateSelection } from './model';
 
 interface Data {
   form: RoamingForm;
@@ -64,8 +57,9 @@ export function WifiRoamingPage(): ReactElement {
   const [form, setForm] = useState<RoamingForm | undefined>();
   const current = form ?? data?.form;
   const { state, apply, reset } = useApply(() => {
+    setForm(undefined);
     void reloadRoaming().finally(() => {
-      void reload();
+      reload();
     });
   });
   const status = usePoll(getRoamingStatus, 8000, data !== undefined ? 'on' : 'off').data;
@@ -75,13 +69,16 @@ export function WifiRoamingPage(): ReactElement {
     return JSON.stringify(current) !== JSON.stringify(data.form);
   }, [current, data]);
 
-  const set = useCallback(<K extends keyof RoamingForm>(key: K, value: RoamingForm[K]) => {
-    setForm((prev) => {
-      const base = prev ?? data?.form;
-      if (base === undefined) return prev;
-      return { ...base, [key]: value };
-    });
-  }, [data?.form]);
+  const set = useCallback(
+    <K extends keyof RoamingForm>(key: K, value: RoamingForm[K]) => {
+      setForm((prev) => {
+        const base = prev ?? data?.form;
+        if (base === undefined) return prev;
+        return { ...base, [key]: value };
+      });
+    },
+    [data?.form],
+  );
 
   const domainError = current === undefined ? undefined : validateMobilityDomain(current.mobilityDomain);
   const selectionError = current === undefined ? undefined : validateSelection(current);
@@ -91,7 +88,12 @@ export function WifiRoamingPage(): ReactElement {
     return (
       <>
         <PageHeader title="Wi-Fi roaming" description="Fast handoff between this router and your access points." />
-        <LoadError error={error} retry={() => void reload()} />
+        <LoadError
+          error={error}
+          retry={() => {
+            reload();
+          }}
+        />
       </>
     );
   }
@@ -106,10 +108,7 @@ export function WifiRoamingPage(): ReactElement {
 
   return (
     <>
-      <PageHeader
-        title="Wi-Fi roaming"
-        description="Seamless handoff between this router and your access points."
-      />
+      <PageHeader title="Wi-Fi roaming" description="Seamless handoff between this router and your access points." />
 
       {!data.compatible && (
         <Alert variant="destructive" className="mb-4">
@@ -124,15 +123,15 @@ export function WifiRoamingPage(): ReactElement {
       <Card className="mb-4">
         <CardContent className="flex flex-col gap-2 py-4 text-sm text-muted-foreground">
           <p>
-            Roaming keeps phones and laptops on the same Wi-Fi name while they walk from one access point to another —
-            without a long reconnect. Turn the same switches on here and on every other OpenWrt 25.x AP that shares your
-            SSID, and use one shared <strong className="text-foreground">mobility domain</strong>.
+            Roaming keeps phones and laptops on the same Wi-Fi name while they walk from one access point to another — without a
+            long reconnect. Turn the same switches on here and on every other OpenWrt 25.x AP that shares your SSID, and use one
+            shared <strong className="text-foreground">mobility domain</strong>.
           </p>
           <p>
             Recommended starter: Fast Transition, 802.11k, 802.11v, and usteer all On, with mobility domain{' '}
-            <code className="font-mono text-foreground">a1b2</code> (or any four hex digits you copy everywhere). Needs
-            full <code className="font-mono text-foreground">wpad-mbedtls</code> (shipped in this image). Use{' '}
-            <GoLink href={`${href('mesh')}`}>Mesh</GoLink> when you are adding more APs.
+            <code className="font-mono text-foreground">a1b2</code> (or any four hex digits you copy everywhere). Needs full{' '}
+            <code className="font-mono text-foreground">wpad-mbedtls</code> (shipped in this image). Use{' '}
+            <GoLink href={href('mesh')}>Mesh</GoLink> when you are adding more APs.
           </p>
         </CardContent>
       </Card>
@@ -156,7 +155,9 @@ export function WifiRoamingPage(): ReactElement {
               <Switch
                 id={`${id}-r`}
                 checked={current.ieee80211r}
-                onCheckedChange={(v) => set('ieee80211r', v)}
+                onCheckedChange={(v) => {
+                  set('ieee80211r', v);
+                }}
               />
             </Field>
 
@@ -173,9 +174,11 @@ export function WifiRoamingPage(): ReactElement {
                 id={`${id}-md`}
                 value={current.mobilityDomain}
                 maxLength={4}
-                className="font-mono uppercase max-w-[8rem]"
+                className="max-w-[8rem] font-mono uppercase"
                 disabled={!current.ieee80211r}
-                onChange={(e) => set('mobilityDomain', e.target.value.toLowerCase())}
+                onChange={(e) => {
+                  set('mobilityDomain', e.target.value.toLowerCase());
+                }}
                 aria-invalid={domainError !== undefined}
               />
             </Field>
@@ -192,7 +195,9 @@ export function WifiRoamingPage(): ReactElement {
                 id={`${id}-ft`}
                 checked={current.ftOverDs}
                 disabled={!current.ieee80211r}
-                onCheckedChange={(v) => set('ftOverDs', v)}
+                onCheckedChange={(v) => {
+                  set('ftOverDs', v);
+                }}
               />
             </Field>
 
@@ -205,7 +210,13 @@ export function WifiRoamingPage(): ReactElement {
               )}
               status={current.ieee80211k ? <Badge variant="success">On</Badge> : <Badge variant="secondary">Off</Badge>}
             >
-              <Switch id={`${id}-k`} checked={current.ieee80211k} onCheckedChange={(v) => set('ieee80211k', v)} />
+              <Switch
+                id={`${id}-k`}
+                checked={current.ieee80211k}
+                onCheckedChange={(v) => {
+                  set('ieee80211k', v);
+                }}
+              />
             </Field>
 
             <Field
@@ -220,17 +231,16 @@ export function WifiRoamingPage(): ReactElement {
               <Switch
                 id={`${id}-v`}
                 checked={current.bssTransition}
-                onCheckedChange={(v) => set('bssTransition', v)}
+                onCheckedChange={(v) => {
+                  set('bssTransition', v);
+                }}
               />
             </Field>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeading
-            title="Networks"
-            description="Choose which Wi-Fi names on this router get the roaming settings above."
-          />
+          <CardHeading title="Networks" description="Choose which Wi-Fi names on this router get the roaming settings above." />
           <CardContent className="flex flex-col gap-1">
             <Field
               id={`${id}-all`}
@@ -241,7 +251,13 @@ export function WifiRoamingPage(): ReactElement {
                 ['wireless.@wifi-iface'],
               )}
             >
-              <Switch id={`${id}-all`} checked={current.applyAll} onCheckedChange={(v) => set('applyAll', v)} />
+              <Switch
+                id={`${id}-all`}
+                checked={current.applyAll}
+                onCheckedChange={(v) => {
+                  set('applyAll', v);
+                }}
+              />
             </Field>
             {!current.applyAll && (
               <div className="flex flex-col gap-2 py-2">
@@ -262,7 +278,7 @@ export function WifiRoamingPage(): ReactElement {
                           );
                         }}
                       />
-                      <span className="font-medium text-foreground">{ap.ssid || ap.name}</span>
+                      <span className="font-medium text-foreground">{ap.ssid !== '' ? ap.ssid : ap.name}</span>
                       <span className="font-mono text-xs text-muted-foreground">{ap.name}</span>
                       {ap.disabled && <Badge variant="secondary">Off</Badge>}
                     </label>
@@ -274,10 +290,7 @@ export function WifiRoamingPage(): ReactElement {
         </Card>
 
         <Card>
-          <CardHeading
-            title="Steering"
-            description="Optional helper that nudges clients toward a stronger or less busy AP."
-          />
+          <CardHeading title="Steering" description="Optional helper that nudges clients toward a stronger or less busy AP." />
           <CardContent className="flex flex-col gap-1">
             <Field
               id={`${id}-usteer`}
@@ -287,7 +300,7 @@ export function WifiRoamingPage(): ReactElement {
                 ['usteer.@usteer.disabled'],
               )}
               status={
-                status?.usteerRunning ? (
+                status?.usteerRunning === true ? (
                   <Badge variant="success">Running</Badge>
                 ) : current.usteer ? (
                   <Badge variant="secondary">Configured</Badge>
@@ -296,7 +309,13 @@ export function WifiRoamingPage(): ReactElement {
                 )
               }
             >
-              <Switch id={`${id}-usteer`} checked={current.usteer} onCheckedChange={(v) => set('usteer', v)} />
+              <Switch
+                id={`${id}-usteer`}
+                checked={current.usteer}
+                onCheckedChange={(v) => {
+                  set('usteer', v);
+                }}
+              />
             </Field>
             {status?.wpadFull === false && (
               <p className="text-sm text-warning">
@@ -313,8 +332,8 @@ export function WifiRoamingPage(): ReactElement {
           />
           <CardContent className="flex flex-col gap-3 text-sm">
             <p className="text-muted-foreground">
-              After you save, FT ifaces should list your AP networks. Neighbors appear once other APs share the SSID and
-              roaming settings — empty is normal on a single router.
+              After you save, FT ifaces should list your AP networks. Neighbors appear once other APs share the SSID and roaming
+              settings — empty is normal on a single router.
             </p>
             <div className="flex flex-wrap gap-2">
               <Badge variant="outline">FT ifaces: {(status?.ftIfaces ?? []).length}</Badge>
@@ -332,8 +351,7 @@ export function WifiRoamingPage(): ReactElement {
             ))}
             {(status?.neighbors ?? []).length === 0 && (
               <p className="text-muted-foreground">
-                No usteer neighbors yet. Enable the same roaming options on peer APs, or open Mesh → Deploy other APs to
-                add them.
+                No usteer neighbors yet. Enable the same roaming options on peer APs, or open Mesh → Deploy other APs to add them.
               </p>
             )}
           </CardContent>
@@ -347,7 +365,6 @@ export function WifiRoamingPage(): ReactElement {
         onSave={() => {
           if (domainError !== undefined || selectionError !== undefined || !data.compatible) return;
           void apply(toChanges(current, data.wireless, data.usteer, data.milkflint));
-          setForm(undefined);
         }}
         onRevert={() => {
           setForm(undefined);

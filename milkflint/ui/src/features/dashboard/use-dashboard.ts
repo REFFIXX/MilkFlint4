@@ -245,8 +245,12 @@ export function useDashboard(): ReturnType<typeof usePoll<Dashboard>> {
       dhcp.filter((s) => s['.type'] === 'host').flatMap((h) => list(h, 'mac').map((mac) => [mac.toLowerCase(), h] as const)),
     );
     const seen = new Map<string, number>();
-    const clients: Client[] = live.flatMap((l) =>
-      l.stations.map((s): Client => {
+    // One row per MAC. A client can appear on several radios (MLO / multi-AP);
+    // keep the strongest link for display, but sum byte counters so Home rates
+    // stay sane across polls when the winning radio changes.
+    const byMac = new Map<string, Client>();
+    for (const l of live) {
+      for (const s of l.stations) {
         const mac = s.mac.toLowerCase();
         const lease = leaseByMac.get(mac);
         const hint = hintByMac.get(mac);
@@ -257,7 +261,7 @@ export function useDashboard(): ReturnType<typeof usePoll<Dashboard>> {
           undefined,
         );
         if (generation !== undefined) seen.set(mac, generation);
-        return {
+        const link: Client = {
           mac,
           name,
           nameFrom:
@@ -284,20 +288,34 @@ export function useDashboard(): ReturnType<typeof usePoll<Dashboard>> {
           txBytes: s.tx?.bytes,
           rxBytes: s.rx?.bytes,
           connectedSeconds: s.connected_time,
-          down: rate(prev?.stations.get(mac)?.tx, s.tx?.bytes, seconds),
-          up: rate(prev?.stations.get(mac)?.rx, s.rx?.bytes, seconds),
+          down: undefined,
+          up: undefined,
         };
-      }),
-    );
-    generations.current = seen;
-    // One row per MAC — a client can show up on several radios at once (or the
-    // mock returns the same station for every phy). Keep the strongest signal.
-    const byMac = new Map<string, Client>();
-    for (const c of clients) {
-      const prevClient = byMac.get(c.mac);
-      if (prevClient === undefined || (c.signal ?? -200) > (prevClient.signal ?? -200)) byMac.set(c.mac, c);
+        const held = byMac.get(mac);
+        if (held === undefined) {
+          byMac.set(mac, link);
+          continue;
+        }
+        const stronger = (link.signal ?? -200) > (held.signal ?? -200);
+        const sumBytes = (a: number | undefined, b: number | undefined): number | undefined =>
+          a === undefined && b === undefined ? undefined : (a ?? 0) + (b ?? 0);
+        byMac.set(mac, {
+          ...(stronger ? link : held),
+          txBytes: sumBytes(held.txBytes, link.txBytes),
+          rxBytes: sumBytes(held.rxBytes, link.rxBytes),
+          generation: [held.generation, link.generation].reduce<number | undefined>(
+            (a, b) => (b === undefined ? a : Math.max(a ?? 0, b)),
+            undefined,
+          ),
+        });
+      }
     }
-    const uniqueClients = [...byMac.values()];
+    generations.current = seen;
+    const uniqueClients = [...byMac.values()].map((c) => ({
+      ...c,
+      down: rate(prev?.stations.get(c.mac)?.tx, c.txBytes, seconds),
+      up: rate(prev?.stations.get(c.mac)?.rx, c.rxBytes, seconds),
+    }));
     uniqueClients.sort((a, b) => (b.signal ?? -200) - (a.signal ?? -200));
 
     const wan = interfaces.find((i) => i.interface === 'wan');

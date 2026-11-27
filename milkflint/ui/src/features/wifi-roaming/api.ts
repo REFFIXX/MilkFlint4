@@ -8,10 +8,11 @@ const statusSchema = z.object({
   neighbors: z
     .array(
       z.object({
-        bssid: z.string().optional(),
-        ssid: z.string().optional(),
-        freq: z.number().optional(),
-        signal: z.number().optional(),
+        // rpcd emits null when usteer omits a field — accept nullish, not only missing.
+        bssid: z.string().nullish(),
+        ssid: z.string().nullish(),
+        freq: z.number().nullish(),
+        signal: z.number().nullish(),
       }),
     )
     .optional(),
