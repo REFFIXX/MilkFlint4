@@ -7,6 +7,7 @@ OpenWrt firmware for **GL-BE14000 (Flint 4)** · kernel **6.18** · React shell 
 - Version: `milkflint/diffconfig` → `CONFIG_VERSION_NUMBER`. Tags: `v*`. Firmware CI: tag push or `workflow_dispatch` only (not every `main` push).
 - Release notes: `docs/RELEASE-*.md`. GitHub release publishes from the tag workflow after a successful world build.
 - UI gate: `cd milkflint/ui && pnpm check` (needs Node ^24.11, pnpm, Playwright Chromium).
+- Cloud agents: prefer `PATH=/usr/local/bin:$PATH` so Node **24.11** wins over `/exec-daemon` Node 22.
 - Research: Context.dev for OpenWrt/mt76; Context7 for Vitest/React/Vite; Supermemory for durable project memory.
 
 ## milkflint4 Cursor plugin
