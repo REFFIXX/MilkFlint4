@@ -59,3 +59,9 @@ FORUM_SHOTS_OUT=/tmp/forum-shots node scripts/forum-screenshots.mjs
 ![Port forwards](forum-10-port-forwards.png)
 
 ![Port forwards — dark](forum-10b-port-forwards-dark.png)
+
+## Roaming / Mesh / Themes (README gallery)
+
+Same-size **Monokai milk** dark cards used in the root README (Wi‑Fi roaming, Mesh, Themes, Home, …):
+
+→ [`../readme/`](../readme/)
