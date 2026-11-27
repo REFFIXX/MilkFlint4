@@ -20,7 +20,7 @@ milkflint4-*-glinet_gl-be14000-squashfs-sysupgrade.bin
 - From MilkFlint4 **1.0 / 1.0.1 / 1.1**: keep settings is fine  
 - From GL.iNet / plain OpenWrt: **do not** keep settings (`sysupgrade -n`)
 
-After flash: set a password, open **Wi‑Fi → Mesh** / **Wi‑Fi roaming**, and follow the page help. On a real BE14000, soak dual-radio + 10G WAN and watch `milkflint4-wan` / `milkflint4-wan-watch` logs.
+After flash: set a password, open **Wi‑Fi → Mesh** / **Wi‑Fi roaming**, and follow the page help. Dual-radio + 10G WAN overnight soak on a BE14000 completed without flaps/wedges (mitigations in place for still-open upstream #26690/#26691).
 
 ## Source
 
