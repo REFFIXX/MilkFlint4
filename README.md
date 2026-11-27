@@ -93,34 +93,34 @@ More screenshots (light + dark): [`milkflint/docs/forum/`](milkflint/docs/forum/
 
 Not “it boots.” *Wired in properly* — MT7988 / MT7996 / YT9224 / RTL8261C treated as a Flint 4, not a generic brick.
 
-<!-- Labels are shields.io images (same as Features) — GitHub strips most HTML/CSS color on text -->
+<!-- Fixed-width SVG pills (shields.io sizes badges by text length) -->
 <table>
   <tr>
-    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/10G%20WAN-78dce8?style=flat-square" alt="10G WAN"></td>
+    <td width="170" align="center" valign="middle"><img src="milkflint/docs/readme/badges/hw-10g-wan.svg" alt="10G WAN" height="22"></td>
     <td>RTL8261C — firmware load, soft-reset, USXGMII flap skip, MDIO 2.5 MHz, <code>eee-broken-*</code>, hotplug recovery</td>
   </tr>
   <tr>
-    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/WAN%20path-78dce8?style=flat-square" alt="WAN path"></td>
+    <td width="170" align="center" valign="middle"><img src="milkflint/docs/readme/badges/hw-wan-path.svg" alt="WAN path" height="22"></td>
     <td>Real <code>wan</code> — not Flint 2 <code>ports</code> / <code>eth1</code> cargo-cult</td>
   </tr>
   <tr>
-    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/Wi--Fi%207-78dce8?style=flat-square" alt="Wi-Fi 7"></td>
+    <td width="170" align="center" valign="middle"><img src="milkflint/docs/readme/badges/hw-wifi7.svg" alt="Wi-Fi 7" height="22"></td>
     <td>MT7996 tri-band · <b>WED</b> on by default (<code>mt7996e wed_enable=Y</code>)</td>
   </tr>
   <tr>
-    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/RSS-78dce8?style=flat-square" alt="RSS"></td>
+    <td width="170" align="center" valign="middle"><img src="milkflint/docs/readme/badges/hw-rss.svg" alt="RSS" height="22"></td>
     <td>Hardware RSS on <code>wan</code> (PDMA 0–3)</td>
   </tr>
   <tr>
-    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/Panel-78dce8?style=flat-square" alt="Panel"></td>
+    <td width="170" align="center" valign="middle"><img src="milkflint/docs/readme/badges/hw-panel.svg" alt="Panel" height="22"></td>
     <td>ST7789 + CST3530 — lit, driven, branded (logo stays after boot)</td>
   </tr>
   <tr>
-    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/Fan-78dce8?style=flat-square" alt="Fan"></td>
+    <td width="170" align="center" valign="middle"><img src="milkflint/docs/readme/badges/hw-fan.svg" alt="Fan" height="22"></td>
     <td>PWM from ~45 °C</td>
   </tr>
   <tr>
-    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/Switch%20%2F%20PHY-78dce8?style=flat-square" alt="Switch / PHY"></td>
+    <td width="170" align="center" valign="middle"><img src="milkflint/docs/readme/badges/hw-switch-phy.svg" alt="Switch / PHY" height="22"></td>
     <td>YT9224 + YT8824 · SFP+ present</td>
   </tr>
 </table>
@@ -134,19 +134,19 @@ After a hard 10G PHY wedge: **power-cycle** (warm reboot is not enough). Upstrea
 
 <table>
   <tr>
-    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/WAN-78dce8?style=flat-square" alt="WAN"></td>
+    <td width="170" align="center" valign="middle"><img src="milkflint/docs/readme/badges/hw-wan.svg" alt="WAN" height="22"></td>
     <td>10G RJ45 → <code>wan</code></td>
   </tr>
   <tr>
-    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/LAN-78dce8?style=flat-square" alt="LAN"></td>
+    <td width="170" align="center" valign="middle"><img src="milkflint/docs/readme/badges/hw-lan.svg" alt="LAN" height="22"></td>
     <td><code>lan2</code>–<code>lan5</code> (2.5G) · <code>lan6</code>–<code>lan9</code> (1G) · <code>sfp</code> (SFP+)</td>
   </tr>
   <tr>
-    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/SoC-78dce8?style=flat-square" alt="SoC"></td>
+    <td width="170" align="center" valign="middle"><img src="milkflint/docs/readme/badges/hw-soc.svg" alt="SoC" height="22"></td>
     <td>MT7988A (4× A73) · <b>kernel 6.18</b> · 2 GB DDR4 / eMMC</td>
   </tr>
   <tr>
-    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/Console-78dce8?style=flat-square" alt="Console"></td>
+    <td width="170" align="center" valign="middle"><img src="milkflint/docs/readme/badges/hw-console.svg" alt="Console" height="22"></td>
     <td><code>ttyS0</code> 115200 8N1</td>
   </tr>
 </table>
