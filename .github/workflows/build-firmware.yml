@@ -1,10 +1,11 @@
 name: Build GL-BE14000 firmware
 
+# Full OpenWrt world builds are expensive. Do not run on every main push
+# (docs/README merges were cancelling each other and racing release tags).
+# Build on version tags (publish release) or manual workflow_dispatch only.
 on:
   workflow_dispatch:
   push:
-    branches:
-      - "main"
     tags:
       - "v*"
 
