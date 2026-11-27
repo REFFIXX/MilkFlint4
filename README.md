@@ -129,72 +129,31 @@ After a hard 10G PHY wedge: **power-cycle** (warm reboot is not enough). Upstrea
 <h2><span style="color:#a9dc76">●</span> What’s in the image</h2>
 
 | | |
-|---|---|
-| <img src="https://img.shields.io/badge/UI-ff6188?style=flat-square" alt="UI"> | Live **Home**, Wi‑Fi, guests, DNS, AdGuard Home, banIP, SQM, VPN, schedules, device control, themes, upgrade, Performance Tuning — LuCI under **Advanced** |
-| <img src="https://img.shields.io/badge/Roaming-ff6188?style=flat-square" alt="Roaming"> | **Wi‑Fi → Wi‑Fi roaming** — 802.11r/k/v + `usteer`, shared mobility domain, “Why?” recommended settings |
-| <img src="https://img.shields.io/badge/Mesh-ab9df2?style=flat-square" alt="Mesh"> | **Wi‑Fi → Mesh** — `mesh11sd` Main/peer, shared identity, live topology, first-boot script for OpenWrt 25.x APs |
-| <img src="https://img.shields.io/badge/Theme-ff6188?style=flat-square" alt="Theme"> | **Monokai milk** default · Honey milk / Plain milk / Moss / Minimamilk · Footstrap LuCI |
-| <img src="https://img.shields.io/badge/LCD-ffd866?style=flat-square" alt="LCD"> | Boot splash paints the logo on the 320×240 panel and leaves it on |
-| <img src="https://img.shields.io/badge/SQM%20%2F%20VPN-a9dc76?style=flat-square" alt="SQM / VPN"> | Multi-queue CAKE (1 Gbit Eth / 500 Mbit PPPoE) · queue-per-CPU IFBs · VPN **Use VPN’s DNS** · CAKE ECN/DSCP retry |
-| <img src="https://img.shields.io/badge/Wi--Fi-78dce8?style=flat-square" alt="Wi-Fi"> | UL MU-MIMO/OFDMA **off** (latency-first) · US country · 6 GHz PSC **37** · WED on · BE latency tweak on 5+6 GHz |
-| <img src="https://img.shields.io/badge/Steering-fc9867?style=flat-square" alt="Steering"> | Hardware **RSS** on `wan` (PDMA 0–3) · multi-queue CAKE egress on `mtk_soc_eth` |
-| <img src="https://img.shields.io/badge/Packages-ab9df2?style=flat-square" alt="Packages"> | `wpad-mbedtls` · `usteer` · `mesh11sd` · full `CONFIG_ALL_KMODS` (don’t pull snapshot `kmod-*` from openwrt.org) |
+|:---|:---|
+| <code style="background:#ff6188;color:#fcfcfa;padding:4px 12px;border-radius:4px;font-size:14px;font-weight:700">UI</code> | Live **Home**, Wi‑Fi, guests, DNS, AdGuard Home, banIP, SQM, VPN, schedules, device control, themes, upgrade, Performance Tuning — LuCI under **Advanced** |
+| <code style="background:#ff6188;color:#fcfcfa;padding:4px 12px;border-radius:4px;font-size:14px;font-weight:700">Roaming</code> | **Wi‑Fi → Wi‑Fi roaming** — 802.11r/k/v + `usteer`, shared mobility domain, “Why?” recommended settings |
+| <code style="background:#ab9df2;color:#2d2a2e;padding:4px 12px;border-radius:4px;font-size:14px;font-weight:700">Mesh</code> | **Wi‑Fi → Mesh** — `mesh11sd` Main/peer, shared identity, live topology, first-boot script for OpenWrt 25.x APs |
+| <code style="background:#ff6188;color:#fcfcfa;padding:4px 12px;border-radius:4px;font-size:14px;font-weight:700">Theme</code> | **Monokai milk** default · Honey milk / Plain milk / Moss / Minimamilk · Footstrap LuCI |
+| <code style="background:#ffd866;color:#2d2a2e;padding:4px 12px;border-radius:4px;font-size:14px;font-weight:700">LCD</code> | Boot splash paints the logo on the 320×240 panel and leaves it on |
+| <code style="background:#a9dc76;color:#2d2a2e;padding:4px 12px;border-radius:4px;font-size:14px;font-weight:700">SQM / VPN</code> | Multi-queue CAKE (1 Gbit Eth / 500 Mbit PPPoE) · queue-per-CPU IFBs · VPN **Use VPN’s DNS** · CAKE ECN/DSCP retry |
+| <code style="background:#78dce8;color:#2d2a2e;padding:4px 12px;border-radius:4px;font-size:14px;font-weight:700">Wi‑Fi</code> | UL MU-MIMO/OFDMA **off** (latency-first) · US country · 6 GHz PSC **37** · WED on · BE latency tweak on 5+6 GHz |
+| <code style="background:#fc9867;color:#2d2a2e;padding:4px 12px;border-radius:4px;font-size:14px;font-weight:700">Steering</code> | Hardware **RSS** on `wan` (PDMA 0–3) · multi-queue CAKE egress on `mtk_soc_eth` |
+| <code style="background:#ab9df2;color:#2d2a2e;padding:4px 12px;border-radius:4px;font-size:14px;font-weight:700">Packages</code> | `wpad-mbedtls` · `usteer` · `mesh11sd` · full `CONFIG_ALL_KMODS` (don’t pull snapshot `kmod-*` from openwrt.org) |
 
-**Performance defaults** — CPU `performance` · RSS forced · RX coalesce 20 µs · software + hardware flow offload + WED · large TCP buffers · high conntrack — seeded once by `99-milkflint4-flint4-perf`. Change later under **Performance Tuning**; edits stick.
+#### Performance defaults
 
-**This is not** stock GL.iNet UI / cloud, not Flint 2 with labels swapped, and not a **6.12** kernel driver tree — this is **6.18** + OpenWrt main `cake_mq` backports.
+Seeded once by `99-milkflint4-flint4-perf`. Change later under **Performance Tuning** — edits stick.
 
-<h2><span style="color:#ffd866">●</span> Releases</h2>
+- CPU governor: `performance`
+- RSS forced · RX coalesce 20 µs
+- Software + hardware flow offload + WED
+- Large TCP buffers · high conntrack
 
-### 1.1
+#### What this is not
 
-- **Wi‑Fi roaming** (802.11r/k/v + `usteer`) and **802.11s mesh** (`mesh11sd`) in the MilkFlint UI  
-- Image ships `wpad-mbedtls`, `usteer`, `mesh11sd`  
-- Everything from **1.0.1**: LCD splash · **1.0**: Flint 4 / 6.18, Monokai milk, MilkFlint userspace defaults  
-
-Notes: [`docs/RELEASE-1.1.md`](docs/RELEASE-1.1.md) · [`docs/RELEASE-1.0.1.md`](docs/RELEASE-1.0.1.md) · [`docs/RELEASE-1.0.md`](docs/RELEASE-1.0.md)
-
-## Install
-
-Flash **only** this from [Releases](https://github.com/REFFIXX/MilkFlint4/releases):
-
-```text
-milkflint4-*-glinet_gl-be14000-squashfs-sysupgrade.bin
-```
-
-Do **not** use a factory / preloader image with GL.iNet recovery — leave the stock bootloader alone.
-
-### From GL.iNet stock
-
-```sh
-scp -O milkflint4-*-glinet_gl-be14000-squashfs-sysupgrade.bin root@192.168.8.1:/tmp/
-ssh root@192.168.8.1
-cat /tmp/sysinfo/board_name    # must print: glinet,gl-be14000
-sysupgrade -T /tmp/milkflint4-*-glinet_gl-be14000-squashfs-sysupgrade.bin
-sysupgrade -n /tmp/milkflint4-*-glinet_gl-be14000-squashfs-sysupgrade.bin
-```
-
-SSH drops mid-flash — wait **3–5 minutes**. Or **System → Upgrade → Local Upgrade** with Keep Settings **off**.
-
-### From OpenWrt / MilkFlint4
-
-```sh
-sysupgrade -n /tmp/milkflint4-*-glinet_gl-be14000-squashfs-sysupgrade.bin
-```
-
-First MilkFlint4 flash: don’t keep settings. Later MilkFlint4 → MilkFlint4: keep settings is fine.
-
-### First boot
-
-1. Cable into any `lan2`–`lan9`  
-2. `http://192.168.1.1` — empty password → set one under **Admin Password**  
-3. Glance at the front panel — logo should be sitting there like it owns the place  
-4. Wi‑Fi country defaults to **US** (6 GHz LPI). Use **WPA3** on 6 GHz  
-5. WED is on by default; turn on firewall hardware flow offloading when you want Wi‑Fi ↔ WAN off the CPU  
-
-### Back to stock
-
-Reset + power-on → recovery at `http://192.168.1.1` (PC at `192.168.1.2/24`) → vendor image from [dl.gl-inet.com](https://dl.gl-inet.com/).
+- Not stock GL.iNet UI / cloud stack
+- Not Flint 2 with the labels swapped
+- Not a **6.12** kernel driver tree — this is **6.18** + OpenWrt main `cake_mq` backports
 
 ## Add OpenWrt 25.x access points
 
@@ -216,6 +175,72 @@ Use other OpenWrt **25.12+** boxes as APs — same mobility domain for roaming, 
 6. Stuck? Check channel tracking, power-cycle a confidence-test peer, and don’t hand-edit wireless/network while mesh11sd auto-config owns the mesh.
 
 LuCI stays the escape hatch under **Advanced**.
+
+<h2><span style="color:#ffd866">●</span> Releases</h2>
+
+### 1.1
+
+- **Wi‑Fi roaming** (802.11r/k/v + `usteer`) and **802.11s mesh** (`mesh11sd`) in the MilkFlint UI  
+- Image ships `wpad-mbedtls`, `usteer`, `mesh11sd`  
+- Everything from **1.0.1**: LCD splash · **1.0**: Flint 4 / 6.18, Monokai milk, MilkFlint userspace defaults  
+
+Notes: [`docs/RELEASE-1.1.md`](docs/RELEASE-1.1.md) · [`docs/RELEASE-1.0.1.md`](docs/RELEASE-1.0.1.md) · [`docs/RELEASE-1.0.md`](docs/RELEASE-1.0.md)
+
+## Install
+
+### 1. Grab the image
+
+From [Releases](https://github.com/REFFIXX/MilkFlint4/releases), download **only**:
+
+```text
+milkflint4-*-glinet_gl-be14000-squashfs-sysupgrade.bin
+```
+
+Do **not** flash a factory / preloader image through GL.iNet recovery — leave the stock bootloader alone.
+
+### 2. Flash (web UI — easiest)
+
+**Keep settings: off** on the first MilkFlint4 flash (from GL.iNet or from plain OpenWrt). Later MilkFlint4 → MilkFlint4 upgrades can keep settings.
+
+| You’re on | Open | What to do |
+|---|---|---|
+| **GL.iNet stock** | LuCI → **System → Backup / Flash Firmware** | Upload the `.bin` · **uncheck** keep settings · flash |
+| **Official OpenWrt** | **System → Backup / Flash Firmware** | Same — upload · **do not** keep settings · flash |
+| **MilkFlint4** | **System → Upgrade → Local Upgrade** | Upload · keep settings only if you’re already on MilkFlint4 |
+
+Wait **3–5 minutes**. The box reboots into MilkFlint4.
+
+### 3. Flash (SSH — optional)
+
+**From GL.iNet stock** (`192.168.8.1`):
+
+```sh
+scp -O milkflint4-*-glinet_gl-be14000-squashfs-sysupgrade.bin root@192.168.8.1:/tmp/
+ssh root@192.168.8.1
+cat /tmp/sysinfo/board_name    # must print: glinet,gl-be14000
+sysupgrade -T /tmp/milkflint4-*-glinet_gl-be14000-squashfs-sysupgrade.bin
+sysupgrade -n /tmp/milkflint4-*-glinet_gl-be14000-squashfs-sysupgrade.bin
+```
+
+**From OpenWrt / MilkFlint4:**
+
+```sh
+sysupgrade -n /tmp/milkflint4-*-glinet_gl-be14000-squashfs-sysupgrade.bin
+```
+
+SSH drops mid-flash — that’s normal. Wait **3–5 minutes**.
+
+### 4. First boot
+
+1. Cable into any `lan2`–`lan9`
+2. Open `http://192.168.1.1` — empty password → set one under **Admin Password**
+3. Front panel should show the MilkFlint4 logo (stays on)
+4. Wi‑Fi country defaults to **US** (6 GHz LPI). Use **WPA3** on 6 GHz
+5. WED is on by default; turn on firewall hardware flow offloading when you want Wi‑Fi ↔ WAN off the CPU
+
+### 5. Back to stock GL.iNet
+
+Reset + power-on → recovery at `http://192.168.1.1` (PC at `192.168.1.2/24`) → vendor image from [dl.gl-inet.com](https://dl.gl-inet.com/).
 
 ## Build
 
