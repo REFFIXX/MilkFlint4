@@ -1,0 +1,19 @@
+{
+	"milkflint-wifi-roaming": {
+		"description": "MilkFlint web interface: Wi-Fi roaming",
+		"read": {
+			"ubus": {
+				"milkflint.roaming": [ "status" ],
+				"service": [ "list" ]
+			},
+			"uci": [ "wireless", "usteer" ],
+			"file": {
+				"/usr/sbin/hostapd": [ "list" ],
+				"/usr/sbin/wpad": [ "list" ]
+			}
+		},
+		"write": {
+			"uci": [ "wireless", "usteer" ]
+		}
+	}
+}

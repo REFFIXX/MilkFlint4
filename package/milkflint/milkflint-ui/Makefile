@@ -12,7 +12,8 @@ define Package/milkflint-ui
   CATEGORY:=LuCI
   TITLE:=MilkFlint web interface (dashboard and main settings)
   DEPENDS:=+luci-base +luci-theme-footstrap +rpcd +rpcd-mod-ucode +rpcd-mod-iwinfo +uhttpd +uhttpd-mod-ubus \
-	+ucode +ucode-mod-fs +ucode-mod-uci +ucode-mod-resolv +ucode-mod-nl80211 +ucode-mod-socket +ethtool +milkflint-rtprio
+	+ucode +ucode-mod-fs +ucode-mod-uci +ucode-mod-resolv +ucode-mod-nl80211 +ucode-mod-socket +ethtool +milkflint-rtprio \
+	+wpad-mbedtls +usteer +mesh11sd
   PKGARCH:=all
   # the account the dnsproxy for devices sent through a VPN runs as (feature
   # adguardhome): its traffic is marked for the tunnel by its owner

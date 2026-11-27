@@ -26,7 +26,7 @@
 
 If you’ve been waiting for OpenWrt on the **GL-BE14000** that doesn’t treat the box like a generic MT7988 brick — this is it.
 
-**MilkFlint4 1.0.1** is everyday MilkFlint on Flint 4: live dashboard, Wi‑Fi, guests, DNS, AdGuard Home, banIP, SQM, WireGuard, schedules, device control, themes, upgrade, Performance Tuning — on **OpenWrt main / kernel 6.18**, with MT7988 / MT7996 / YT9224 / RTL8261C wired in properly. The front-panel LCD lights up with the MilkFlint4 logo and **stays on**.
+**MilkFlint4** is everyday MilkFlint on Flint 4: live dashboard, Wi‑Fi 7, guests, DNS, AdGuard Home, banIP, SQM, WireGuard, schedules, device control, themes, upgrade, Performance Tuning — plus **Wi‑Fi roaming** and **802.11s mesh** for OpenWrt 25.x APs — on **OpenWrt main / kernel 6.18**, with MT7988 / MT7996 / YT9224 / RTL8261C wired in properly. The front-panel LCD lights up with the MilkFlint4 logo and **stays on**.
 
 The look is ours: **Monokai milk** (soft charcoal / milk panels, pink `#ff6188`, cyan, green). Honey milk and friends live under **System → Themes**. Footstrap LuCI matches.
 
@@ -98,12 +98,15 @@ After a hard 10G PHY wedge: **power-cycle** (warm reboot is not enough). Upstrea
 |---|---|
 | **UI** | Live **Home** dashboard, Wi‑Fi, guests, DNS, AdGuard Home, banIP, SQM, VPN, schedules, device control, themes, upgrade, Performance Tuning — LuCI under **Advanced** |
 | **Theme** | **Monokai milk** default — milky Monokai Pro: charcoal / milk panels with pink `#ff6188`, cyan, and green. Honey milk, Plain milk, Moss, Minimamilk one click away. LuCI Footstrap matches |
+| **Roaming** | **Wi‑Fi → Wi‑Fi roaming**: 802.11r/k/v + `usteer`, shared mobility domain, “Why?” hints with recommended settings |
+| **Mesh** | **Wi‑Fi → Mesh**: `mesh11sd` Main/peer roles, shared identity, live topology, first-boot script to deploy more OpenWrt 25.x APs |
 | **LCD** | Boot splash paints the MilkFlint4 logo on the 320×240 panel and leaves it on |
 | **0.87a userspace** | VPN **Use VPN’s DNS** · multi-queue CAKE from **1 Gbit** Ethernet / **500 Mbit** PPPoE · queue-per-CPU IFBs · Test Bench delay / stalled · CAKE ECN/DSCP retry |
 | **Steering** | Hardware **RSS** on `wan` (PDMA 0–3) |
 | **SQM** | Multi-queue CAKE on by default; per-host fairness; egress single CAKE on `mtk_soc_eth` |
 | **Wi‑Fi** | UL MU-MIMO/OFDMA **off** by default (latency-first) · US country · 6 GHz PSC **37** · BE latency tweak on 5+6 GHz |
 | **WED** | `mt7996e wed_enable=Y` by default |
+| **Packages** | Image ships `wpad-mbedtls`, `usteer`, `mesh11sd` for roaming + mesh |
 | **kmods** | Full `CONFIG_ALL_KMODS` — do **not** pull snapshot `kmod-*` from downloads.openwrt.org |
 
 ### Performance defaults
@@ -165,6 +168,27 @@ First MilkFlint4 flash: don’t keep settings. Later MilkFlint4 → MilkFlint4: 
 
 Reset + power-on → recovery at `http://192.168.1.1` (PC at `192.168.1.2/24`) → vendor image from [dl.gl-inet.com](https://dl.gl-inet.com/).
 
+## Add OpenWrt 25.x access points
+
+MilkFlint4 ships **Wi‑Fi roaming** (802.11r/k/v + `usteer`) and **802.11s mesh** (`mesh11sd`) as first-class **Wi‑Fi** pages — with plain-language “Why?” help and recommended settings.
+
+<p align="center">
+  <img src="milkflint/docs/readme/roaming-monokai-dark.png" width="480" height="300" alt="Wi-Fi roaming">
+  &nbsp;
+  <img src="milkflint/docs/readme/mesh-monokai-dark.png" width="480" height="300" alt="Mesh">
+</p>
+
+Use other OpenWrt **25.12+** boxes as APs — same mobility domain for roaming, same mesh identity for backhaul.
+
+1. Flash each AP with OpenWrt **25.12+** plus `mesh11sd` and full `wpad-mbedtls` (drop `wpad-basic-*`). Firmware Selector → customize packages, e.g. `-wpad-basic-mbedtls wpad-mbedtls mesh11sd ip-full vxlan`.
+2. On the Flint 4 **Mesh** page, copy the **first-boot script** (same `auto_mesh_id` / gate SSID / key) and paste it into Firmware Selector’s “Script to run on first boot”, or run it once on a fresh AP.
+3. Keep **`portal_detect=1`** on every node. One node with **WAN → ISP** becomes Main/portal; other nodes leave WAN unplugged and become peers. (Do not use `portal_detect=5` unless you need a VXLAN trunk peer.)
+4. First-boot scripts start with **`auto_config=0`** (confidence test). After `mesh11sd status` looks healthy, set `auto_config=1` (or `mesh11sd auto_config enable`).
+5. On every AP SSID used for clients: match the **mobility domain** and enable 802.11r/k/v; run `usteer` (or rely on the MilkFlint router + matching FT). Do **not** run dawn and usteer together.
+6. Stuck? Check channel tracking, power-cycle a confidence-test peer, and don’t hand-edit wireless/network while mesh11sd auto-config owns the mesh.
+
+LuCI stays the escape hatch under **Advanced**.
+
 ## Build
 
 ```bash
@@ -172,7 +196,7 @@ git clone https://github.com/REFFIXX/MilkFlint4.git
 cd MilkFlint4
 ./scripts/feeds update -a && ./scripts/feeds install -a
 cp milkflint/diffconfig .config && make defconfig
-make download && make -j$(nproc)
+make download && make -j$(nproc) IGNORE_ERRORS='n m'
 ```
 
 ```text
@@ -184,6 +208,10 @@ UI (Node **24** + pnpm **12**):
 ```bash
 cd milkflint/ui && pnpm install && pnpm exec vite build && node scripts/package.ts
 ```
+
+### Windows (WSL2)
+
+Prefer **WSL2 Ubuntu 24.04** with the tree on **ext4** (`~/src/MilkFlint4`), never `/mnt/c/...`. Install the same apt set as CI (see [`.github/workflows/build-firmware.yml`](.github/workflows/build-firmware.yml)), then feeds → `cp milkflint/diffconfig .config` → `make defconfig` → `make -j$(nproc) world` with `IGNORE_ERRORS='n m'`. For UI-only iteration (seconds): `cd milkflint/ui && pnpm install && pnpm exec vite build`. Full notes: [`docs/DEV-WSL.md`](docs/DEV-WSL.md).
 
 | Path | Role |
 |---|---|

@@ -1,0 +1,20 @@
+{
+	"milkflint-mesh": {
+		"description": "MilkFlint web interface: 802.11s mesh",
+		"read": {
+			"ubus": {
+				"milkflint.mesh": [ "status" ],
+				"mesh11sd": [ "status", "version" ],
+				"service": [ "list" ]
+			},
+			"uci": [ "mesh11sd" ]
+		},
+		"write": {
+			"ubus": {
+				"milkflint.mesh": [ "reload" ],
+				"mesh11sd": [ "config_reload" ]
+			},
+			"uci": [ "mesh11sd" ]
+		}
+	}
+}
