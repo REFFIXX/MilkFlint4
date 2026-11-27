@@ -36,24 +36,24 @@ Keep a stock GL.iNet recovery image before you flash. Then grab a release, flash
 
 ## Screenshots
 
-Every card is the **same size** (3200×2000 → shown at 480×300) — **Monokai milk** dark.
+Every card is the **same size** (3200×2000 → shown at 480×300) — **Monokai milk** dark. Captions are the page titles in the shot.
 
 <table>
   <tr>
-    <td align="center" width="50%"><img src="milkflint/docs/readme/home-monokai-dark.png" width="480" alt="Home — Monokai milk dark"><br><sub>Home</sub></td>
-    <td align="center" width="50%"><img src="milkflint/docs/readme/themes-monokai-dark.png" width="480" alt="Themes — Monokai milk in use"><br><sub>Themes — <b>Monokai milk</b> in use</sub></td>
+    <td align="center" width="50%"><img src="milkflint/docs/readme/home-monokai-dark.png" width="480" alt="Home"><br><sub><b>Home</b> — live status</sub></td>
+    <td align="center" width="50%"><img src="milkflint/docs/readme/themes-monokai-dark.png" width="480" alt="Themes"><br><sub><b>Themes</b> — Monokai milk in use</sub></td>
   </tr>
   <tr>
-    <td align="center" width="50%"><img src="milkflint/docs/readme/roaming-monokai-dark.png" width="480" alt="Wi-Fi roaming — Monokai milk dark"><br><sub>Wi‑Fi roaming</sub></td>
-    <td align="center" width="50%"><img src="milkflint/docs/readme/mesh-monokai-dark.png" width="480" alt="Mesh — Monokai milk dark"><br><sub>Mesh</sub></td>
+    <td align="center" width="50%"><img src="milkflint/docs/readme/roaming-monokai-dark.png" width="480" alt="Wi-Fi roaming"><br><sub><b>Wi‑Fi roaming</b> — 802.11r/k/v + usteer</sub></td>
+    <td align="center" width="50%"><img src="milkflint/docs/readme/mesh-monokai-dark.png" width="480" alt="Mesh"><br><sub><b>Mesh</b> — mesh11sd Main / peers</sub></td>
   </tr>
   <tr>
-    <td align="center" width="50%"><img src="milkflint/docs/readme/wifi-monokai-dark.png" width="480" alt="Wi-Fi — Monokai milk dark"><br><sub>Tri-band Wi‑Fi</sub></td>
-    <td align="center" width="50%"><img src="milkflint/docs/readme/sqm-monokai-dark.png" width="480" alt="Smart Queue — Monokai milk dark"><br><sub>Smart Queue</sub></td>
+    <td align="center" width="50%"><img src="milkflint/docs/readme/wifi-monokai-dark.png" width="480" alt="Networks & radios"><br><sub><b>Networks & radios</b> — 2.4 / 5 / 6 GHz</sub></td>
+    <td align="center" width="50%"><img src="milkflint/docs/readme/sqm-monokai-dark.png" width="480" alt="Smart Queue"><br><sub><b>Smart Queue</b> — CAKE</sub></td>
   </tr>
   <tr>
-    <td align="center" width="50%"><img src="milkflint/docs/readme/tuning-monokai-dark.png" width="480" alt="Performance Tuning — Monokai milk dark"><br><sub>Performance Tuning</sub></td>
-    <td align="center" width="50%"><img src="milkflint/docs/readme/firewall-monokai-dark.png" width="480" alt="Firewall — Monokai milk dark"><br><sub>Firewall</sub></td>
+    <td align="center" width="50%"><img src="milkflint/docs/readme/tuning-monokai-dark.png" width="480" alt="Performance tuning"><br><sub><b>Performance tuning</b></sub></td>
+    <td align="center" width="50%"><img src="milkflint/docs/readme/firewall-monokai-dark.png" width="480" alt="Firewall"><br><sub><b>Firewall</b> — rules</sub></td>
   </tr>
 </table>
 
