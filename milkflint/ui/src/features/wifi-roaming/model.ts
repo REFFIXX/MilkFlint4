@@ -1,4 +1,5 @@
 import { bool, type Change, list, type Section, str } from '@/lib/api/uci';
+import { isGuestIface } from '../wifi-guest/guest';
 
 export interface ApIface {
   name: string;
@@ -23,7 +24,7 @@ export interface RoamingForm {
 export function listApIfaces(wireless: Section[]): ApIface[] {
   return wireless
     .filter((s) => s['.type'] === 'wifi-iface' && (str(s, 'mode') ?? 'ap') === 'ap')
-    .filter((s) => !String(s['.name'] ?? '').includes('guest'))
+    .filter((s) => !isGuestIface(s))
     .map((s) => ({
       name: s['.name'],
       ssid: str(s, 'ssid') ?? s['.name'],
@@ -36,9 +37,17 @@ function roamingMeta(milkflint: Section[]): Section | undefined {
   return milkflint.find((s) => s['.name'] === 'roaming' || s['.type'] === 'roaming');
 }
 
+function sampleIface(wireless: Section[], aps: ApIface[], applyAll: boolean, selected: string[]): Section | undefined {
+  const prefer = !applyAll && selected.length > 0 ? selected : aps.map((a) => a.name);
+  for (const name of prefer) {
+    const s = wireless.find((sec) => sec['.name'] === name);
+    if (s !== undefined) return s;
+  }
+  return undefined;
+}
+
 export function readForm(wireless: Section[], usteer: Section[], milkflint: Section[] = []): RoamingForm {
   const aps = listApIfaces(wireless);
-  const sample = aps.map((a) => wireless.find((s) => s['.name'] === a.name)).find(Boolean);
   const usteerSec = usteer.find((s) => s['.type'] === 'usteer') ?? usteer[0];
   const meta = roamingMeta(milkflint);
   const applyAll = meta === undefined ? true : bool(meta, 'apply_all', true);
@@ -46,9 +55,11 @@ export function readForm(wireless: Section[], usteer: Section[], milkflint: Sect
   // do not fall back to every AP (that would re-apply roaming on next save).
   const saved = list(meta, 'iface').filter((n) => aps.some((a) => a.name === n));
   const allNames = aps.map((a) => a.name);
+  const selected = applyAll ? allNames : saved;
+  const sample = sampleIface(wireless, aps, applyAll, selected);
   return {
     applyAll,
-    selected: applyAll ? allNames : saved,
+    selected,
     ieee80211r: bool(sample, 'ieee80211r'),
     mobilityDomain: (str(sample, 'mobility_domain') ?? '4f57').slice(0, 4).toLowerCase(),
     ftOverDs: bool(sample, 'ft_over_ds', true),
@@ -71,16 +82,15 @@ export function validateSelection(form: RoamingForm): string | undefined {
   return undefined;
 }
 
-export function toChanges(
-  form: RoamingForm,
-  wireless: Section[],
-  usteer: Section[],
-  milkflint: Section[] = [],
-): Change[] {
+function hadRoaming(s: Section | undefined): boolean {
+  return bool(s, 'ieee80211r') || bool(s, 'ieee80211k') || bool(s, 'bss_transition');
+}
+
+export function toChanges(form: RoamingForm, wireless: Section[], usteer: Section[], milkflint: Section[] = []): Change[] {
   const changes: Change[] = [];
-  const targets = form.applyAll
-    ? listApIfaces(wireless).map((a) => a.name)
-    : form.selected.filter((n) => listApIfaces(wireless).some((a) => a.name === n));
+  const aps = listApIfaces(wireless);
+  const targets = form.applyAll ? aps.map((a) => a.name) : form.selected.filter((n) => aps.some((a) => a.name === n));
+  const targetSet = new Set(targets);
 
   const values: Record<string, string> = {
     ieee80211r: form.ieee80211r ? '1' : '0',
@@ -101,9 +111,24 @@ export function toChanges(
       // Drop a shared mobility-domain nasid left by older MilkFlint builds.
       const existing = wireless.find((s) => s['.name'] === name);
       const nasid = str(existing, 'nasid');
-      if (nasid !== undefined && nasid.toLowerCase() === form.mobilityDomain.toLowerCase()) {
+      if (nasid?.toLowerCase() === form.mobilityDomain.toLowerCase()) {
         changes.push({ op: 'unset', config: 'wireless', section: name, options: ['nasid'] });
       }
+    }
+  }
+
+  // Deselected APs that still have FT/k/v would keep roaming despite the UI.
+  if (!form.applyAll) {
+    for (const ap of aps) {
+      if (targetSet.has(ap.name)) continue;
+      const existing = wireless.find((s) => s['.name'] === ap.name);
+      if (!hadRoaming(existing)) continue;
+      changes.push({
+        op: 'set',
+        config: 'wireless',
+        section: ap.name,
+        values: { ieee80211r: '0', ieee80211k: '0', bss_transition: '0' },
+      });
     }
   }
 

@@ -44,6 +44,11 @@ export function widthOf(htmode: string | undefined): number {
   return m === null ? 20 : Number(m[1]);
 }
 
+/** 6 GHz Preferred Scanning Channel: 5, 21, 37, 53, … (every 16 / 80 MHz). */
+export function isPsc6g(channel: number): boolean {
+  return channel >= 5 && (channel - 5) % 16 === 0;
+}
+
 /** Channel numbers as runs: "channel 44", "channels 36–64", "channels 52–64 and 100–112". */
 export function describeChannels(list: readonly number[]): string {
   const sorted = [...new Set(list)].sort((a, b) => a - b);

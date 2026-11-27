@@ -91,8 +91,7 @@ const ROLE_HELP: Record<MeshRole, string> = {
     'Recommended for most homes: plug WAN into your modem for Main; leave WAN unplugged on other APs so they become peers. Uses portal_detect=1 (mesh11sd decides from WAN).',
   'main-fixed':
     'Always the Main (portal) router, even with no WAN cable. Uses portal_detect=0. Pick this when this box must stay Main no matter what.',
-  peer:
-    'UI intent: this box is only an access point. Still writes portal_detect=1 (not 5 / TPE) — leave WAN unplugged so mesh11sd stays a Mesh Peer. Plug WAN in and it can become a second Main.',
+  peer: 'UI intent: this box is only an access point. Still writes portal_detect=1 (not 5 / TPE) — leave WAN unplugged so mesh11sd stays a Mesh Peer. Plug WAN in and it can become a second Main.',
 };
 
 export function MeshPage(): ReactElement {
@@ -101,8 +100,9 @@ export function MeshPage(): ReactElement {
   const [form, setForm] = useState<MeshForm | undefined>();
   const current = form ?? data?.form;
   const { state, apply, reset } = useApply(() => {
+    setForm(undefined);
     void reloadMesh().finally(() => {
-      void reload();
+      reload();
     });
   });
   const status = usePoll(getMeshStatus, 8000, data !== undefined ? 'on' : 'off').data;
@@ -113,13 +113,16 @@ export function MeshPage(): ReactElement {
     return JSON.stringify(current) !== JSON.stringify(data.form);
   }, [current, data]);
 
-  const set = useCallback(<K extends keyof MeshForm>(key: K, value: MeshForm[K]) => {
-    setForm((prev) => {
-      const base = prev ?? data?.form;
-      if (base === undefined) return prev;
-      return { ...base, [key]: value };
-    });
-  }, [data?.form]);
+  const set = useCallback(
+    <K extends keyof MeshForm>(key: K, value: MeshForm[K]) => {
+      setForm((prev) => {
+        const base = prev ?? data?.form;
+        if (base === undefined) return prev;
+        return { ...base, [key]: value };
+      });
+    },
+    [data?.form],
+  );
 
   const formError = current === undefined ? undefined : validateForm(current);
   const script = current === undefined ? '' : firstBootScript(current);
@@ -128,7 +131,12 @@ export function MeshPage(): ReactElement {
     return (
       <>
         <PageHeader title="Mesh" description="802.11s backhaul with mesh11sd." />
-        <LoadError error={error} retry={() => void reload()} />
+        <LoadError
+          error={error}
+          retry={() => {
+            reload();
+          }}
+        />
       </>
     );
   }
@@ -162,9 +170,9 @@ export function MeshPage(): ReactElement {
         <Alert variant="warning" className="mb-4">
           <AlertTitle>mesh11sd owns wireless and network</AlertTitle>
           <AlertDescription>
-            With auto-config on, do not hand-edit wireless or network for the mesh. Change role and identity here, then
-            reboot if portal detection does not take effect. Pair with{' '}
-            <GoLink href={href('wifi-roaming')}>Wi-Fi roaming</GoLink> on the gate SSIDs so phones roam across APs.
+            With auto-config on, do not hand-edit wireless or network for the mesh. Change role and identity here, then reboot if
+            portal detection does not take effect. Pair with <GoLink href={href('wifi-roaming')}>Wi-Fi roaming</GoLink> on the
+            gate SSIDs so phones roam across APs.
           </AlertDescription>
         </Alert>
       )}
@@ -177,8 +185,8 @@ export function MeshPage(): ReactElement {
           />
           <CardContent className="flex flex-col gap-3">
             <p className="text-sm text-muted-foreground">
-              Recommended path: leave this Flint 4 on <strong className="text-foreground">Main · auto</strong> with the
-              modem on WAN, then flash other APs as peers with the script below (WAN unplugged on those).
+              Recommended path: leave this Flint 4 on <strong className="text-foreground">Main · auto</strong> with the modem on
+              WAN, then flash other APs as peers with the script below (WAN unplugged on those).
             </p>
             <div className="grid gap-3 sm:grid-cols-3">
               {(
@@ -193,7 +201,9 @@ export function MeshPage(): ReactElement {
                   <button
                     key={role}
                     type="button"
-                    onClick={() => set('role', role)}
+                    onClick={() => {
+                      set('role', role);
+                    }}
                     className={cn(
                       'flex flex-col items-start gap-2 rounded-lg border px-3 py-3 text-left transition-colors',
                       on ? 'border-primary bg-primary/5' : 'border-border hover:bg-muted/40',
@@ -210,10 +220,10 @@ export function MeshPage(): ReactElement {
               <Alert variant="warning">
                 <AlertTitle>Keep WAN unplugged on this Access point</AlertTitle>
                 <AlertDescription>
-                  MilkFlint stores “Access point” as <code className="font-mono">milkflint.mesh.role=peer</code> while
-                  mesh11sd still uses <code className="font-mono">portal_detect=1</code> (same as Main · auto). That is
-                  intentional: code <code className="font-mono">5</code> is a specialised TPE trunk peer, not a home AP.
-                  With WAN up, mesh11sd may promote this node to Main — leave WAN empty so it stays a Mesh Peer.
+                  MilkFlint stores “Access point” as <code className="font-mono">milkflint.mesh.role=peer</code> while mesh11sd
+                  still uses <code className="font-mono">portal_detect=1</code> (same as Main · auto). That is intentional: code{' '}
+                  <code className="font-mono">5</code> is a specialised TPE trunk peer, not a home AP. With WAN up, mesh11sd may
+                  promote this node to Main — leave WAN empty so it stays a Mesh Peer.
                 </AlertDescription>
               </Alert>
             )}
@@ -225,7 +235,7 @@ export function MeshPage(): ReactElement {
                 ['mesh11sd.setup.auto_config'],
               )}
               status={
-                status?.running ? (
+                status?.running === true ? (
                   <Badge variant="success">Running</Badge>
                 ) : current.autoConfig ? (
                   <Badge variant="secondary">Configured</Badge>
@@ -234,7 +244,13 @@ export function MeshPage(): ReactElement {
                 )
               }
             >
-              <Switch id={`${id}-auto`} checked={current.autoConfig} onCheckedChange={(v) => set('autoConfig', v)} />
+              <Switch
+                id={`${id}-auto`}
+                checked={current.autoConfig}
+                onCheckedChange={(v) => {
+                  set('autoConfig', v);
+                }}
+              />
             </Field>
             <Field
               id={`${id}-en`}
@@ -244,7 +260,13 @@ export function MeshPage(): ReactElement {
                 ['mesh11sd.setup.enabled'],
               )}
             >
-              <Switch id={`${id}-en`} checked={current.enabled} onCheckedChange={(v) => set('enabled', v)} />
+              <Switch
+                id={`${id}-en`}
+                checked={current.enabled}
+                onCheckedChange={(v) => {
+                  set('enabled', v);
+                }}
+              />
             </Field>
           </CardContent>
         </Card>
@@ -266,8 +288,10 @@ export function MeshPage(): ReactElement {
               <Input
                 id={`${id}-mid`}
                 value={current.autoMeshId}
-                className="font-mono max-w-md"
-                onChange={(e) => set('autoMeshId', e.target.value)}
+                className="max-w-md font-mono"
+                onChange={(e) => {
+                  set('autoMeshId', e.target.value);
+                }}
               />
             </Field>
             <Field
@@ -283,8 +307,10 @@ export function MeshPage(): ReactElement {
                 type="password"
                 autoComplete="new-password"
                 value={current.autoMeshKey}
-                className="font-mono max-w-md"
-                onChange={(e) => set('autoMeshKey', e.target.value)}
+                className="max-w-md font-mono"
+                onChange={(e) => {
+                  set('autoMeshKey', e.target.value);
+                }}
               />
             </Field>
             <Field
@@ -295,7 +321,12 @@ export function MeshPage(): ReactElement {
                 ['mesh11sd.setup.auto_mesh_band'],
               )}
             >
-              <Select value={current.band} onValueChange={(v) => set('band', v as MeshBand)}>
+              <Select
+                value={current.band}
+                onValueChange={(v) => {
+                  set('band', v as MeshBand);
+                }}
+              >
                 <SelectTrigger id={`${id}-band`} className="max-w-xs">
                   <SelectValue />
                 </SelectTrigger>
@@ -319,7 +350,9 @@ export function MeshPage(): ReactElement {
                 value={current.gateSsid}
                 maxLength={current.ssidSuffix ? 22 : 30}
                 className="max-w-md"
-                onChange={(e) => set('gateSsid', e.target.value)}
+                onChange={(e) => {
+                  set('gateSsid', e.target.value);
+                }}
               />
             </Field>
             <Field
@@ -330,7 +363,13 @@ export function MeshPage(): ReactElement {
                 ['mesh11sd.setup.ssid_suffix_enable'],
               )}
             >
-              <Switch id={`${id}-suffix`} checked={current.ssidSuffix} onCheckedChange={(v) => set('ssidSuffix', v)} />
+              <Switch
+                id={`${id}-suffix`}
+                checked={current.ssidSuffix}
+                onCheckedChange={(v) => {
+                  set('ssidSuffix', v);
+                }}
+              />
             </Field>
             <Field
               id={`${id}-enc`}
@@ -342,7 +381,9 @@ export function MeshPage(): ReactElement {
             >
               <Select
                 value={current.gateEncryption}
-                onValueChange={(v) => set('gateEncryption', v as GateEncryption)}
+                onValueChange={(v) => {
+                  set('gateEncryption', v as GateEncryption);
+                }}
               >
                 <SelectTrigger id={`${id}-enc`} className="max-w-xs">
                   <SelectValue />
@@ -370,8 +411,10 @@ export function MeshPage(): ReactElement {
                   type="password"
                   autoComplete="new-password"
                   value={current.gateKey}
-                  className="font-mono max-w-md"
-                  onChange={(e) => set('gateKey', e.target.value)}
+                  className="max-w-md font-mono"
+                  onChange={(e) => {
+                    set('gateKey', e.target.value);
+                  }}
                 />
               </Field>
             )}
@@ -379,22 +422,19 @@ export function MeshPage(): ReactElement {
         </Card>
 
         <Card>
-          <CardHeading
-            title="Topology"
-            description="A live map of this node and any mesh peers that have joined."
-          />
+          <CardHeading title="Topology" description="A live map of this node and any mesh peers that have joined." />
           <CardContent className="flex flex-col gap-3">
             <p className="text-sm text-muted-foreground">
-              What to expect: this Flint 4 shows as Main or Peer. Healthy peers list a hostname, MAC, signal (dBm — closer
-              to 0 is stronger), and a routing metric (lower is better). Empty peers usually means other APs are not
-              flashed yet, or Mesh ID / band do not match.
+              What to expect: this Flint 4 shows as Main or Peer. Healthy peers list a hostname, MAC, signal (dBm — closer to 0 is
+              stronger), and a routing metric (lower is better). Empty peers usually means other APs are not flashed yet, or Mesh
+              ID / band do not match.
             </p>
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="outline">{status?.local?.hostname ?? 'This node'}</Badge>
               <Badge variant={current.role === 'peer' ? 'secondary' : 'success'}>
                 {current.role === 'peer' ? 'Peer' : 'Main'}
               </Badge>
-              {status?.local?.portalType && (
+              {status?.local?.portalType !== undefined && status.local.portalType !== '' && (
                 <Badge variant="outline" className="font-mono">
                   {status.local.portalType}
                 </Badge>
@@ -404,8 +444,8 @@ export function MeshPage(): ReactElement {
             <div className="grid gap-2 sm:grid-cols-2">
               {(status?.peers ?? []).length === 0 && (
                 <p className="text-sm text-muted-foreground sm:col-span-2">
-                  No peers yet. Use Deploy other APs below, keep the same Mesh ID and band, power the new AP near this
-                  one, then wait a minute for paths to appear.
+                  No peers yet. Use Deploy other APs below, keep the same Mesh ID and band, power the new AP near this one, then
+                  wait a minute for paths to appear.
                 </p>
               )}
               {(status?.peers ?? []).map((p) => (
@@ -415,10 +455,10 @@ export function MeshPage(): ReactElement {
                     <span className="font-medium">{p.hostname ?? p.mac ?? p.id ?? 'Peer'}</span>
                   </div>
                   <div className="flex flex-wrap gap-x-3 gap-y-1 font-mono text-xs text-muted-foreground">
-                    {p.role && <span>{p.role}</span>}
-                    {p.mac && <span>{p.mac}</span>}
-                    {p.signal != null && <span>{p.signal} dBm</span>}
-                    {p.metric != null && <span>metric {p.metric}</span>}
+                    {p.role !== undefined && p.role !== '' && <span>{p.role}</span>}
+                    {p.mac !== undefined && p.mac !== '' && <span>{p.mac}</span>}
+                    {p.signal !== null && p.signal !== undefined && <span>{p.signal} dBm</span>}
+                    {p.metric !== null && p.metric !== undefined && <span>metric {p.metric}</span>}
                   </div>
                 </div>
               ))}
@@ -436,7 +476,7 @@ export function MeshPage(): ReactElement {
               <li>
                 Open{' '}
                 <a
-                  className="text-primary underline-offset-2 hover:underline"
+                  className="link underline-offset-2 hover:underline"
                   href="https://firmware-selector.openwrt.org"
                   target="_blank"
                   rel="noreferrer"
@@ -447,13 +487,12 @@ export function MeshPage(): ReactElement {
               </li>
               <li>
                 Customize packages: remove basic wpad and add{' '}
-                <code className="font-mono text-foreground">-wpad-basic-mbedtls wpad-mbedtls mesh11sd ip-full vxlan</code>
-                .
+                <code className="font-mono text-foreground">-wpad-basic-mbedtls wpad-mbedtls mesh11sd ip-full vxlan</code>.
               </li>
               <li>Paste the script below into the first-boot / custom script box, request the build, then flash the AP.</li>
               <li>
-                Plug the new AP in with <strong className="text-foreground">WAN unplugged</strong> (peer). Only the Main
-                keeps WAN → modem. Match Mesh ID and band with this page.
+                Plug the new AP in with <strong className="text-foreground">WAN unplugged</strong> (peer). Only the Main keeps WAN
+                → modem. Match Mesh ID and band with this page.
               </li>
               <li>
                 The script starts in <strong className="text-foreground">confidence-test</strong> (
@@ -462,13 +501,11 @@ export function MeshPage(): ReactElement {
                 <code className="font-mono text-foreground">auto_config=1</code> (or turn Auto-config On here and save).
               </li>
               <li>
-                Then open <GoLink href={href('wifi-roaming')}>Wi-Fi roaming</GoLink> and enable the same Fast Transition
-                options on every gate SSID.
+                Then open <GoLink href={href('wifi-roaming')}>Wi-Fi roaming</GoLink> and enable the same Fast Transition options
+                on every gate SSID.
               </li>
             </ol>
-            <pre className="max-h-56 overflow-auto rounded-lg border bg-muted/40 p-3 font-mono text-xs leading-5">
-              {script}
-            </pre>
+            <pre className="max-h-56 overflow-auto rounded-lg border bg-muted/40 p-3 font-mono text-xs leading-5">{script}</pre>
             <div className="flex flex-wrap gap-2">
               <Button
                 type="button"
@@ -512,7 +549,6 @@ export function MeshPage(): ReactElement {
         onSave={() => {
           if (formError !== undefined || !data.compatible) return;
           void apply(toChanges(current, data.mesh, data.milkflint));
-          setForm(undefined);
         }}
         onRevert={() => {
           setForm(undefined);

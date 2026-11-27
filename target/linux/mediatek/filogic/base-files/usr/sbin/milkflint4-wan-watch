@@ -24,16 +24,32 @@ bounce_wan() {
 	ip link set wan up 2>/dev/null || true
 }
 
+# Count phys with at least one UP BSS — not every guest/AP netdev.
 radios_up() {
 	n=0
-	for d in /sys/class/ieee80211/phy*/device/net/*/operstate; do
-		[ -f "$d" ] || continue
-		[ "$(cat "$d" 2>/dev/null)" = up ] && n=$((n + 1))
+	for phy in /sys/class/ieee80211/phy*; do
+		[ -d "$phy" ] || continue
+		up=0
+		for d in "$phy"/device/net/*/operstate; do
+			[ -f "$d" ] || continue
+			[ "$(cat "$d" 2>/dev/null)" = up ] && up=1 && break
+		done
+		[ "$up" = 1 ] && n=$((n + 1))
 	done
 	echo "$n"
 }
 
-[ -d /sys/class/net/wan ] || exit 0
+# Wait for wan (DSA / PHY may appear after procd starts us). Exit non-zero so
+# procd respawns if it never shows up within ~5 minutes.
+i=0
+while [ ! -d /sys/class/net/wan ]; do
+	i=$((i + 1))
+	[ "$i" -gt 60 ] && {
+		logger -t milkflint4-wan-watch "wan netdev missing after wait; exiting for respawn"
+		exit 1
+	}
+	sleep 5
+done
 
 seed=$(cat /sys/class/net/wan/carrier_changes 2>/dev/null || echo 0)
 # carrier_60: reading ~60s ago; carrier_30: reading ~30s ago

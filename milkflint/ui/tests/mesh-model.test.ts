@@ -1,11 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import {
-  firstBootScript,
-  portalDetectFor,
-  type MeshForm,
-  validateForm,
-} from '../src/features/mesh/model.ts';
+import { firstBootScript, portalDetectFor, type MeshForm, validateForm } from '../src/features/mesh/model.ts';
 
 const base: MeshForm = {
   enabled: true,
@@ -39,4 +34,5 @@ test('first-boot script stays in confidence-test mode', () => {
   assert.doesNotMatch(script, /^uci set mesh11sd\.setup\.auto_config='1'$/m);
   assert.match(script, /^uci set mesh11sd\.setup\.portal_detect='1'$/m);
   assert.doesNotMatch(script, /portal_detect='5'/);
+  assert.match(script, /^uci set milkflint\.mesh\.role='peer'$/m);
 });

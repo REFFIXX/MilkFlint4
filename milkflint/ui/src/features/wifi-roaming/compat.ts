@@ -6,5 +6,5 @@ export function supports25RoamingMesh(board: Board | undefined): boolean {
   const dist = board?.release?.distribution ?? '';
   const ver = board?.release?.version ?? '';
   if (/^milkflint/i.test(dist)) return true;
-  return /^25\./.test(ver);
+  return ver.startsWith('25.');
 }

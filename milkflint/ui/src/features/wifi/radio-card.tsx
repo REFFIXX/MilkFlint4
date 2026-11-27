@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import type { RegRule } from '@/lib/api/wireless';
 import { href } from '@/lib/router';
-import { blockOf, describeBlock } from './channels';
+import { blockOf, describeBlock, isPsc6g } from './channels';
 import { explain } from '@/components/explain';
 import {
   channelLimit,
@@ -182,7 +182,7 @@ export function RadioFields({
           {...explain(
             form.band === '6g'
               ? block === undefined
-                ? 'Auto picks the quietest Preferred Scanning Channel (PSC) at start-up. On 6 GHz, phones mainly scan PSCs (5, 21, 37, 53, … every 16 channels / 80 MHz); non-PSC channels are harder for clients to find. Recommended: Auto, or a PSC if you pick by hand.'
+                ? 'On Flint 4, prefer a Preferred Scanning Channel (PSC: 5, 21, 37, 53, … every 16 / 80 MHz) instead of Auto — ACS on dual MLD (5 + 6 GHz) can deadlock, and MilkFlint defaults to PSC 37. Phones mainly scan PSCs; non-PSC channels are harder to find.'
                 : `At ${String(width)} MHz this takes up channels ${describeBlock(form.band, block)}. Prefer a Preferred Scanning Channel (PSC: 5, 21, 37, 53, …) as primary so phones find the AP quickly; non-PSC primaries rely on out-of-band discovery. Channel ${form.channel} is the primary.`
               : block === undefined
                 ? 'Auto picks the quietest one at start-up.'
@@ -211,7 +211,9 @@ export function RadioFields({
               <SelectItem value="auto">Auto</SelectItem>
               {channels.map((c) => (
                 <SelectItem key={c.mhz} value={String(c.channel)}>
-                  {c.channel} ({(c.mhz / 1000).toFixed(3)} GHz){dfs.has(c.mhz) ? ' · DFS, radar check' : ''}
+                  {c.channel} ({(c.mhz / 1000).toFixed(3)} GHz)
+                  {form.band === '6g' && isPsc6g(c.channel) ? ' · PSC' : ''}
+                  {dfs.has(c.mhz) ? ' · DFS, radar check' : ''}
                 </SelectItem>
               ))}
               {!hasCurrent && <SelectItem value={form.channel}>{form.channel}</SelectItem>}

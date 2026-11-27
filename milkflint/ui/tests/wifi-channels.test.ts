@@ -2,7 +2,7 @@
 // them, and the quietest place the Scan page suggests.
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { blockAround, blockOf, describeBlock, describeChannels, widthOf } from '../src/features/wifi/channels.ts';
+import { blockAround, blockOf, describeBlock, describeChannels, isPsc6g, widthOf } from '../src/features/wifi/channels.ts';
 import type { ScannedNetwork } from '../src/features/wifi-scan/api.ts';
 import { coveredChannels, emptyNarrower, quietest } from '../src/features/wifi-scan/spectrum.ts';
 
@@ -32,6 +32,11 @@ test('6 GHz counts from channel 1', () => {
   assert.equal(blockOf('6g', 37, 320).length, 16);
   assert.equal(blockOf('6g', 37, 320)[0], 1);
   assert.equal(blockOf('6g', 69, 320)[0], 65);
+});
+
+test('6 GHz PSC channels are 5 + 16n', () => {
+  for (const c of [5, 21, 37, 53, 69]) assert.equal(isPsc6g(c), true);
+  for (const c of [1, 9, 33, 45]) assert.equal(isPsc6g(c), false);
 });
 
 test('around a centre channel, as the radio reports it', () => {

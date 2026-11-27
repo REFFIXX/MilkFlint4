@@ -76,21 +76,49 @@ if [ -z "$(uci -q get milkflint.defaults.flint4_psc6)" ]; then
 	UCI
 fi
 
-# Default Wi-Fi country US on first boot (MilkFlint4). Only when every radio
-# is still empty/00 so a user choice sticks. US 6 GHz LPI AP works with our
-# wireless-regdb patch (510-us-6ghz-lpi-allow-ap).
+# Default Wi-Fi country US on first boot (MilkFlint4). MilkFlint's generic
+# 91-milkflint-wifi seeds empty radios with GB before this runs, so treat GB
+# (and empty/00) as the unset first-boot default. A later user choice sticks
+# because this only runs once (flint4_country_us). US 6 GHz LPI AP works with
+# our wireless-regdb patch (510-us-6ghz-lpi-allow-ap).
 if [ -z "$(uci -q get milkflint.defaults.flint4_country_us)" ]; then
 	for radio in $(uci -q show wireless | sed -n "s/^wireless\.\([^.=]*\)=wifi-device$/\1/p"); do
 		c=$(uci -q get "wireless.$radio.country")
-		[ -z "$c" ] || [ "$c" = 00 ] || continue
+		[ -z "$c" ] || [ "$c" = 00 ] || [ "$c" = GB ] || continue
 		uci set "wireless.$radio.country=US"
 	done
 	uci -q commit wireless
 	uci -q batch <<-UCI
 		set milkflint.defaults=defaults
 		set milkflint.defaults.flint4_country_us='1'
+		set milkflint.defaults.flint4_country_us_fix='1'
+		commit milkflint
+	UCI
+fi
+
+# Migrate images that set flint4_country_us=1 without writing US (91 had
+# already seeded GB). If every radio is still GB, apply US once.
+if [ "$(uci -q get milkflint.defaults.flint4_country_us)" = 1 ] && \
+	[ -z "$(uci -q get milkflint.defaults.flint4_country_us_fix)" ]; then
+	all_gb=1
+	any=
+	for radio in $(uci -q show wireless | sed -n "s/^wireless\.\([^.=]*\)=wifi-device$/\1/p"); do
+		any=1
+		c=$(uci -q get "wireless.$radio.country")
+		[ "$c" = GB ] || all_gb=0
+	done
+	if [ -n "$any" ] && [ "$all_gb" = 1 ]; then
+		for radio in $(uci -q show wireless | sed -n "s/^wireless\.\([^.=]*\)=wifi-device$/\1/p"); do
+			uci set "wireless.$radio.country=US"
+		done
+		uci -q commit wireless
+	fi
+	uci -q batch <<-UCI
+		set milkflint.defaults=defaults
+		set milkflint.defaults.flint4_country_us_fix='1'
 		commit milkflint
 	UCI
 fi
 
 exit 0
+

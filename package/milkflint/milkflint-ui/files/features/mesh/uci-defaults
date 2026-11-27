@@ -9,10 +9,10 @@ uci -q show mesh11sd.setup >/dev/null 2>&1 || {
 	uci set mesh11sd.setup.portal_detect='1'
 	uci commit mesh11sd
 }
-# Ensure auto_config stays 0 on first MilkFlint boot if the package defaulted otherwise.
+# Mark seeded once so later boots don't rewrite mesh11sd. Only force
+# auto_config=0 when creating the setup section above — never clobber a
+# box that already had mesh11sd configured before MilkFlint arrived.
 if [ -z "$(uci -q get milkflint.mesh.seeded)" ]; then
-	uci -q set mesh11sd.setup.auto_config='0'
-	uci -q commit mesh11sd
 	uci -q batch <<-UCI
 		set milkflint.mesh=mesh
 		set milkflint.mesh.seeded='1'

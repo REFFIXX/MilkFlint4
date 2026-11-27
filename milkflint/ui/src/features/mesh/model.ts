@@ -106,14 +106,11 @@ export function toChanges(form: MeshForm, mesh: Section[], milkflint: Section[] 
     auto_mesh_band: form.band,
     mesh_gate_base_ssid: form.gateSsid.replace(/\s+/g, ''),
     mesh_gate_encryption: form.gateEncryption,
-    mesh_gate_key:
-      form.gateEncryption === '0' || form.gateEncryption === '4' ? undefined : form.gateKey.trim(),
+    mesh_gate_key: form.gateEncryption === '0' || form.gateEncryption === '4' ? undefined : form.gateKey.trim(),
     ssid_suffix_enable: form.ssidSuffix ? '1' : '0',
     mesh_gate_enable: '1',
   };
-  const setup = sectionChanges('mesh11sd', mesh, 'setup', values).map((c) =>
-    c.op === 'add' ? { ...c, type: 'mesh11sd' } : c,
-  );
+  const setup = sectionChanges('mesh11sd', mesh, 'setup', values).map((c) => (c.op === 'add' ? { ...c, type: 'mesh11sd' } : c));
   // Persist UI role separately: main-auto and peer both use portal_detect=1.
   const meta = sectionChanges('milkflint', milkflint, 'mesh', { role: form.role }).map((c) =>
     c.op === 'add' ? { ...c, type: 'mesh' } : c,
@@ -132,7 +129,7 @@ export function firstBootScript(form: MeshForm): string {
     '# OpenWrt 25.12+. Same auto_mesh_id / gate SSID / key on every node.',
     '# auto_config=0 = confidence test (power-cycle recovers). After mesh11sd status looks good:',
     "#   uci set mesh11sd.setup.auto_config='1' && uci commit mesh11sd",
-    "#   (or: mesh11sd auto_config enable)",
+    '#   (or: mesh11sd auto_config enable)',
     "uci set mesh11sd.setup.auto_config='0'",
     "uci set mesh11sd.setup.portal_detect='1'",
     `uci set mesh11sd.setup.auto_mesh_id='${escapeUci(form.autoMeshId.trim())}'`,
@@ -151,6 +148,10 @@ export function firstBootScript(form: MeshForm): string {
   lines.push(
     `uci set mesh11sd.setup.ssid_suffix_enable='${form.ssidSuffix ? '1' : '0'}'`,
     'uci commit mesh11sd',
+    // Persist UI role: peer and main-auto both use portal_detect=1.
+    'uci -q get milkflint.mesh >/dev/null 2>&1 || uci set milkflint.mesh=mesh',
+    `uci set milkflint.mesh.role='${form.role}'`,
+    'uci commit milkflint',
     '',
   );
   return lines.join('\n');
