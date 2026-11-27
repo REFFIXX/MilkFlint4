@@ -436,15 +436,15 @@ export function MeshPage(): ReactElement {
       )}
 
       <SaveBar
-        dirty={dirty}
-        applying={state.phase === 'applying'}
-        disabled={loading || formError !== undefined || !data.compatible}
+        visible={dirty}
+        busy={state.phase === 'applying'}
+        invalid={loading || formError !== undefined || !data.compatible}
         onSave={() => {
-          if (formError !== undefined) return;
+          if (formError !== undefined || !data.compatible) return;
           void apply(toChanges(current, data.mesh, data.milkflint));
           setForm(undefined);
         }}
-        onDiscard={() => {
+        onRevert={() => {
           setForm(undefined);
           reset();
         }}

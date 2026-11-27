@@ -311,15 +311,15 @@ export function WifiRoamingPage(): ReactElement {
       </div>
 
       <SaveBar
-        dirty={dirty}
-        applying={state.phase === 'applying'}
-        disabled={loading || domainError !== undefined || !data.compatible}
+        visible={dirty}
+        busy={state.phase === 'applying'}
+        invalid={loading || domainError !== undefined || !data.compatible}
         onSave={() => {
-          if (domainError !== undefined) return;
+          if (domainError !== undefined || !data.compatible) return;
           void apply(toChanges(current, data.wireless, data.usteer));
           setForm(undefined);
         }}
-        onDiscard={() => {
+        onRevert={() => {
           setForm(undefined);
           reset();
         }}

@@ -93,3 +93,16 @@ Copy the packaged `htdocs` into a running image’s `milkflint-ui` package tree 
 - `mesh11sd` plus `ip-full`, `vxlan`, `kmod-nft-bridge`
 
 Configure them from the MilkFlint **Wi‑Fi → Wi‑Fi roaming** and **Wi‑Fi → Mesh** pages (OpenWrt 25.x / MilkFlint4 only). Mesh first-boot scripts start with `auto_config=0` (confidence test) and `portal_detect=1` (ordinary portal/peer auto-detect).
+
+## UI simulator (no router required)
+
+For Roaming / Mesh page work without a Flint 4:
+
+```bash
+cd milkflint/ui
+node scripts/mock-openwrt-ubus.mjs          # :8088 simulated OpenWrt 25.x ubus
+MILKFLINT_VM=http://127.0.0.1:8088 pnpm exec vite   # :5288 MilkFlint UI
+# optional: node scripts/verify-roaming-mesh-sim.mjs
+```
+
+Open `http://127.0.0.1:5288/milkflint/` — password any. Seeded tri-band APs, usteer neighbors, and mesh peers.
