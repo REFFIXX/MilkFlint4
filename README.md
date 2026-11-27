@@ -36,37 +36,28 @@ Keep a stock GL.iNet recovery image before you flash. Then grab a release, flash
 
 ## Screenshots
 
-All cards are the same size — **Monokai milk** dark.
+Every card is the **same size** (3200×2000 → shown at 480×300) — **Monokai milk** dark. Captions are the page titles in the shot.
 
-<p align="center">
-  <img src="milkflint/docs/readme/home-monokai-dark.png" width="480" height="300" alt="Home — Monokai milk dark">
-  &nbsp;
-  <img src="milkflint/docs/readme/themes-monokai-dark.png" width="480" height="300" alt="Themes — Monokai milk in use">
-</p>
-<p align="center"><sub>Home dashboard · Themes — <b>Monokai milk</b> is the default</sub></p>
+<table>
+  <tr>
+    <td align="center" width="50%"><img src="milkflint/docs/readme/home-monokai-dark.png" width="480" alt="Home"><br><sub><b>Home</b> — live status</sub></td>
+    <td align="center" width="50%"><img src="milkflint/docs/readme/themes-monokai-dark.png" width="480" alt="Themes"><br><sub><b>Themes</b> — Monokai milk in use</sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="50%"><img src="milkflint/docs/readme/roaming-monokai-dark.png" width="480" alt="Wi-Fi roaming"><br><sub><b>Wi‑Fi roaming</b> — 802.11r/k/v + usteer</sub></td>
+    <td align="center" width="50%"><img src="milkflint/docs/readme/mesh-monokai-dark.png" width="480" alt="Mesh"><br><sub><b>Mesh</b> — mesh11sd Main / peers</sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="50%"><img src="milkflint/docs/readme/wifi-monokai-dark.png" width="480" alt="Networks & radios"><br><sub><b>Networks & radios</b> — 2.4 / 5 / 6 GHz</sub></td>
+    <td align="center" width="50%"><img src="milkflint/docs/readme/sqm-monokai-dark.png" width="480" alt="Smart Queue"><br><sub><b>Smart Queue</b> — CAKE</sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="50%"><img src="milkflint/docs/readme/tuning-monokai-dark.png" width="480" alt="Performance tuning"><br><sub><b>Performance tuning</b></sub></td>
+    <td align="center" width="50%"><img src="milkflint/docs/readme/firewall-monokai-dark.png" width="480" alt="Firewall"><br><sub><b>Firewall</b> — rules</sub></td>
+  </tr>
+</table>
 
-<p align="center">
-  <img src="milkflint/docs/readme/roaming-monokai-dark.png" width="480" height="300" alt="Wi-Fi roaming — Monokai milk dark">
-  &nbsp;
-  <img src="milkflint/docs/readme/mesh-monokai-dark.png" width="480" height="300" alt="Mesh — Monokai milk dark">
-</p>
-<p align="center"><sub>Wi‑Fi roaming (802.11r/k/v + usteer) · 802.11s Mesh (mesh11sd)</sub></p>
-
-<p align="center">
-  <img src="milkflint/docs/readme/wifi-monokai-dark.png" width="480" height="300" alt="Wi-Fi — Monokai milk dark">
-  &nbsp;
-  <img src="milkflint/docs/readme/sqm-monokai-dark.png" width="480" height="300" alt="Smart Queue — Monokai milk dark">
-</p>
-<p align="center"><sub>Tri-band Wi‑Fi · Smart Queue (CAKE)</sub></p>
-
-<p align="center">
-  <img src="milkflint/docs/readme/tuning-monokai-dark.png" width="480" height="300" alt="Performance Tuning — Monokai milk dark">
-  &nbsp;
-  <img src="milkflint/docs/readme/firewall-monokai-dark.png" width="480" height="300" alt="Firewall — Monokai milk dark">
-</p>
-<p align="center"><sub>Performance Tuning · Firewall</sub></p>
-
-More (incl. light variants): [`milkflint/docs/forum/`](milkflint/docs/forum/) · gallery source: [`milkflint/docs/readme/`](milkflint/docs/readme/).
+More (incl. light variants): [`milkflint/docs/forum/`](milkflint/docs/forum/) · gallery: [`milkflint/docs/readme/`](milkflint/docs/readme/).
 ## Why it’s spicy
 
 ### Hardware that actually works
