@@ -290,7 +290,15 @@ export function useDashboard(): ReturnType<typeof usePoll<Dashboard>> {
       }),
     );
     generations.current = seen;
-    clients.sort((a, b) => (b.signal ?? -200) - (a.signal ?? -200));
+    // One row per MAC — a client can show up on several radios at once (or the
+    // mock returns the same station for every phy). Keep the strongest signal.
+    const byMac = new Map<string, Client>();
+    for (const c of clients) {
+      const prevClient = byMac.get(c.mac);
+      if (prevClient === undefined || (c.signal ?? -200) > (prevClient.signal ?? -200)) byMac.set(c.mac, c);
+    }
+    const uniqueClients = [...byMac.values()];
+    uniqueClients.sort((a, b) => (b.signal ?? -200) - (a.signal ?? -200));
 
     const wan = interfaces.find((i) => i.interface === 'wan');
     // PPPoE's IPv6 comes up as wan_6 when it has no wan6 of its own
@@ -301,7 +309,7 @@ export function useDashboard(): ReturnType<typeof usePoll<Dashboard>> {
     const wired = wiredDevices(
       neighbors,
       lan?.['ipv4-address']?.[0],
-      new Set(clients.map((c) => c.mac)),
+      new Set(uniqueClients.map((c) => c.mac)),
       new Set(gateway === undefined ? [] : [gateway]),
     );
 
@@ -320,7 +328,7 @@ export function useDashboard(): ReturnType<typeof usePoll<Dashboard>> {
       cpu: stats.cpu,
       bytes,
       cake: new Map(cake.map((c) => [c.dev, c.bytes])),
-      stations: new Map(clients.map((c) => [c.mac, { tx: c.txBytes, rx: c.rxBytes }])),
+      stations: new Map(uniqueClients.map((c) => [c.mac, { tx: c.txBytes, rx: c.rxBytes }])),
     };
 
     const wanDev = wan?.l3_device ?? wan?.device;
@@ -335,7 +343,7 @@ export function useDashboard(): ReturnType<typeof usePoll<Dashboard>> {
       // An access point's tx is what clients download.
       wifiDown: sum(live.map((ap) => rateOf(ap.ifname, 'tx'))),
       wifiUp: sum(live.map((ap) => rateOf(ap.ifname, 'rx'))),
-      devices: clients.length + (wired ?? 0),
+      devices: uniqueClients.length + (wired ?? 0),
     };
     history.current = [...history.current, sample].slice(-HISTORY);
 
@@ -346,6 +354,21 @@ export function useDashboard(): ReturnType<typeof usePoll<Dashboard>> {
       stats.temperatures = sampleTemperatures(phys, wan?.device);
     }
 
-    return { board, info, stats, cpu, cores, wan, wan6, lan, radios, clients, wired, ports, cake, history: history.current };
+    return {
+      board,
+      info,
+      stats,
+      cpu,
+      cores,
+      wan,
+      wan6,
+      lan,
+      radios,
+      clients: uniqueClients,
+      wired,
+      ports,
+      cake,
+      history: history.current,
+    };
   }, POLL_MS);
 }

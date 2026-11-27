@@ -84,7 +84,7 @@ export function WifiRoamingPage(): ReactElement {
     return (
       <>
         <PageHeader title="Wi-Fi roaming" description="Fast handoff between this router and your access points." />
-        <LoadError error={error} onRetry={() => void reload()} />
+        <LoadError error={error} retry={() => void reload()} />
       </>
     );
   }
