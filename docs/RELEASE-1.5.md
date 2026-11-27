@@ -46,7 +46,7 @@ Flash this if you are on **1.1.1 / 1.1.2** (or earlier 1.x). Keep settings is fi
 ## From 1.1.x (still in this image)
 
 - Wi‑Fi → Wi‑Fi roaming (802.11r/k/v + usteer) and 802.11s mesh (mesh11sd)
-- Fixed mac80211 patch 507 for [openwrt#26972](https://github.com/openwrt/openwrt/issues/26972) (MLD `ethtool -S` oops)
+- Fixed mac80211 patch 507 for [openwrt#26972](https://github.com/openwrt/openwrt/issues/26972) (MLD `ethtool -S` oops) — hunk line counts corrected so the #26972 NULL/`valid_links` guards apply cleanly on backports 6.18
 - WAN watch 60s sample window, PSC help text, empty-SSID save guard from 1.1.2
 
 ---
