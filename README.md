@@ -34,33 +34,33 @@ Keep a stock GL.iNet recovery image before you flash. Then grab a release, flash
 <table>
   <tr>
     <td width="50%" valign="top">
-      <p><img src="https://img.shields.io/badge/Wi--Fi%20roaming-ff6188?style=flat-square&labelColor=2d2a2e" alt="Wi-Fi roaming"></p>
+      <p><img src="https://img.shields.io/badge/Wi--Fi%20roaming-ff6188?style=flat-square" alt="Wi-Fi roaming"></p>
       <p><b>Wi‑Fi → Wi‑Fi roaming</b><br>
       802.11r / k / v + <code>usteer</code>, shared mobility domain, “Why?” hints with recommended settings for multi‑AP handoff.</p>
     </td>
     <td width="50%" valign="top">
-      <p><img src="https://img.shields.io/badge/802.11s%20mesh-ab9df2?style=flat-square&labelColor=2d2a2e" alt="802.11s mesh"></p>
+      <p><img src="https://img.shields.io/badge/802.11s%20mesh-ab9df2?style=flat-square" alt="802.11s mesh"></p>
       <p><b>Wi‑Fi → Mesh</b><br>
       <code>mesh11sd</code> Main / peer roles, shared identity, live topology, first-boot script to deploy more OpenWrt <b>25.x</b> APs.</p>
     </td>
   </tr>
   <tr>
     <td width="50%" valign="top">
-      <p><img src="https://img.shields.io/badge/Monokai%20milk-fcfcfa?style=flat-square&labelColor=2d2a2e&color=ff6188" alt="Monokai milk"></p>
+      <p><img src="https://img.shields.io/badge/Monokai%20milk-ff6188?style=flat-square" alt="Monokai milk"></p>
       <p>Soft charcoal / milk panels · pink / cyan / green · Honey milk, Plain milk, Moss, Minimamilk one click away · Footstrap LuCI.</p>
     </td>
     <td width="50%" valign="top">
-      <p><img src="https://img.shields.io/badge/LCD%20splash-ffd866?style=flat-square&labelColor=2d2a2e" alt="LCD splash"></p>
+      <p><img src="https://img.shields.io/badge/LCD%20splash-ffd866?style=flat-square" alt="LCD splash"></p>
       <p>MilkFlint4 logo on the 320×240 panel at boot — and it <b>stays on</b>. Pink <b>4</b> on the front like it owns the place.</p>
     </td>
   </tr>
   <tr>
     <td width="50%" valign="top">
-      <p><img src="https://img.shields.io/badge/Wi--Fi%207-78dce8?style=flat-square&labelColor=2d2a2e" alt="Wi-Fi 7"></p>
+      <p><img src="https://img.shields.io/badge/Wi--Fi%207-78dce8?style=flat-square" alt="Wi-Fi 7"></p>
       <p>MT7996 tri‑band · <b>WED</b> on by default · latency-first radio defaults · full MilkFlint Wi‑Fi / guests / schedules.</p>
     </td>
     <td width="50%" valign="top">
-      <p><img src="https://img.shields.io/badge/10G%20%2B%20SQM-a9dc76?style=flat-square&labelColor=2d2a2e" alt="10G + SQM"></p>
+      <p><img src="https://img.shields.io/badge/10G%20%2B%20SQM-a9dc76?style=flat-square" alt="10G + SQM"></p>
       <p>Real <code>wan</code> on RTL8261C · multi-queue CAKE · RSS · AdGuard Home, banIP, WireGuard, Performance Tuning.</p>
     </td>
   </tr>
@@ -130,15 +130,15 @@ After a hard 10G PHY wedge: **power-cycle** (warm reboot is not enough). Upstrea
 
 | | |
 |---|---|
-| <img src="https://img.shields.io/badge/UI-ff6188?style=flat-square&labelColor=2d2a2e" alt="UI"> | Live **Home**, Wi‑Fi, guests, DNS, AdGuard Home, banIP, SQM, VPN, schedules, device control, themes, upgrade, Performance Tuning — LuCI under **Advanced** |
-| <img src="https://img.shields.io/badge/Roaming-ff6188?style=flat-square&labelColor=2d2a2e" alt="Roaming"> | **Wi‑Fi → Wi‑Fi roaming** — 802.11r/k/v + `usteer`, shared mobility domain, “Why?” recommended settings |
-| <img src="https://img.shields.io/badge/Mesh-ab9df2?style=flat-square&labelColor=2d2a2e" alt="Mesh"> | **Wi‑Fi → Mesh** — `mesh11sd` Main/peer, shared identity, live topology, first-boot script for OpenWrt 25.x APs |
-| <img src="https://img.shields.io/badge/Theme-fcfcfa?style=flat-square&labelColor=2d2a2e&color=ff6188" alt="Theme"> | **Monokai milk** default · Honey milk / Plain milk / Moss / Minimamilk · Footstrap LuCI |
-| <img src="https://img.shields.io/badge/LCD-ffd866?style=flat-square&labelColor=2d2a2e" alt="LCD"> | Boot splash paints the logo on the 320×240 panel and leaves it on |
-| <img src="https://img.shields.io/badge/SQM%20%2F%20VPN-a9dc76?style=flat-square&labelColor=2d2a2e" alt="SQM / VPN"> | Multi-queue CAKE (1 Gbit Eth / 500 Mbit PPPoE) · queue-per-CPU IFBs · VPN **Use VPN’s DNS** · CAKE ECN/DSCP retry |
-| <img src="https://img.shields.io/badge/Wi--Fi-78dce8?style=flat-square&labelColor=2d2a2e" alt="Wi-Fi"> | UL MU-MIMO/OFDMA **off** (latency-first) · US country · 6 GHz PSC **37** · WED on · BE latency tweak on 5+6 GHz |
-| <img src="https://img.shields.io/badge/Steering-fc9867?style=flat-square&labelColor=2d2a2e" alt="Steering"> | Hardware **RSS** on `wan` (PDMA 0–3) · multi-queue CAKE egress on `mtk_soc_eth` |
-| <img src="https://img.shields.io/badge/Packages-ab9df2?style=flat-square&labelColor=2d2a2e" alt="Packages"> | `wpad-mbedtls` · `usteer` · `mesh11sd` · full `CONFIG_ALL_KMODS` (don’t pull snapshot `kmod-*` from openwrt.org) |
+| <img src="https://img.shields.io/badge/UI-ff6188?style=flat-square" alt="UI"> | Live **Home**, Wi‑Fi, guests, DNS, AdGuard Home, banIP, SQM, VPN, schedules, device control, themes, upgrade, Performance Tuning — LuCI under **Advanced** |
+| <img src="https://img.shields.io/badge/Roaming-ff6188?style=flat-square" alt="Roaming"> | **Wi‑Fi → Wi‑Fi roaming** — 802.11r/k/v + `usteer`, shared mobility domain, “Why?” recommended settings |
+| <img src="https://img.shields.io/badge/Mesh-ab9df2?style=flat-square" alt="Mesh"> | **Wi‑Fi → Mesh** — `mesh11sd` Main/peer, shared identity, live topology, first-boot script for OpenWrt 25.x APs |
+| <img src="https://img.shields.io/badge/Theme-ff6188?style=flat-square" alt="Theme"> | **Monokai milk** default · Honey milk / Plain milk / Moss / Minimamilk · Footstrap LuCI |
+| <img src="https://img.shields.io/badge/LCD-ffd866?style=flat-square" alt="LCD"> | Boot splash paints the logo on the 320×240 panel and leaves it on |
+| <img src="https://img.shields.io/badge/SQM%20%2F%20VPN-a9dc76?style=flat-square" alt="SQM / VPN"> | Multi-queue CAKE (1 Gbit Eth / 500 Mbit PPPoE) · queue-per-CPU IFBs · VPN **Use VPN’s DNS** · CAKE ECN/DSCP retry |
+| <img src="https://img.shields.io/badge/Wi--Fi-78dce8?style=flat-square" alt="Wi-Fi"> | UL MU-MIMO/OFDMA **off** (latency-first) · US country · 6 GHz PSC **37** · WED on · BE latency tweak on 5+6 GHz |
+| <img src="https://img.shields.io/badge/Steering-fc9867?style=flat-square" alt="Steering"> | Hardware **RSS** on `wan` (PDMA 0–3) · multi-queue CAKE egress on `mtk_soc_eth` |
+| <img src="https://img.shields.io/badge/Packages-ab9df2?style=flat-square" alt="Packages"> | `wpad-mbedtls` · `usteer` · `mesh11sd` · full `CONFIG_ALL_KMODS` (don’t pull snapshot `kmod-*` from openwrt.org) |
 
 **Performance defaults** — CPU `performance` · RSS forced · RX coalesce 20 µs · software + hardware flow offload + WED · large TCP buffers · high conntrack — seeded once by `99-milkflint4-flint4-perf`. Change later under **Performance Tuning**; edits stick.
 
