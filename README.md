@@ -29,7 +29,7 @@ The look is ours: **Monokai milk** (soft charcoal / milk panels, pink `#ff6188`,
 
 Keep a stock GL.iNet recovery image before you flash. Then grab a release, flash it, watch the pink **4** light up, and go break a speed test.
 
-<h2><span style="color:#ff6188">●</span> Features</h2>
+<h2><img src="https://img.shields.io/badge/%E2%97%8F-ff6188?style=flat-square" alt=""> Features</h2>
 
 <table>
   <tr>
@@ -89,19 +89,41 @@ Keep a stock GL.iNet recovery image before you flash. Then grab a release, flash
 
 More screenshots (light + dark): [`milkflint/docs/forum/`](milkflint/docs/forum/).
 
-<h2><span style="color:#78dce8">●</span> Hardware</h2>
+<h2><img src="https://img.shields.io/badge/%E2%97%8F-78dce8?style=flat-square" alt=""> Hardware</h2>
 
 Not “it boots.” *Wired in properly* — MT7988 / MT7996 / YT9224 / RTL8261C treated as a Flint 4, not a generic brick.
 
-| Piece | What’s going on |
-|---|---|
-| **10G WAN (RTL8261C)** | Firmware load, soft-reset, USXGMII flap skip, MDIO 2.5 MHz, `eee-broken-*`, hotplug recovery |
-| **WAN path** | Real `wan` — not Flint 2 `ports` / `eth1` cargo-cult |
-| **Wi‑Fi 7 (MT7996)** | Tri-band · **WED** on by default (`mt7996e wed_enable=Y`) |
-| **RSS** | Hardware RSS on `wan` (PDMA 0–3) |
-| **Panel** | ST7789 + CST3530 — lit, driven, branded (logo stays after boot) |
-| **Fan** | PWM from ~45 °C |
-| **Switch / PHY** | YT9224 + YT8824 · SFP+ present |
+<!-- Labels are shields.io images (same as Features) — GitHub strips most HTML/CSS color on text -->
+<table>
+  <tr>
+    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/10G%20WAN-ff6188?style=flat-square" alt="10G WAN"></td>
+    <td>RTL8261C — firmware load, soft-reset, USXGMII flap skip, MDIO 2.5 MHz, <code>eee-broken-*</code>, hotplug recovery</td>
+  </tr>
+  <tr>
+    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/WAN%20path-ff6188?style=flat-square" alt="WAN path"></td>
+    <td>Real <code>wan</code> — not Flint 2 <code>ports</code> / <code>eth1</code> cargo-cult</td>
+  </tr>
+  <tr>
+    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/Wi--Fi%207-78dce8?style=flat-square" alt="Wi-Fi 7"></td>
+    <td>MT7996 tri-band · <b>WED</b> on by default (<code>mt7996e wed_enable=Y</code>)</td>
+  </tr>
+  <tr>
+    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/RSS-fc9867?style=flat-square" alt="RSS"></td>
+    <td>Hardware RSS on <code>wan</code> (PDMA 0–3)</td>
+  </tr>
+  <tr>
+    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/Panel-ffd866?style=flat-square" alt="Panel"></td>
+    <td>ST7789 + CST3530 — lit, driven, branded (logo stays after boot)</td>
+  </tr>
+  <tr>
+    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/Fan-a9dc76?style=flat-square" alt="Fan"></td>
+    <td>PWM from ~45 °C</td>
+  </tr>
+  <tr>
+    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/Switch%20%2F%20PHY-ab9df2?style=flat-square" alt="Switch / PHY"></td>
+    <td>YT9224 + YT8824 · SFP+ present</td>
+  </tr>
+</table>
 
 After a hard 10G PHY wedge: **power-cycle** (warm reboot is not enough). Upstream refs: openwrt#26690 / #26691.
 
@@ -110,60 +132,64 @@ After a hard 10G PHY wedge: **power-cycle** (warm reboot is not enough). Upstrea
 
 <br>
 
-| Role | Interface |
-|---|---|
-| WAN (10G RJ45) | `wan` |
-| LAN | `lan2`–`lan5` (2.5G) · `lan6`–`lan9` (1G) · `sfp` (SFP+) |
-
-| | |
-|---|---|
-| SoC | MT7988A (4× A73) · **kernel 6.18** |
-| RAM / flash | 2 GB DDR4 / eMMC |
-| Wi‑Fi | MT7996 tri‑band Wi‑Fi 7 |
-| Switch / PHY | YT9224 + YT8824 · RTL8261C/D 10G WAN |
-| Panel / fan | ST7789 + CST3530 · PWM from ~45 °C |
-| Console | `ttyS0` 115200 8N1 |
+<table>
+  <tr>
+    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/WAN-ff6188?style=flat-square" alt="WAN"></td>
+    <td>10G RJ45 → <code>wan</code></td>
+  </tr>
+  <tr>
+    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/LAN-78dce8?style=flat-square" alt="LAN"></td>
+    <td><code>lan2</code>–<code>lan5</code> (2.5G) · <code>lan6</code>–<code>lan9</code> (1G) · <code>sfp</code> (SFP+)</td>
+  </tr>
+  <tr>
+    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/SoC-a9dc76?style=flat-square" alt="SoC"></td>
+    <td>MT7988A (4× A73) · <b>kernel 6.18</b> · 2 GB DDR4 / eMMC</td>
+  </tr>
+  <tr>
+    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/Console-fc9867?style=flat-square" alt="Console"></td>
+    <td><code>ttyS0</code> 115200 8N1</td>
+  </tr>
+</table>
 
 </details>
 
-<h2><span style="color:#a9dc76">●</span> What’s in the image</h2>
+<h2><img src="https://img.shields.io/badge/%E2%97%8F-a9dc76?style=flat-square" alt=""> What’s in the image</h2>
 
-<!-- bgcolor on <td> survives GitHub’s HTML sanitize; <code style> backgrounds do not -->
 <table>
   <tr>
-    <td width="150" align="center" bgcolor="#ff6188"><font color="#fcfcfa"><b>UI</b></font></td>
+    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/UI-ff6188?style=flat-square" alt="UI"></td>
     <td>Live <b>Home</b>, Wi‑Fi, guests, DNS, AdGuard Home, banIP, SQM, VPN, schedules, device control, themes, upgrade, Performance Tuning — LuCI under <b>Advanced</b></td>
   </tr>
   <tr>
-    <td width="150" align="center" bgcolor="#ff6188"><font color="#fcfcfa"><b>Roaming</b></font></td>
+    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/Roaming-ff6188?style=flat-square" alt="Roaming"></td>
     <td><b>Wi‑Fi → Wi‑Fi roaming</b> — 802.11r/k/v + <code>usteer</code>, shared mobility domain, “Why?” recommended settings</td>
   </tr>
   <tr>
-    <td width="150" align="center" bgcolor="#ab9df2"><font color="#2d2a2e"><b>Mesh</b></font></td>
+    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/Mesh-ab9df2?style=flat-square" alt="Mesh"></td>
     <td><b>Wi‑Fi → Mesh</b> — <code>mesh11sd</code> Main/peer, shared identity, live topology, first-boot script for OpenWrt 25.x APs</td>
   </tr>
   <tr>
-    <td width="150" align="center" bgcolor="#ff6188"><font color="#fcfcfa"><b>Theme</b></font></td>
+    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/Theme-ff6188?style=flat-square" alt="Theme"></td>
     <td><b>Monokai milk</b> default · Honey milk / Plain milk / Moss / Minimamilk · Footstrap LuCI</td>
   </tr>
   <tr>
-    <td width="150" align="center" bgcolor="#ffd866"><font color="#2d2a2e"><b>LCD</b></font></td>
+    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/LCD-ffd866?style=flat-square" alt="LCD"></td>
     <td>Boot splash paints the logo on the 320×240 panel and leaves it on</td>
   </tr>
   <tr>
-    <td width="150" align="center" bgcolor="#a9dc76"><font color="#2d2a2e"><b>SQM / VPN</b></font></td>
+    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/SQM%20%2F%20VPN-a9dc76?style=flat-square" alt="SQM / VPN"></td>
     <td>Multi-queue CAKE (1 Gbit Eth / 500 Mbit PPPoE) · queue-per-CPU IFBs · VPN <b>Use VPN’s DNS</b> · CAKE ECN/DSCP retry</td>
   </tr>
   <tr>
-    <td width="150" align="center" bgcolor="#78dce8"><font color="#2d2a2e"><b>Wi‑Fi</b></font></td>
+    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/Wi--Fi-78dce8?style=flat-square" alt="Wi-Fi"></td>
     <td>UL MU-MIMO/OFDMA <b>off</b> (latency-first) · US country · 6 GHz PSC <b>37</b> · WED on · BE latency tweak on 5+6 GHz</td>
   </tr>
   <tr>
-    <td width="150" align="center" bgcolor="#fc9867"><font color="#2d2a2e"><b>Steering</b></font></td>
+    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/Steering-fc9867?style=flat-square" alt="Steering"></td>
     <td>Hardware <b>RSS</b> on <code>wan</code> (PDMA 0–3) · multi-queue CAKE egress on <code>mtk_soc_eth</code></td>
   </tr>
   <tr>
-    <td width="150" align="center" bgcolor="#ab9df2"><font color="#2d2a2e"><b>Packages</b></font></td>
+    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/Packages-ab9df2?style=flat-square" alt="Packages"></td>
     <td><code>wpad-mbedtls</code> · <code>usteer</code> · <code>mesh11sd</code> · full <code>CONFIG_ALL_KMODS</code> (don’t pull snapshot <code>kmod-*</code> from openwrt.org)</td>
   </tr>
 </table>
@@ -204,7 +230,7 @@ Use other OpenWrt **25.12+** boxes as APs — same mobility domain for roaming, 
 
 LuCI stays the escape hatch under **Advanced**.
 
-<h2><span style="color:#ffd866">●</span> Releases</h2>
+<h2><img src="https://img.shields.io/badge/%E2%97%8F-ffd866?style=flat-square" alt=""> Releases</h2>
 
 ### 1.1
 
