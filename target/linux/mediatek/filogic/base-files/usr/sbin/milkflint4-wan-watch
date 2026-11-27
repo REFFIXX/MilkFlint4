@@ -1,6 +1,8 @@
 #!/bin/sh
 # Poll wan carrier_changes while ≥2 Wi-Fi radios are up. If the counter
 # climbs by ≥4 in a 60s window, pulse the fan and bounce wan (openwrt#26690).
+# Samples every 30s; the window compares against the reading from two ticks ago
+# so slow flap storms (e.g. +2 per interval) still trip recovery.
 
 STATE=/tmp/milkflint4-wan-watch
 mkdir -p "$STATE"
@@ -33,16 +35,22 @@ radios_up() {
 
 [ -d /sys/class/net/wan ] || exit 0
 
-prev=$(cat /sys/class/net/wan/carrier_changes 2>/dev/null || echo 0)
-echo "$prev" > "$STATE/carrier"
-echo "$(date +%s)" > "$STATE/at"
+seed=$(cat /sys/class/net/wan/carrier_changes 2>/dev/null || echo 0)
+# carrier_60: reading ~60s ago; carrier_30: reading ~30s ago
+echo "$seed" > "$STATE/carrier_60"
+echo "$seed" > "$STATE/carrier_30"
 
 while sleep 30; do
 	[ -d /sys/class/net/wan ] || continue
 	now=$(cat /sys/class/net/wan/carrier_changes 2>/dev/null || echo 0)
-	old=$(cat "$STATE/carrier" 2>/dev/null || echo 0)
-	echo "$now" > "$STATE/carrier"
-	delta=$((now - old))
+	ago60=$(cat "$STATE/carrier_60" 2>/dev/null || echo 0)
+	ago30=$(cat "$STATE/carrier_30" 2>/dev/null || echo 0)
+
+	# Slide the 60s window: previous 30s sample becomes the 60s baseline.
+	echo "$ago30" > "$STATE/carrier_60"
+	echo "$now" > "$STATE/carrier_30"
+
+	delta=$((now - ago60))
 	[ "$delta" -lt 0 ] && delta=0
 
 	ru=$(radios_up)
@@ -52,11 +60,14 @@ while sleep 30; do
 		ts=$(date +%s)
 		if [ $((ts - last)) -ge 300 ]; then
 			logger -t milkflint4-wan-watch \
-				"carrier_changes +$delta in ~30s with $ru radios; fan pulse + bounce"
+				"carrier_changes +$delta in ~60s with $ru radios; fan pulse + bounce"
 			pulse_fan
 			bounce_wan
 			echo "$ts" > "$STATE/last_fix"
-			echo "$(cat /sys/class/net/wan/carrier_changes 2>/dev/null || echo 0)" > "$STATE/carrier"
+			# Reseed the window after a bounce so we don't immediately re-trigger.
+			fresh=$(cat /sys/class/net/wan/carrier_changes 2>/dev/null || echo 0)
+			echo "$fresh" > "$STATE/carrier_60"
+			echo "$fresh" > "$STATE/carrier_30"
 		fi
 	fi
 done

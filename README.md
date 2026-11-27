@@ -238,7 +238,7 @@ LuCI stays the escape hatch under **Advanced**.
 - Image ships `wpad-mbedtls`, `usteer`, `mesh11sd`  
 - Everything from **1.0.1**: LCD splash · **1.0**: Flint 4 / 6.18, Monokai milk, MilkFlint userspace defaults  
 
-Notes: [`docs/RELEASE-1.1.md`](docs/RELEASE-1.1.md) · [`docs/RELEASE-1.0.1.md`](docs/RELEASE-1.0.1.md) · [`docs/RELEASE-1.0.md`](docs/RELEASE-1.0.md)
+Notes: [`docs/RELEASE-1.1.2.md`](docs/RELEASE-1.1.2.md) · [`docs/RELEASE-1.1.1.md`](docs/RELEASE-1.1.1.md) · [`docs/RELEASE-1.1.md`](docs/RELEASE-1.1.md) · [`docs/RELEASE-1.0.1.md`](docs/RELEASE-1.0.1.md) · [`docs/RELEASE-1.0.md`](docs/RELEASE-1.0.md)
 
 <h2><img src="https://img.shields.io/badge/%E2%97%8F-fc9867?style=flat-square" alt=""> Install</h2>
 
