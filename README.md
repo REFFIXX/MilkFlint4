@@ -10,13 +10,13 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/badge/status-stable-ff6188?style=flat-square&labelColor=2d2a2e" alt="stable"></a>
-  <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/badge/kernel-6.18-ff6188?style=flat-square&labelColor=2d2a2e" alt="kernel 6.18"></a>
+  <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/badge/status-stable-a9dc76?style=flat-square&labelColor=2d2a2e" alt="stable"></a>
+  <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/badge/kernel-6.18-78dce8?style=flat-square&labelColor=2d2a2e" alt="kernel 6.18"></a>
   <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/badge/roaming-802.11r%2Fk%2Fv-ff6188?style=flat-square&labelColor=2d2a2e" alt="Wi-Fi roaming"></a>
-  <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/badge/mesh-802.11s-ff6188?style=flat-square&labelColor=2d2a2e" alt="802.11s mesh"></a>
-  <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/badge/theme-Monokai%20milk-ff6188?style=flat-square&labelColor=2d2a2e&color=ff6188" alt="Monokai milk"></a>
-  <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/badge/LCD-logo%20on-ff6188?style=flat-square&labelColor=2d2a2e" alt="LCD splash"></a>
-  <a href="https://openwrt.org"><img src="https://img.shields.io/badge/base-OpenWrt%20main-ff6188?style=flat-square&labelColor=2d2a2e" alt="OpenWrt main"></a>
+  <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/badge/mesh-802.11s-ab9df2?style=flat-square&labelColor=2d2a2e" alt="802.11s mesh"></a>
+  <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/badge/theme-Monokai%20milk-fcfcfa?style=flat-square&labelColor=2d2a2e&color=ff6188" alt="Monokai milk"></a>
+  <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/badge/LCD-logo%20on-ffd866?style=flat-square&labelColor=2d2a2e" alt="LCD splash"></a>
+  <a href="https://openwrt.org"><img src="https://img.shields.io/badge/base-OpenWrt%20main-fc9867?style=flat-square&labelColor=2d2a2e" alt="OpenWrt main"></a>
 </p>
 
 ---
@@ -39,7 +39,7 @@ Keep a stock GL.iNet recovery image before you flash. Then grab a release, flash
       802.11r / k / v + <code>usteer</code>, shared mobility domain, “Why?” hints with recommended settings for multi‑AP handoff.</p>
     </td>
     <td width="50%" valign="top">
-      <p><img src="https://img.shields.io/badge/802.11s%20mesh-ff6188?style=flat-square" alt="802.11s mesh"></p>
+      <p><img src="https://img.shields.io/badge/802.11s%20mesh-ab9df2?style=flat-square" alt="802.11s mesh"></p>
       <p><b>Wi‑Fi → Mesh</b><br>
       <code>mesh11sd</code> Main / peer roles, shared identity, live topology, first-boot script to deploy more OpenWrt <b>25.x</b> APs.</p>
     </td>
@@ -50,23 +50,23 @@ Keep a stock GL.iNet recovery image before you flash. Then grab a release, flash
       <p>Soft charcoal / milk panels · pink / cyan / green · Honey milk, Plain milk, Moss, Minimamilk one click away · Footstrap LuCI.</p>
     </td>
     <td width="50%" valign="top">
-      <p><img src="https://img.shields.io/badge/LCD%20splash-ff6188?style=flat-square" alt="LCD splash"></p>
+      <p><img src="https://img.shields.io/badge/LCD%20splash-ffd866?style=flat-square" alt="LCD splash"></p>
       <p>MilkFlint4 logo on the 320×240 panel at boot — and it <b>stays on</b>. Pink <b>4</b> on the front like it owns the place.</p>
     </td>
   </tr>
   <tr>
     <td width="50%" valign="top">
-      <p><img src="https://img.shields.io/badge/Wi--Fi%207-ff6188?style=flat-square" alt="Wi-Fi 7"></p>
+      <p><img src="https://img.shields.io/badge/Wi--Fi%207-78dce8?style=flat-square" alt="Wi-Fi 7"></p>
       <p>MT7996 tri‑band · <b>WED</b> on by default · latency-first radio defaults · full MilkFlint Wi‑Fi / guests / schedules.</p>
     </td>
     <td width="50%" valign="top">
-      <p><img src="https://img.shields.io/badge/10G%20%2B%20SQM-ff6188?style=flat-square" alt="10G + SQM"></p>
+      <p><img src="https://img.shields.io/badge/10G%20%2B%20SQM-a9dc76?style=flat-square" alt="10G + SQM"></p>
       <p>Real <code>wan</code> on RTL8261C · multi-queue CAKE · RSS · AdGuard Home, banIP, WireGuard, Performance Tuning.</p>
     </td>
   </tr>
 </table>
 
-## Screenshots
+<h2><img src="https://img.shields.io/badge/%E2%97%8F-ab9df2?style=flat-square" alt=""> Screenshots</h2>
 
 <table>
   <tr>
@@ -89,7 +89,7 @@ Keep a stock GL.iNet recovery image before you flash. Then grab a release, flash
 
 More screenshots (light + dark): [`milkflint/docs/forum/`](milkflint/docs/forum/).
 
-<h2><img src="https://img.shields.io/badge/%E2%97%8F-ff6188?style=flat-square" alt=""> Hardware</h2>
+<h2><img src="https://img.shields.io/badge/%E2%97%8F-78dce8?style=flat-square" alt=""> Hardware</h2>
 
 Not “it boots.” *Wired in properly* — MT7988 / MT7996 / YT9224 / RTL8261C treated as a Flint 4, not a generic brick.
 
@@ -104,23 +104,23 @@ Not “it boots.” *Wired in properly* — MT7988 / MT7996 / YT9224 / RTL8261C 
     <td>Real <code>wan</code> — not Flint 2 <code>ports</code> / <code>eth1</code> cargo-cult</td>
   </tr>
   <tr>
-    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/Wi--Fi%207-ff6188?style=flat-square" alt="Wi-Fi 7"></td>
+    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/Wi--Fi%207-78dce8?style=flat-square" alt="Wi-Fi 7"></td>
     <td>MT7996 tri-band · <b>WED</b> on by default (<code>mt7996e wed_enable=Y</code>)</td>
   </tr>
   <tr>
-    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/RSS-ff6188?style=flat-square" alt="RSS"></td>
+    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/RSS-fc9867?style=flat-square" alt="RSS"></td>
     <td>Hardware RSS on <code>wan</code> (PDMA 0–3)</td>
   </tr>
   <tr>
-    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/Panel-ff6188?style=flat-square" alt="Panel"></td>
+    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/Panel-ffd866?style=flat-square" alt="Panel"></td>
     <td>ST7789 + CST3530 — lit, driven, branded (logo stays after boot)</td>
   </tr>
   <tr>
-    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/Fan-ff6188?style=flat-square" alt="Fan"></td>
+    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/Fan-a9dc76?style=flat-square" alt="Fan"></td>
     <td>PWM from ~45 °C</td>
   </tr>
   <tr>
-    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/Switch%20%2F%20PHY-ff6188?style=flat-square" alt="Switch / PHY"></td>
+    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/Switch%20%2F%20PHY-ab9df2?style=flat-square" alt="Switch / PHY"></td>
     <td>YT9224 + YT8824 · SFP+ present</td>
   </tr>
 </table>
@@ -138,22 +138,22 @@ After a hard 10G PHY wedge: **power-cycle** (warm reboot is not enough). Upstrea
     <td>10G RJ45 → <code>wan</code></td>
   </tr>
   <tr>
-    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/LAN-ff6188?style=flat-square" alt="LAN"></td>
+    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/LAN-78dce8?style=flat-square" alt="LAN"></td>
     <td><code>lan2</code>–<code>lan5</code> (2.5G) · <code>lan6</code>–<code>lan9</code> (1G) · <code>sfp</code> (SFP+)</td>
   </tr>
   <tr>
-    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/SoC-ff6188?style=flat-square" alt="SoC"></td>
+    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/SoC-a9dc76?style=flat-square" alt="SoC"></td>
     <td>MT7988A (4× A73) · <b>kernel 6.18</b> · 2 GB DDR4 / eMMC</td>
   </tr>
   <tr>
-    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/Console-ff6188?style=flat-square" alt="Console"></td>
+    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/Console-fc9867?style=flat-square" alt="Console"></td>
     <td><code>ttyS0</code> 115200 8N1</td>
   </tr>
 </table>
 
 </details>
 
-<h2><img src="https://img.shields.io/badge/%E2%97%8F-ff6188?style=flat-square" alt=""> What’s in the image</h2>
+<h2><img src="https://img.shields.io/badge/%E2%97%8F-a9dc76?style=flat-square" alt=""> What’s in the image</h2>
 
 <table>
   <tr>
@@ -165,7 +165,7 @@ After a hard 10G PHY wedge: **power-cycle** (warm reboot is not enough). Upstrea
     <td><b>Wi‑Fi → Wi‑Fi roaming</b> — 802.11r/k/v + <code>usteer</code>, shared mobility domain, “Why?” recommended settings</td>
   </tr>
   <tr>
-    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/Mesh-ff6188?style=flat-square" alt="Mesh"></td>
+    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/Mesh-ab9df2?style=flat-square" alt="Mesh"></td>
     <td><b>Wi‑Fi → Mesh</b> — <code>mesh11sd</code> Main/peer, shared identity, live topology, first-boot script for OpenWrt 25.x APs</td>
   </tr>
   <tr>
@@ -173,23 +173,23 @@ After a hard 10G PHY wedge: **power-cycle** (warm reboot is not enough). Upstrea
     <td><b>Monokai milk</b> default · Honey milk / Plain milk / Moss / Minimamilk · Footstrap LuCI</td>
   </tr>
   <tr>
-    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/LCD-ff6188?style=flat-square" alt="LCD"></td>
+    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/LCD-ffd866?style=flat-square" alt="LCD"></td>
     <td>Boot splash paints the logo on the 320×240 panel and leaves it on</td>
   </tr>
   <tr>
-    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/SQM%20%2F%20VPN-ff6188?style=flat-square" alt="SQM / VPN"></td>
+    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/SQM%20%2F%20VPN-a9dc76?style=flat-square" alt="SQM / VPN"></td>
     <td>Multi-queue CAKE (1 Gbit Eth / 500 Mbit PPPoE) · queue-per-CPU IFBs · VPN <b>Use VPN’s DNS</b> · CAKE ECN/DSCP retry</td>
   </tr>
   <tr>
-    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/Wi--Fi-ff6188?style=flat-square" alt="Wi-Fi"></td>
+    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/Wi--Fi-78dce8?style=flat-square" alt="Wi-Fi"></td>
     <td>UL MU-MIMO/OFDMA <b>off</b> (latency-first) · US country · 6 GHz PSC <b>37</b> · WED on · BE latency tweak on 5+6 GHz</td>
   </tr>
   <tr>
-    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/Steering-ff6188?style=flat-square" alt="Steering"></td>
+    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/Steering-fc9867?style=flat-square" alt="Steering"></td>
     <td>Hardware <b>RSS</b> on <code>wan</code> (PDMA 0–3) · multi-queue CAKE egress on <code>mtk_soc_eth</code></td>
   </tr>
   <tr>
-    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/Packages-ff6188?style=flat-square" alt="Packages"></td>
+    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/Packages-ab9df2?style=flat-square" alt="Packages"></td>
     <td><code>wpad-mbedtls</code> · <code>usteer</code> · <code>mesh11sd</code> · full <code>CONFIG_ALL_KMODS</code> (don’t pull snapshot <code>kmod-*</code> from openwrt.org)</td>
   </tr>
 </table>
@@ -230,7 +230,7 @@ Use other OpenWrt **25.12+** boxes as APs — same mobility domain for roaming, 
 
 LuCI stays the escape hatch under **Advanced**.
 
-<h2><img src="https://img.shields.io/badge/%E2%97%8F-ff6188?style=flat-square" alt=""> Releases</h2>
+<h2><img src="https://img.shields.io/badge/%E2%97%8F-ffd866?style=flat-square" alt=""> Releases</h2>
 
 ### 1.1
 
@@ -240,7 +240,7 @@ LuCI stays the escape hatch under **Advanced**.
 
 Notes: [`docs/RELEASE-1.1.md`](docs/RELEASE-1.1.md) · [`docs/RELEASE-1.0.1.md`](docs/RELEASE-1.0.1.md) · [`docs/RELEASE-1.0.md`](docs/RELEASE-1.0.md)
 
-## Install
+<h2><img src="https://img.shields.io/badge/%E2%97%8F-fc9867?style=flat-square" alt=""> Install</h2>
 
 ### 1. Grab the image
 
