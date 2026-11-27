@@ -128,17 +128,45 @@ After a hard 10G PHY wedge: **power-cycle** (warm reboot is not enough). Upstrea
 
 <h2><span style="color:#a9dc76">●</span> What’s in the image</h2>
 
-| | |
-|:---|:---|
-| <code style="background:#ff6188;color:#fcfcfa;padding:4px 12px;border-radius:4px;font-size:14px;font-weight:700">UI</code> | Live **Home**, Wi‑Fi, guests, DNS, AdGuard Home, banIP, SQM, VPN, schedules, device control, themes, upgrade, Performance Tuning — LuCI under **Advanced** |
-| <code style="background:#ff6188;color:#fcfcfa;padding:4px 12px;border-radius:4px;font-size:14px;font-weight:700">Roaming</code> | **Wi‑Fi → Wi‑Fi roaming** — 802.11r/k/v + `usteer`, shared mobility domain, “Why?” recommended settings |
-| <code style="background:#ab9df2;color:#2d2a2e;padding:4px 12px;border-radius:4px;font-size:14px;font-weight:700">Mesh</code> | **Wi‑Fi → Mesh** — `mesh11sd` Main/peer, shared identity, live topology, first-boot script for OpenWrt 25.x APs |
-| <code style="background:#ff6188;color:#fcfcfa;padding:4px 12px;border-radius:4px;font-size:14px;font-weight:700">Theme</code> | **Monokai milk** default · Honey milk / Plain milk / Moss / Minimamilk · Footstrap LuCI |
-| <code style="background:#ffd866;color:#2d2a2e;padding:4px 12px;border-radius:4px;font-size:14px;font-weight:700">LCD</code> | Boot splash paints the logo on the 320×240 panel and leaves it on |
-| <code style="background:#a9dc76;color:#2d2a2e;padding:4px 12px;border-radius:4px;font-size:14px;font-weight:700">SQM / VPN</code> | Multi-queue CAKE (1 Gbit Eth / 500 Mbit PPPoE) · queue-per-CPU IFBs · VPN **Use VPN’s DNS** · CAKE ECN/DSCP retry |
-| <code style="background:#78dce8;color:#2d2a2e;padding:4px 12px;border-radius:4px;font-size:14px;font-weight:700">Wi‑Fi</code> | UL MU-MIMO/OFDMA **off** (latency-first) · US country · 6 GHz PSC **37** · WED on · BE latency tweak on 5+6 GHz |
-| <code style="background:#fc9867;color:#2d2a2e;padding:4px 12px;border-radius:4px;font-size:14px;font-weight:700">Steering</code> | Hardware **RSS** on `wan` (PDMA 0–3) · multi-queue CAKE egress on `mtk_soc_eth` |
-| <code style="background:#ab9df2;color:#2d2a2e;padding:4px 12px;border-radius:4px;font-size:14px;font-weight:700">Packages</code> | `wpad-mbedtls` · `usteer` · `mesh11sd` · full `CONFIG_ALL_KMODS` (don’t pull snapshot `kmod-*` from openwrt.org) |
+<!-- bgcolor on <td> survives GitHub’s HTML sanitize; <code style> backgrounds do not -->
+<table>
+  <tr>
+    <td width="150" align="center" bgcolor="#ff6188"><font color="#fcfcfa"><b>UI</b></font></td>
+    <td>Live <b>Home</b>, Wi‑Fi, guests, DNS, AdGuard Home, banIP, SQM, VPN, schedules, device control, themes, upgrade, Performance Tuning — LuCI under <b>Advanced</b></td>
+  </tr>
+  <tr>
+    <td width="150" align="center" bgcolor="#ff6188"><font color="#fcfcfa"><b>Roaming</b></font></td>
+    <td><b>Wi‑Fi → Wi‑Fi roaming</b> — 802.11r/k/v + <code>usteer</code>, shared mobility domain, “Why?” recommended settings</td>
+  </tr>
+  <tr>
+    <td width="150" align="center" bgcolor="#ab9df2"><font color="#2d2a2e"><b>Mesh</b></font></td>
+    <td><b>Wi‑Fi → Mesh</b> — <code>mesh11sd</code> Main/peer, shared identity, live topology, first-boot script for OpenWrt 25.x APs</td>
+  </tr>
+  <tr>
+    <td width="150" align="center" bgcolor="#ff6188"><font color="#fcfcfa"><b>Theme</b></font></td>
+    <td><b>Monokai milk</b> default · Honey milk / Plain milk / Moss / Minimamilk · Footstrap LuCI</td>
+  </tr>
+  <tr>
+    <td width="150" align="center" bgcolor="#ffd866"><font color="#2d2a2e"><b>LCD</b></font></td>
+    <td>Boot splash paints the logo on the 320×240 panel and leaves it on</td>
+  </tr>
+  <tr>
+    <td width="150" align="center" bgcolor="#a9dc76"><font color="#2d2a2e"><b>SQM / VPN</b></font></td>
+    <td>Multi-queue CAKE (1 Gbit Eth / 500 Mbit PPPoE) · queue-per-CPU IFBs · VPN <b>Use VPN’s DNS</b> · CAKE ECN/DSCP retry</td>
+  </tr>
+  <tr>
+    <td width="150" align="center" bgcolor="#78dce8"><font color="#2d2a2e"><b>Wi‑Fi</b></font></td>
+    <td>UL MU-MIMO/OFDMA <b>off</b> (latency-first) · US country · 6 GHz PSC <b>37</b> · WED on · BE latency tweak on 5+6 GHz</td>
+  </tr>
+  <tr>
+    <td width="150" align="center" bgcolor="#fc9867"><font color="#2d2a2e"><b>Steering</b></font></td>
+    <td>Hardware <b>RSS</b> on <code>wan</code> (PDMA 0–3) · multi-queue CAKE egress on <code>mtk_soc_eth</code></td>
+  </tr>
+  <tr>
+    <td width="150" align="center" bgcolor="#ab9df2"><font color="#2d2a2e"><b>Packages</b></font></td>
+    <td><code>wpad-mbedtls</code> · <code>usteer</code> · <code>mesh11sd</code> · full <code>CONFIG_ALL_KMODS</code> (don’t pull snapshot <code>kmod-*</code> from openwrt.org)</td>
+  </tr>
+</table>
 
 #### Performance defaults
 
@@ -242,41 +270,11 @@ SSH drops mid-flash — that’s normal. Wait **3–5 minutes**.
 
 Reset + power-on → recovery at `http://192.168.1.1` (PC at `192.168.1.2/24`) → vendor image from [dl.gl-inet.com](https://dl.gl-inet.com/).
 
-## Build
-
-```bash
-git clone https://github.com/REFFIXX/MilkFlint4.git
-cd MilkFlint4
-./scripts/feeds update -a && ./scripts/feeds install -a
-cp milkflint/diffconfig .config && make defconfig
-make download && make -j$(nproc) IGNORE_ERRORS='n m'
-```
-
-```text
-bin/targets/mediatek/filogic/milkflint4-*-glinet_gl-be14000-squashfs-sysupgrade.bin
-```
-
-UI (Node **24** + pnpm **12**):
-
-```bash
-cd milkflint/ui && pnpm install && pnpm exec vite build && node scripts/package.ts
-```
-
-### Windows (WSL2)
-
-Prefer **WSL2 Ubuntu 24.04** with the tree on **ext4** (`~/src/MilkFlint4`), never `/mnt/c/...`. Install the same apt set as CI (see [`.github/workflows/build-firmware.yml`](.github/workflows/build-firmware.yml)), then feeds → `cp milkflint/diffconfig .config` → `make defconfig` → `make -j$(nproc) world` with `IGNORE_ERRORS='n m'`. For UI-only iteration (seconds): `cd milkflint/ui && pnpm install && pnpm exec vite build`. Full notes: [`docs/DEV-WSL.md`](docs/DEV-WSL.md).
-
-| Path | Role |
-|---|---|
-| `target/linux/mediatek/` | BE14000 DTS, 6.18 patches, board defaults |
-| `package/milkflint/` | UI + MilkFlint packages (incl. LCD splash) |
-| `milkflint/ui/` | React source (Monokai milk default) |
-| `milkflint/diffconfig` | Build seed |
-
 ## Support
 
 * [Releases](https://github.com/REFFIXX/MilkFlint4/releases)  
 * [OpenWrt Forum](https://forum.openwrt.org)  
+* Build / WSL notes: [`docs/DEV-WSL.md`](docs/DEV-WSL.md)  
 * Upstream: [OpenWrt](https://openwrt.org) · [OddBlueDog MilkFlint](https://github.com/OddBlueDog/openwrt)
 
 ## License
