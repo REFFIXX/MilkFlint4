@@ -34,33 +34,33 @@ Keep a stock GL.iNet recovery image before you flash. Then grab a release, flash
 <table>
   <tr>
     <td width="50%" valign="top">
-      <p><img src="https://img.shields.io/badge/Wi--Fi%20roaming-ff6188?style=flat-square" alt="Wi-Fi roaming"></p>
+      <p><img src="milkflint/docs/readme/badges/feat-roaming.svg" alt="Wi-Fi roaming" height="22"></p>
       <p><b>Wi‑Fi → Wi‑Fi roaming</b><br>
       802.11r / k / v + <code>usteer</code>, shared mobility domain, “Why?” hints with recommended settings for multi‑AP handoff.</p>
     </td>
     <td width="50%" valign="top">
-      <p><img src="https://img.shields.io/badge/802.11s%20mesh-ab9df2?style=flat-square" alt="802.11s mesh"></p>
+      <p><img src="milkflint/docs/readme/badges/feat-mesh.svg" alt="802.11s mesh" height="22"></p>
       <p><b>Wi‑Fi → Mesh</b><br>
       <code>mesh11sd</code> Main / peer roles, shared identity, live topology, first-boot script to deploy more OpenWrt <b>25.x</b> APs.</p>
     </td>
   </tr>
   <tr>
     <td width="50%" valign="top">
-      <p><img src="https://img.shields.io/badge/Monokai%20milk-ff6188?style=flat-square" alt="Monokai milk"></p>
+      <p><img src="milkflint/docs/readme/badges/feat-monokai.svg" alt="Monokai milk" height="22"></p>
       <p>Soft charcoal / milk panels · pink / cyan / green · Honey milk, Plain milk, Moss, Minimamilk one click away · Footstrap LuCI.</p>
     </td>
     <td width="50%" valign="top">
-      <p><img src="https://img.shields.io/badge/LCD%20splash-ffd866?style=flat-square" alt="LCD splash"></p>
+      <p><img src="milkflint/docs/readme/badges/feat-lcd.svg" alt="LCD splash" height="22"></p>
       <p>MilkFlint4 logo on the 320×240 panel at boot — and it <b>stays on</b>. Pink <b>4</b> on the front like it owns the place.</p>
     </td>
   </tr>
   <tr>
     <td width="50%" valign="top">
-      <p><img src="https://img.shields.io/badge/Wi--Fi%207-78dce8?style=flat-square" alt="Wi-Fi 7"></p>
+      <p><img src="milkflint/docs/readme/badges/feat-wifi7.svg" alt="Wi-Fi 7" height="22"></p>
       <p>MT7996 tri‑band · <b>WED</b> on by default · latency-first radio defaults · full MilkFlint Wi‑Fi / guests / schedules.</p>
     </td>
     <td width="50%" valign="top">
-      <p><img src="https://img.shields.io/badge/10G%20%2B%20SQM-a9dc76?style=flat-square" alt="10G + SQM"></p>
+      <p><img src="milkflint/docs/readme/badges/feat-10g-sqm.svg" alt="10G + SQM" height="22"></p>
       <p>Real <code>wan</code> on RTL8261C · multi-queue CAKE · RSS · AdGuard Home, banIP, WireGuard, Performance Tuning.</p>
     </td>
   </tr>
@@ -157,39 +157,39 @@ After a hard 10G PHY wedge: **power-cycle** (warm reboot is not enough). Upstrea
 
 <table>
   <tr>
-    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/UI-ff6188?style=flat-square" alt="UI"></td>
+    <td width="170" align="center" valign="middle"><img src="milkflint/docs/readme/badges/img-ui.svg" alt="UI" height="22"></td>
     <td>Live <b>Home</b>, Wi‑Fi, guests, DNS, AdGuard Home, banIP, SQM, VPN, schedules, device control, themes, upgrade, Performance Tuning — LuCI under <b>Advanced</b></td>
   </tr>
   <tr>
-    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/Roaming-ff6188?style=flat-square" alt="Roaming"></td>
+    <td width="170" align="center" valign="middle"><img src="milkflint/docs/readme/badges/img-roaming.svg" alt="Roaming" height="22"></td>
     <td><b>Wi‑Fi → Wi‑Fi roaming</b> — 802.11r/k/v + <code>usteer</code>, shared mobility domain, “Why?” recommended settings</td>
   </tr>
   <tr>
-    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/Mesh-ab9df2?style=flat-square" alt="Mesh"></td>
+    <td width="170" align="center" valign="middle"><img src="milkflint/docs/readme/badges/img-mesh.svg" alt="Mesh" height="22"></td>
     <td><b>Wi‑Fi → Mesh</b> — <code>mesh11sd</code> Main/peer, shared identity, live topology, first-boot script for OpenWrt 25.x APs</td>
   </tr>
   <tr>
-    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/Theme-ff6188?style=flat-square" alt="Theme"></td>
+    <td width="170" align="center" valign="middle"><img src="milkflint/docs/readme/badges/img-theme.svg" alt="Theme" height="22"></td>
     <td><b>Monokai milk</b> default · Honey milk / Plain milk / Moss / Minimamilk · Footstrap LuCI</td>
   </tr>
   <tr>
-    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/LCD-ffd866?style=flat-square" alt="LCD"></td>
+    <td width="170" align="center" valign="middle"><img src="milkflint/docs/readme/badges/img-lcd.svg" alt="LCD" height="22"></td>
     <td>Boot splash paints the logo on the 320×240 panel and leaves it on</td>
   </tr>
   <tr>
-    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/SQM%20%2F%20VPN-a9dc76?style=flat-square" alt="SQM / VPN"></td>
+    <td width="170" align="center" valign="middle"><img src="milkflint/docs/readme/badges/img-sqm-vpn.svg" alt="SQM / VPN" height="22"></td>
     <td>Multi-queue CAKE (1 Gbit Eth / 500 Mbit PPPoE) · queue-per-CPU IFBs · VPN <b>Use VPN’s DNS</b> · CAKE ECN/DSCP retry</td>
   </tr>
   <tr>
-    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/Wi--Fi-78dce8?style=flat-square" alt="Wi-Fi"></td>
+    <td width="170" align="center" valign="middle"><img src="milkflint/docs/readme/badges/img-wifi.svg" alt="Wi-Fi" height="22"></td>
     <td>UL MU-MIMO/OFDMA <b>off</b> (latency-first) · US country · 6 GHz PSC <b>37</b> · WED on · BE latency tweak on 5+6 GHz</td>
   </tr>
   <tr>
-    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/Steering-fc9867?style=flat-square" alt="Steering"></td>
+    <td width="170" align="center" valign="middle"><img src="milkflint/docs/readme/badges/img-steering.svg" alt="Steering" height="22"></td>
     <td>Hardware <b>RSS</b> on <code>wan</code> (PDMA 0–3) · multi-queue CAKE egress on <code>mtk_soc_eth</code></td>
   </tr>
   <tr>
-    <td width="170" align="center" valign="middle"><img src="https://img.shields.io/badge/Packages-ab9df2?style=flat-square" alt="Packages"></td>
+    <td width="170" align="center" valign="middle"><img src="milkflint/docs/readme/badges/img-packages.svg" alt="Packages" height="22"></td>
     <td><code>wpad-mbedtls</code> · <code>usteer</code> · <code>mesh11sd</code> · full <code>CONFIG_ALL_KMODS</code> (don’t pull snapshot <code>kmod-*</code> from openwrt.org)</td>
   </tr>
 </table>
