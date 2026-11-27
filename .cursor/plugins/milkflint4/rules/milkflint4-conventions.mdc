@@ -1,0 +1,13 @@
+---
+description: MilkFlint4 OpenWrt + milkflint UI conventions for agents
+alwaysApply: true
+---
+
+# MilkFlint4 conventions
+
+- Target: **GL-BE14000 (Flint 4)**, kernel **6.18**, board images under `bin/targets/mediatek/filogic/*glinet_gl-be14000*.bin`.
+- Version source of truth: `milkflint/diffconfig` → `CONFIG_VERSION_NUMBER`. Tags are `vMAJOR.MINOR.PATCH` on `main`; firmware CI is **tag / workflow_dispatch only** (`.github/workflows/build-firmware.yml`).
+- Release notes live in `docs/RELEASE-*.md`. After a green tag build, the workflow publishes the GitHub release.
+- UI lives in `milkflint/ui` (React + Vite + Vitest browser/Playwright). LuCI remains for everything the React shell does not own.
+- Prefer **Context.dev** for live OpenWrt / mt76 / GL.iNet research and **Context7** for Vitest/React/Vite/Tailwind APIs. Prefer **Supermemory** for durable project decisions.
+- Do not invent BrowserStack flows for the on-router LAN UI; use local Vitest browser tests and the mock OpenWrt sim when present.
