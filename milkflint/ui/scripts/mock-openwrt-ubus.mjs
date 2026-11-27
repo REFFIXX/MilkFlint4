@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
  * Simulated OpenWrt 25.x ubus/uhttpd for local MilkFlint UI testing.
- * Serves JSON-RPC at /ubus with wireless, usteer, mesh11sd, and milkflint.* status.
+ * Serves JSON-RPC at /ubus with wireless, usteer, mesh11sd, milkflint.*, and
+ * enough system/network stubs so every sidebar page can load.
  *
  *   node scripts/mock-openwrt-ubus.mjs
  *   MILKFLINT_VM=http://127.0.0.1:8088 pnpm exec vite
@@ -10,6 +11,7 @@ import http from 'node:http';
 import { randomBytes } from 'node:crypto';
 
 const PORT = Number(process.env.MOCK_UBUS_PORT ?? 8088);
+const NOW = () => Math.floor(Date.now() / 1000);
 
 /** @type {Record<string, Record<string, Record<string, unknown>>>} */
 const configs = {
@@ -109,7 +111,7 @@ const configs = {
       enabled: '1',
       auto_config: '0',
       portal_detect: '1',
-      auto_mesh_id: 'MilkFlint',
+      auto_mesh_id: 'MilkFlintLab',
       auto_mesh_band: '2g',
       mesh_gate_base_ssid: 'MilkFlint',
       mesh_gate_encryption: '4',
@@ -120,6 +122,125 @@ const configs = {
   milkflint: {
     defaults: { '.type': 'defaults', '.name': 'defaults', '.index': 0 },
     mesh: { '.type': 'mesh', '.name': 'mesh', '.index': 1, role: 'main-auto' },
+    mode: { '.type': 'mode', '.name': 'mode', '.index': 2, mode: 'router' },
+    datastats: { '.type': 'datastats', '.name': 'datastats', '.index': 3, enabled: '1' },
+  },
+  network: {
+    loopback: {
+      '.type': 'interface',
+      '.name': 'loopback',
+      '.index': 0,
+      device: 'lo',
+      proto: 'static',
+      ipaddr: '127.0.0.1',
+      netmask: '255.0.0.0',
+    },
+    lan: {
+      '.type': 'interface',
+      '.name': 'lan',
+      '.index': 1,
+      device: 'br-lan',
+      proto: 'static',
+      ipaddr: '192.168.1.1',
+      netmask: '255.255.255.0',
+      ip6assign: '60',
+    },
+    wan: {
+      '.type': 'interface',
+      '.name': 'wan',
+      '.index': 2,
+      device: 'eth1',
+      proto: 'dhcp',
+    },
+    wan6: {
+      '.type': 'interface',
+      '.name': 'wan6',
+      '.index': 3,
+      device: 'eth1',
+      proto: 'dhcpv6',
+    },
+  },
+  dhcp: {
+    lan: {
+      '.type': 'dhcp',
+      '.name': 'lan',
+      '.index': 0,
+      interface: 'lan',
+      start: '100',
+      limit: '150',
+      leasetime: '12h',
+    },
+  },
+  firewall: {
+    defaults: {
+      '.type': 'defaults',
+      '.name': 'defaults',
+      '.index': 0,
+      syn_flood: '1',
+      input: 'REJECT',
+      output: 'ACCEPT',
+      forward: 'REJECT',
+      flow_offloading: '1',
+      flow_offloading_hw: '1',
+      flow_offloading_bridge: '0',
+    },
+    lan: {
+      '.type': 'zone',
+      '.name': 'lan',
+      '.index': 1,
+      name: 'lan',
+      network: 'lan',
+      input: 'ACCEPT',
+      output: 'ACCEPT',
+      forward: 'ACCEPT',
+    },
+    wan: {
+      '.type': 'zone',
+      '.name': 'wan',
+      '.index': 2,
+      name: 'wan',
+      network: ['wan', 'wan6'],
+      input: 'REJECT',
+      output: 'ACCEPT',
+      forward: 'REJECT',
+      masq: '1',
+    },
+    lan_wan: { '.type': 'forwarding', '.name': 'lan_wan', '.index': 3, src: 'lan', dest: 'wan' },
+  },
+  sqm: {},
+  system: {
+    '@system[0]': {
+      '.type': 'system',
+      '.name': '@system[0]',
+      '.index': 0,
+      hostname: 'MilkFlint-Sim',
+      timezone: 'UTC',
+    },
+  },
+  luci: {},
+  dropbear: {
+    main: { '.type': 'dropbear', '.name': 'main', '.index': 0, Port: '22', PasswordAuth: 'on' },
+  },
+  upnpd: {
+    config: { '.type': 'upnpd', '.name': 'config', '.index': 0, enabled: '0' },
+  },
+  uhttpd: {
+    main: {
+      '.type': 'uhttpd',
+      '.name': 'main',
+      '.index': 0,
+      listen_http: '0.0.0.0:80',
+      listen_https: '0.0.0.0:443',
+      redirect_https: '0',
+      home: '/www',
+      rfc1918_filter: '1',
+    },
+  },
+  banip: {
+    global: { '.type': 'banip', '.name': 'global', '.index': 0, ban_enabled: '0' },
+  },
+  adguardhome: {
+    config: { '.type': 'adguardhome', '.name': 'config', '.index': 0, enabled: '0' },
   },
 };
 
@@ -128,6 +249,9 @@ const staged = {};
 const sessions = new Set();
 let usteerRunning = false;
 let meshRunning = false;
+let homeWidgets = null;
+let themeSettings = { theme: 'monokai-milk', custom: [] };
+let cpuTick = 0;
 
 function ok(data) {
   return [0, data ?? {}];
@@ -178,6 +302,374 @@ function applyStaged(config) {
   }
 }
 
+function statsPayload() {
+  cpuTick += 1;
+  const base = 8_000_000 + cpuTick * 50_000;
+  const idle = Math.floor(base * 0.82);
+  return {
+    cpu: [
+      { name: 'cpu', total: base, idle, softirq: Math.floor(base * 0.04) },
+      { name: 'cpu0', total: Math.floor(base / 4), idle: Math.floor(idle / 4), softirq: 1000 },
+      { name: 'cpu1', total: Math.floor(base / 4), idle: Math.floor(idle / 4), softirq: 800 },
+      { name: 'cpu2', total: Math.floor(base / 4), idle: Math.floor(idle / 4), softirq: 900 },
+      { name: 'cpu3', total: Math.floor(base / 4), idle: Math.floor(idle / 4), softirq: 700 },
+    ],
+    temperatures: [
+      { name: 'cpu-thermal', celsius: 54 + (cpuTick % 5) },
+      { name: 'sim-phy0', celsius: 62, wiphy: 'phy0' },
+      { name: 'sim-phy1', celsius: 58, wiphy: 'phy1' },
+      { name: 'sim-eth1', celsius: 49, port: 'eth1' },
+    ],
+    conntrack: { count: 420 + (cpuTick % 40), max: 65536 },
+  };
+}
+
+function interfaceDump() {
+  return {
+    interface: [
+      {
+        interface: 'loopback',
+        up: true,
+        proto: 'static',
+        device: 'lo',
+        l3_device: 'lo',
+        'ipv4-address': [{ address: '127.0.0.1', mask: 8 }],
+        route: [],
+      },
+      {
+        interface: 'lan',
+        up: true,
+        uptime: 3600,
+        proto: 'static',
+        device: 'br-lan',
+        l3_device: 'br-lan',
+        'ipv4-address': [{ address: '192.168.1.1', mask: 24 }],
+        'ipv6-address': [{ address: 'fd00:milk:flint::1', mask: 64 }],
+        route: [],
+        'dns-server': [],
+      },
+      {
+        interface: 'wan',
+        up: true,
+        uptime: 3500,
+        proto: 'dhcp',
+        device: 'eth1',
+        l3_device: 'eth1',
+        'ipv4-address': [{ address: '203.0.113.47', mask: 24 }],
+        route: [{ target: '0.0.0.0', mask: 0, nexthop: '203.0.113.1' }],
+        'dns-server': ['1.1.1.1', '9.9.9.9'],
+      },
+      {
+        interface: 'wan6',
+        up: true,
+        uptime: 3500,
+        proto: 'dhcpv6',
+        device: 'eth1',
+        l3_device: 'eth1',
+        'ipv6-address': [{ address: '2001:db8:47::2', mask: 64 }],
+        'ipv6-prefix': [{ address: '2001:db8:47::', mask: 56 }],
+        route: [{ target: '::', mask: 0, nexthop: 'fe80::1' }],
+        'dns-server': ['2606:4700:4700::1111'],
+      },
+    ],
+  };
+}
+
+function deviceStatus() {
+  return {
+    lo: { type: 'Network device', up: true, statistics: { rx_bytes: 0, tx_bytes: 0 } },
+    eth0: {
+      type: 'Network device',
+      up: true,
+      carrier: true,
+      speed: '1000F',
+      'link-supported': ['1000baseT-F'],
+      statistics: { rx_bytes: 1e9, tx_bytes: 2e8, rx_packets: 1e6, tx_packets: 5e5 },
+    },
+    eth1: {
+      type: 'Network device',
+      up: true,
+      carrier: true,
+      speed: '1000F',
+      'link-supported': ['1000baseT-F', '2500baseT-F'],
+      statistics: { rx_bytes: 8e9, tx_bytes: 1e9, rx_packets: 4e6, tx_packets: 9e5 },
+    },
+    'br-lan': {
+      type: 'Bridge',
+      up: true,
+      'bridge-members': ['eth0', 'phy0-ap0', 'phy1-ap0', 'phy2-ap0'],
+      statistics: { rx_bytes: 3e9, tx_bytes: 6e9 },
+    },
+    lan1: { type: 'Network device', devtype: 'dsa', up: true, carrier: true, speed: '1000F', statistics: { rx_bytes: 1e8, tx_bytes: 2e7 } },
+    lan2: { type: 'Network device', devtype: 'dsa', up: true, carrier: false, statistics: { rx_bytes: 0, tx_bytes: 0 } },
+    lan3: { type: 'Network device', devtype: 'dsa', up: true, carrier: false, statistics: { rx_bytes: 0, tx_bytes: 0 } },
+    lan4: { type: 'Network device', devtype: 'dsa', up: true, carrier: false, statistics: { rx_bytes: 0, tx_bytes: 0 } },
+  };
+}
+
+function wirelessDevices() {
+  const ap = (section, ifname, ssid) => ({
+    section,
+    ifname,
+    config: { mode: 'ap', ssid, network: ['lan'], encryption: 'sae-mixed' },
+  });
+  return {
+    radio0: {
+      up: true,
+      disabled: false,
+      config: { band: '2g', channel: '1', htmode: 'HE20', country: 'US', txpower: '20' },
+      iwinfo: { phy: 'phy0', htmodes: ['HT20', 'HE20'] },
+      interfaces: [ap('wifinet0', 'phy0-ap0', 'MilkFlint')],
+    },
+    radio1: {
+      up: true,
+      disabled: false,
+      config: { band: '5g', channel: '36', htmode: 'HE80', country: 'US', txpower: '23' },
+      iwinfo: { phy: 'phy1', htmodes: ['VHT80', 'HE80'] },
+      interfaces: [ap('wifinet1', 'phy1-ap0', 'MilkFlint')],
+    },
+    radio2: {
+      up: true,
+      disabled: false,
+      config: { band: '6g', channel: '37', htmode: 'EHT160', country: 'US', txpower: '18' },
+      iwinfo: { phy: 'phy2', htmodes: ['HE160', 'EHT160'] },
+      interfaces: [ap('wifinet2', 'phy2-ap0', 'MilkFlint')],
+    },
+  };
+}
+
+function sensorHistory() {
+  const names = ['cpu-thermal', 'sim-phy0', 'sim-phy1', 'sim-eth1'];
+  const now = NOW();
+  return {
+    now,
+    interval: 10,
+    samples: Array.from({ length: 60 }, (_, i) => ({
+      t: now - (59 - i) * 10,
+      c: Object.fromEntries(names.map((n, k) => [n, 48 + k * 4 + Math.sin(i / 8) * 2])),
+    })),
+  };
+}
+
+function modeStatus() {
+  return {
+    now: NOW(),
+    mode: 'router',
+    handmade: false,
+    switching: false,
+    last: null,
+    wan_port: 'eth1',
+    lan: { proto: 'static', ipaddr: '192.168.1.1', netmask: '255.255.255.0', gateway: null, dns: [] },
+    lan_now: { up: true, ipaddr: '192.168.1.1', prefix: 24, gateway: null, dns: [] },
+    uplink: { up: true, ipaddr: '203.0.113.47', prefix: 24, gateway: '203.0.113.1', dns: ['1.1.1.1'] },
+    router_address: '192.168.1.1',
+    firewall_defaults: 'defaults',
+    bridge_offload: false,
+    bridge_offload_available: true,
+  };
+}
+
+/** Soft stubs that still satisfy common zod status shapes. */
+function milkflintStub(object, method, params = {}) {
+  const key = `${object} ${method}`;
+  switch (key) {
+    case 'milkflint stats':
+      return statsPayload();
+    case 'milkflint sqm_status':
+      return { qdiscs: [], steering: { cpus: 4, napi: [0], rps: [0, 1, 2, 3] } };
+    case 'milkflint neighbors':
+      return { neighbors: [] };
+    case 'milkflint.home get':
+      return homeWidgets ? { widgets: homeWidgets } : {};
+    case 'milkflint.home set':
+      homeWidgets = params.widgets ?? null;
+      return { saved: true };
+    case 'milkflint.sensors history':
+      return sensorHistory();
+    case 'milkflint.mode status':
+      return modeStatus();
+    case 'milkflint.mode switch':
+      return { started: true, at: NOW(), seconds: 30 };
+    case 'milkflint.dns status':
+      return { installed: true, running: true };
+    case 'milkflint.adminpassword status':
+      return { set: true };
+    case 'milkflint.https status':
+      return {
+        tls: true,
+        generator: true,
+        own: true,
+        cert: null,
+        running: true,
+        https: ['0.0.0.0:443'],
+        redirect: false,
+      };
+    case 'milkflint.https renew':
+      return { renewing: true };
+    case 'milkflint.logs status':
+      return { kinds: ['system', 'kernel', 'wifi'], sizes: {} };
+    case 'milkflint.logs read':
+      return { lines: ['sim: mock log line 1', 'sim: mock log line 2'], truncated: false };
+    case 'milkflint.upgrade check':
+      return { available: false, current: '25.12-SNAPSHOT', latest: null };
+    case 'milkflint.themes get':
+      return themeSettings;
+    case 'milkflint.themes set':
+      themeSettings = {
+        theme: typeof params.theme === 'string' ? params.theme : themeSettings.theme,
+        custom: Array.isArray(params.custom) ? params.custom : themeSettings.custom,
+      };
+      return { saved: true };
+    case 'milkflint.adguardhome status':
+      return { installed: true, enabled: false, configured: false, mode: 'router', running: false, state: 'off' };
+    case 'milkflint.adguardhome insights':
+      return { queries: [], top: [] };
+    case 'milkflint.banip status':
+      return {
+        installed: true,
+        enabled: false,
+        mode: 'router',
+        state: 'off',
+        table: false,
+        elements: 0,
+        drops: { step: 300, end: NOW(), counted: [], logged: [], flood: [], hour: 0, day: 0, source: 'counters' },
+        now: NOW(),
+      };
+    case 'milkflint.banip config':
+      return {
+        installed: true,
+        enabled: false,
+        mode: 'router',
+        options: {},
+        milkflint: {},
+        custom: { state: 'builtin', loads: true, own: [] },
+        catalogue: [],
+        runtime: null,
+        install: null,
+        tools: { msmtp: false, conntrack: true, curl: true, wget: true },
+        memory: { total_kb: 2_000_000, available_kb: 1_200_000 },
+        cpus: 4,
+      };
+    case 'milkflint.banip list_get':
+      return { entries: [], total: 0 };
+    case 'milkflint.banip search':
+      return { hits: [] };
+    case 'milkflint.banip lookup':
+      return { found: false };
+    case 'milkflint.banip survey':
+      return { entries: [], total: 0, offset: 0 };
+    case 'milkflint.banip report':
+      return { generated: NOW(), summary: {} };
+    case 'milkflint.banip drops':
+      return { entries: [], total: 0 };
+    case 'milkflint.banip log':
+      return { lines: [] };
+    case 'milkflint.banip feed_test':
+      return { ok: true, count: 0 };
+    case 'milkflint.banip mail_get':
+      return { enabled: false };
+    case 'milkflint.vpn status':
+      return { installed: true, now: NOW(), interfaces: [] };
+    case 'milkflint.traffic periods':
+      return { installed: true, enabled: true, periods: [] };
+    case 'milkflint.traffic usage':
+      return { columns: ['mac', 'ip', 'conns', 'rx_bytes', 'rx_pkts', 'tx_bytes', 'tx_pkts'], data: [] };
+    case 'milkflint.devicecontrol status':
+      return {
+        now: NOW(),
+        offset: 0,
+        paused: {},
+        extra: {},
+        ready: true,
+        today: null,
+        seen: {},
+        clock: { ntp: true, synced: true, stratum: 2, at: NOW() - 60, uptime: 3600 },
+        adguard: { installed: true, enabled: false, state: null },
+      };
+    case 'milkflint.netquality status': {
+      const now = NOW();
+      return {
+        enabled: true,
+        now,
+        interval: 60,
+        targets: {
+          gateway: '203.0.113.1',
+          internet: '1.1.1.1',
+          dns_server: '1.1.1.1',
+          dns_domain: 'example.com',
+          dns_servers: [{ key: '1.1.1.1', host: '1.1.1.1', addr: '1.1.1.1' }],
+          routes: [
+            { key: 'uk', label: 'UK', host: 'london.example', addr: '198.51.100.10' },
+            { key: 'eu', label: 'Europe', host: 'frankfurt.example', addr: '198.51.100.20' },
+            { key: 'us', label: 'US', host: 'ashburn.example', addr: '198.51.100.30' },
+          ],
+        },
+        gateway_answers: true,
+        samples: Array.from({ length: 5 }, (_, i) => ({
+          t: now - (4 - i) * 60,
+          gateway: 2 + i * 0.2,
+          internet: 12 + i,
+          dns: 8 + i * 0.5,
+          dns_servers: { '1.1.1.1': 8 + i * 0.5 },
+          routes: { uk: 20 + i, eu: 28 + i, us: 90 + i },
+        })),
+      };
+    }
+    case 'milkflint.netquality history': {
+      const now = NOW();
+      const step = Number(params.step ?? 60);
+      const span = Number(params.span ?? 3600);
+      const start = now - span;
+      const n = Math.min(60, Math.floor(span / step));
+      return {
+        now,
+        start,
+        step,
+        days: 7,
+        buckets: Array.from({ length: n }, (_, i) => ({
+          i,
+          internet: [12 + (i % 5), 40, 0, 10],
+          dns: [8, 20, 0, 10],
+          gateway: [2, 5, 0, 10],
+          routes: { uk: [20, 50, 0, 5], eu: [28, 60, 0, 5], us: [90, 140, 0, 5] },
+          dns_servers: { '1.1.1.1': [8, 20, 0, 10] },
+        })),
+      };
+    }
+    case 'milkflint.tuning status':
+      return { applied: false, profile: null, available: [] };
+    case 'milkflint.wifiscan results':
+      return { scanning: false, radios: {}, results: [] };
+    case 'milkflint.radarscan status':
+      return { running: false, phy: null };
+    case 'milkflint.radarscan reports':
+      return { reports: [] };
+    case 'milkflint.radarscan stop':
+      return { stopping: true };
+    case 'milkflint.upnp mappings':
+      return { mappings: [] };
+    case 'milkflint.bench status':
+    case 'milkflint.bench create':
+    case 'milkflint.bench rotate':
+    case 'milkflint.bench coordinate':
+      return { now: Date.now(), bench: null };
+    case 'milkflint.bench close':
+      return { closed: true };
+    case 'milkflint.bench runs':
+      return { runs: [] };
+    case 'milkflint.bench run_get':
+      return { error: 'No such run' };
+    case 'milkflint.bench run_delete':
+      return { deleted: true };
+    default:
+      if (object.startsWith('milkflint')) {
+        // Prefer empty success over hard fail for unknown methods.
+        return {};
+      }
+      return undefined;
+  }
+}
+
 function handleCall(session, object, method, params = {}) {
   if (object === 'session' && method === 'login') {
     const id = sessionId();
@@ -199,14 +691,6 @@ function handleCall(session, object, method, params = {}) {
     return { error: { code: -32002, message: 'Access denied' } };
   }
 
-  if (object === 'milkflint.adminpassword' && method === 'status') {
-    return ok({ set: true });
-  }
-
-  if (object === 'milkflint.mode' && method === 'status') {
-    return ok({ mode: 'router', switching: false });
-  }
-
   if (object === 'system' && method === 'board') {
     return ok({
       hostname: 'MilkFlint-Sim',
@@ -225,10 +709,18 @@ function handleCall(session, object, method, params = {}) {
 
   if (object === 'system' && method === 'info') {
     return ok({
-      localtime: Math.floor(Date.now() / 1000),
-      uptime: 3600,
-      load: [65536, 65536, 65536],
-      memory: { total: 2e9, free: 1e9, shared: 0, buffered: 1e8, available: 1.2e9, cached: 2e8 },
+      localtime: NOW(),
+      uptime: 3600 + (cpuTick % 100),
+      load: [12000, 9000, 7000],
+      memory: {
+        total: 2_048_000_000,
+        free: 900_000_000,
+        shared: 1_000_000,
+        buffered: 80_000_000,
+        available: 1_200_000_000,
+        cached: 220_000_000,
+      },
+      root: { total: 120_000_000, free: 90_000_000, used: 30_000_000, avail: 90_000_000 },
     });
   }
 
@@ -287,6 +779,92 @@ function handleCall(session, object, method, params = {}) {
     return ok({});
   }
 
+  if (object === 'network.interface' && method === 'dump') return ok(interfaceDump());
+  if (object === 'network.device' && method === 'status') return ok(deviceStatus());
+  if (object === 'luci-rpc' && method === 'getWirelessDevices') return ok(wirelessDevices());
+  if (object === 'luci-rpc' && method === 'getDHCPLeases') {
+    return ok({
+      dhcp_leases: [
+        { hostname: 'phone-sim', macaddr: 'aa:bb:cc:11:22:33', ipaddr: '192.168.1.120', expires: 3600 },
+        { hostname: 'laptop-sim', macaddr: 'aa:bb:cc:44:55:66', ipaddr: '192.168.1.121', expires: 7200 },
+      ],
+      dhcp6_leases: [],
+    });
+  }
+  if (object === 'luci-rpc' && method === 'getHostHints') {
+    return ok({
+      'aa:bb:cc:11:22:33': { name: 'phone-sim', ipaddrs: ['192.168.1.120'] },
+      'aa:bb:cc:44:55:66': { name: 'laptop-sim', ipaddrs: ['192.168.1.121'] },
+    });
+  }
+  if (object === 'luci' && method === 'getBuiltinEthernetPorts') {
+    return ok({
+      result: [
+        { role: 'wan', device: 'eth1' },
+        { role: 'lan', device: 'lan1' },
+        { role: 'lan', device: 'lan2' },
+        { role: 'lan', device: 'lan3' },
+        { role: 'lan', device: 'lan4' },
+      ],
+    });
+  }
+
+  if (object === 'iwinfo' && method === 'info') {
+    return ok({
+      phy: 'phy0',
+      ssid: 'MilkFlint',
+      bssid: '94:83:c4:00:11:22',
+      country: 'US',
+      mode: 'Master',
+      channel: 36,
+      frequency: 5180,
+      txpower: 23,
+      quality: 70,
+      quality_max: 70,
+      noise: -92,
+      htmode: 'HE80',
+    });
+  }
+  if (object === 'iwinfo' && method === 'assoclist') {
+    return ok({
+      results: [
+        {
+          mac: 'aa:bb:cc:11:22:33',
+          signal: -55,
+          noise: -92,
+          connected_time: 1200,
+          authorized: true,
+          rx: { bytes: 1e8, packets: 1e5, rate: 400_000, mhz: 80, nss: 2 },
+          tx: { bytes: 4e8, packets: 3e5, rate: 800_000, mhz: 80, nss: 2 },
+        },
+        {
+          mac: 'aa:bb:cc:44:55:66',
+          signal: -62,
+          noise: -92,
+          connected_time: 800,
+          authorized: true,
+          rx: { bytes: 5e7, packets: 5e4, rate: 200_000, mhz: 80, nss: 2 },
+          tx: { bytes: 9e7, packets: 8e4, rate: 350_000, mhz: 80, nss: 2 },
+        },
+      ],
+    });
+  }
+  if (object === 'iwinfo' && method === 'scan') {
+    return ok({ results: [] });
+  }
+
+  if (object === 'file' && method === 'read') {
+    if (params.path === '/etc/crontabs/root') return ok({ data: '' });
+    return ok({ data: '' });
+  }
+  if (object === 'file' && method === 'exec') return ok({ code: 0, stdout: '', stderr: '' });
+  if (object === 'file' && method === 'stat') return ok({ type: 'file', size: 0, mode: 420, atime: NOW(), mtime: NOW(), ctime: NOW() });
+  if (object === 'file' && method === 'list') return ok({ entries: [] });
+  if (object === 'file' && method === 'write') return ok({});
+
+  if (object === 'service' && (method === 'list' || method === 'status')) return ok({});
+  if (object === 'rc' && method === 'list') return ok({});
+
   if (object === 'milkflint.roaming' && method === 'status') {
     const wireless = configs.wireless;
     const ftIfaces = Object.values(wireless)
@@ -313,7 +891,7 @@ function handleCall(session, object, method, params = {}) {
       local: {
         portalDetect: String(setup.portal_detect ?? '1'),
         autoConfig: String(setup.auto_config ?? '0'),
-        portalType: setup.portal_detect === '0' ? 'MRP' : 'MRP',
+        portalType: 'MRP',
         hostname: 'MilkFlint-Sim',
         meshId: setup.auto_mesh_id ?? null,
       },
@@ -346,8 +924,10 @@ function handleCall(session, object, method, params = {}) {
     return ok({ reloaded: true });
   }
 
-  // Soft-ok stubs so other pages don't explode if navigated.
-  if (object.startsWith('milkflint.') || object === 'luci' || object === 'luci-rpc' || object === 'iwinfo' || object === 'network.interface') {
+  const stub = milkflintStub(object, method, params);
+  if (stub !== undefined) return ok(stub);
+
+  if (object.startsWith('milkflint.') || object === 'luci' || object === 'luci-rpc' || object === 'iwinfo' || object.startsWith('network')) {
     return ok({});
   }
 
@@ -407,5 +987,5 @@ const server = http.createServer((req, res) => {
 
 server.listen(PORT, '127.0.0.1', () => {
   console.log(`Mock OpenWrt ubus on http://127.0.0.1:${PORT}/ubus`);
-  console.log('Login: any password · board: MilkFlint 25.12 simulated · wifi/mesh seeded');
+  console.log('Login: any password · board: MilkFlint 25.12 simulated · all sidebar pages stubbed');
 });
