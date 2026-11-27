@@ -7,14 +7,14 @@
 				"mesh11sd": [ "status", "version" ],
 				"service": [ "list" ]
 			},
-			"uci": [ "mesh11sd" ]
+			"uci": [ "mesh11sd", "milkflint" ]
 		},
 		"write": {
 			"ubus": {
 				"milkflint.mesh": [ "reload" ],
 				"mesh11sd": [ "config_reload" ]
 			},
-			"uci": [ "mesh11sd" ]
+			"uci": [ "mesh11sd", "milkflint" ]
 		}
 	}
 }

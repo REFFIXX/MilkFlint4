@@ -44,8 +44,10 @@ export function roleFromPortalDetect(v: string | undefined): MeshRole {
 }
 
 /**
- * Ordinary home mesh: portal_detect=1 on every node (WAN up → portal, WAN down → peer).
- * Fixed portal is 0. Do not use 5 (TPE / VXLAN trunk peer) for a normal AP.
+ * Ordinary home mesh: portal_detect=1 for both Main·auto and Access point
+ * (WAN up → portal, WAN down → peer). Fixed portal is 0.
+ * Do not use 5 (TPE / VXLAN trunk peer) for a normal AP — UI “peer” is
+ * milkflint.mesh.role only; mesh11sd still sees portal_detect=1.
  */
 export function portalDetectFor(role: MeshRole): string {
   if (role === 'main-fixed') return '0';

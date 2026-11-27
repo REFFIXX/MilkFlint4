@@ -72,6 +72,15 @@ return {
 					neighbors: neighbors()
 				};
 			}
+		},
+		reload: {
+			call: function() {
+				// wifi reload restarts hostapd with new FT/k/v; usteer picks up
+				// neighbor reports after that. Best-effort: never fail the save.
+				system('wifi reload >/dev/null 2>&1 || wifi >/dev/null 2>&1 || true');
+				system('/etc/init.d/usteer reload >/dev/null 2>&1 || /etc/init.d/usteer restart >/dev/null 2>&1 || true');
+				return { reloaded: true };
+			}
 		}
 	}
 };

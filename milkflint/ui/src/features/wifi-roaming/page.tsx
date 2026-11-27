@@ -19,7 +19,7 @@ import { getBoard } from '@/lib/api/system';
 import { getConfig } from '@/lib/api/uci';
 import { href } from '@/lib/router';
 import { GoLink } from '@/components/page-kit';
-import { getRoamingStatus } from './api';
+import { getRoamingStatus, reloadRoaming } from './api';
 import { supports25RoamingMesh } from './compat';
 import {
   listApIfaces,
@@ -33,22 +33,25 @@ interface Data {
   form: RoamingForm;
   wireless: Awaited<ReturnType<typeof getConfig>>;
   usteer: Awaited<ReturnType<typeof getConfig>>;
+  milkflint: Awaited<ReturnType<typeof getConfig>>;
   compatible: boolean;
   versionLabel: string;
 }
 
 async function load(): Promise<Data> {
-  const [wireless, usteer, board] = await Promise.all([
+  const [wireless, usteer, milkflint, board] = await Promise.all([
     getConfig('wireless'),
     getConfig('usteer').catch(() => []),
+    getConfig('milkflint').catch(() => []),
     getBoard().catch(() => undefined),
   ]);
   const dist = board?.release?.distribution ?? 'OpenWrt';
   const ver = board?.release?.version ?? '?';
   return {
-    form: readForm(wireless, usteer),
+    form: readForm(wireless, usteer, milkflint),
     wireless,
     usteer,
+    milkflint,
     compatible: supports25RoamingMesh(board),
     versionLabel: `${dist} ${ver}`,
   };
@@ -60,7 +63,9 @@ export function WifiRoamingPage(): ReactElement {
   const [form, setForm] = useState<RoamingForm | undefined>();
   const current = form ?? data?.form;
   const { state, apply, reset } = useApply(() => {
-    void reload();
+    void reloadRoaming().finally(() => {
+      void reload();
+    });
   });
   const status = usePoll(getRoamingStatus, 8000, data !== undefined ? 'on' : 'off').data;
 
@@ -338,7 +343,7 @@ export function WifiRoamingPage(): ReactElement {
         invalid={loading || domainError !== undefined || !data.compatible}
         onSave={() => {
           if (domainError !== undefined || !data.compatible) return;
-          void apply(toChanges(current, data.wireless, data.usteer));
+          void apply(toChanges(current, data.wireless, data.usteer, data.milkflint));
           setForm(undefined);
         }}
         onRevert={() => {
@@ -346,7 +351,7 @@ export function WifiRoamingPage(): ReactElement {
           reset();
         }}
       />
-      <ApplyStatus state={state} onDismiss={reset} />
+      <ApplyStatus state={state} />
     </>
   );
 }

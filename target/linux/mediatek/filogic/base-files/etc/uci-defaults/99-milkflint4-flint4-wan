@@ -1,5 +1,6 @@
 #!/bin/sh
-# Flint 4 WAN: mark board mitigations applied (DTS EEE-broken + hotplug recovery).
+# Flint 4 WAN: mark board mitigations applied (DTS EEE-broken + hotplug recovery)
+# and enable the background watchdog for openwrt#26690 flap storms.
 
 [ "$(board_name)" = glinet,gl-be14000 ] || exit 0
 
@@ -9,6 +10,11 @@ if [ -z "$(uci -q get milkflint.defaults.flint4_wan)" ]; then
 		set milkflint.defaults.flint4_wan='1'
 		commit milkflint
 	UCI
+fi
+
+if [ -x /etc/init.d/milkflint4-wan-watch ]; then
+	/etc/init.d/milkflint4-wan-watch enable
+	/etc/init.d/milkflint4-wan-watch start >/dev/null 2>&1 || true
 fi
 
 exit 0

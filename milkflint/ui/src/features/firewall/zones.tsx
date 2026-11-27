@@ -540,6 +540,7 @@ function DefaultsSheet({
     opt: string,
     hint: string,
     disabled = false,
+    why?: ReactElement | string,
   ): ReactElement => (
     <SwitchRow
       id={`${id}-${key}`}
@@ -554,6 +555,7 @@ function DefaultsSheet({
         </span>
       }
       hint={hint}
+      why={why}
     />
   );
 
@@ -641,6 +643,12 @@ function DefaultsSheet({
               'Software flow offloading',
               'flow_offloading',
               'Established connections take a shortcut through the router: less CPU at high speeds. Smart Queue still shapes them. MilkFlint turns it on.',
+              false,
+              <>
+                Once a connection is allowed, later packets skip most firewall and routing work. Recommended: On for home
+                routers. Turn Off only while troubleshooting. Hardware offloading and WED need this on too. UCI option:{' '}
+                <code className="font-mono">firewall.@defaults[0].flow_offloading</code>.
+              </>,
             )}
             {toggle(
               'offloadHw',
@@ -648,6 +656,12 @@ function DefaultsSheet({
               'flow_offloading_hw',
               'The Ethernet chip forwards established connections by itself: no CPU at all, but Smart Queue can’t shape them. Needs software offloading.',
               !f.offload && !f.offloadHw,
+              <>
+                The SoC’s flow engine forwards established flows without the CPU. Recommended: leave Off unless you also run
+                WED from Tuning — hardware-forwarded packets bypass Smart Queue, so latency under load comes back. Needs
+                software offloading. UCI option:{' '}
+                <code className="font-mono">firewall.@defaults[0].flow_offloading_hw</code>.
+              </>,
             )}
             {wed.on && (
               <WedNotice title="Hardware offloading runs with Wireless Ethernet Dispatch (WED)" turningOff={wedOff}>

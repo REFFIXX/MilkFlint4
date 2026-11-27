@@ -1,4 +1,4 @@
-import { bool, type Change, type Section, str } from '@/lib/api/uci';
+import { bool, type Change, list, type Section, str } from '@/lib/api/uci';
 
 export interface ApIface {
   name: string;
@@ -32,13 +32,21 @@ export function listApIfaces(wireless: Section[]): ApIface[] {
     }));
 }
 
-export function readForm(wireless: Section[], usteer: Section[]): RoamingForm {
+function roamingMeta(milkflint: Section[]): Section | undefined {
+  return milkflint.find((s) => s['.name'] === 'roaming' || s['.type'] === 'roaming');
+}
+
+export function readForm(wireless: Section[], usteer: Section[], milkflint: Section[] = []): RoamingForm {
   const aps = listApIfaces(wireless);
   const sample = aps.map((a) => wireless.find((s) => s['.name'] === a.name)).find(Boolean);
   const usteerSec = usteer.find((s) => s['.type'] === 'usteer') ?? usteer[0];
+  const meta = roamingMeta(milkflint);
+  const applyAll = meta === undefined ? true : bool(meta, 'apply_all', true);
+  const saved = list(meta, 'iface').filter((n) => aps.some((a) => a.name === n));
+  const allNames = aps.map((a) => a.name);
   return {
-    applyAll: true,
-    selected: aps.map((a) => a.name),
+    applyAll,
+    selected: applyAll ? allNames : saved.length > 0 ? saved : allNames,
     ieee80211r: bool(sample, 'ieee80211r'),
     mobilityDomain: (str(sample, 'mobility_domain') ?? '4f57').slice(0, 4).toLowerCase(),
     ftOverDs: bool(sample, 'ft_over_ds', true),
@@ -53,7 +61,12 @@ export function validateMobilityDomain(v: string): string | undefined {
   return undefined;
 }
 
-export function toChanges(form: RoamingForm, wireless: Section[], usteer: Section[]): Change[] {
+export function toChanges(
+  form: RoamingForm,
+  wireless: Section[],
+  usteer: Section[],
+  milkflint: Section[] = [],
+): Change[] {
   const changes: Change[] = [];
   const targets = form.applyAll
     ? listApIfaces(wireless).map((a) => a.name)
@@ -65,8 +78,8 @@ export function toChanges(form: RoamingForm, wireless: Section[], usteer: Sectio
     bss_transition: form.bssTransition ? '1' : '0',
   };
   if (form.ieee80211r) {
-    values.mobility_domain = form.mobilityDomain.toLowerCase();
-    values.ft_over_ds = form.ftOverDs ? '1' : '0';
+    values['mobility_domain'] = form.mobilityDomain.toLowerCase();
+    values['ft_over_ds'] = form.ftOverDs ? '1' : '0';
     // Do not set nasid here: it must be unique per AP (PMK-R0 key holder).
     // When unset, hostapd uses the interface BSSID, which is unique.
   }
@@ -96,6 +109,21 @@ export function toChanges(form: RoamingForm, wireless: Section[], usteer: Sectio
       name: 'usteer',
       values: { disabled: '0' },
     });
+  }
+
+  // Persist which SSIDs get roaming so "All AP networks" survives reload.
+  const meta = roamingMeta(milkflint);
+  const metaValues: Record<string, string | string[]> = {
+    apply_all: form.applyAll ? '1' : '0',
+  };
+  if (!form.applyAll) metaValues['iface'] = targets;
+  if (meta === undefined) {
+    changes.push({ op: 'add', config: 'milkflint', type: 'roaming', name: 'roaming', values: metaValues });
+  } else {
+    changes.push({ op: 'set', config: 'milkflint', section: meta['.name'], values: metaValues });
+    if (form.applyAll && list(meta, 'iface').length > 0) {
+      changes.push({ op: 'unset', config: 'milkflint', section: meta['.name'], options: ['iface'] });
+    }
   }
 
   return changes;
