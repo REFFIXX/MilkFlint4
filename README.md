@@ -19,39 +19,45 @@
 
 <p align="center">
   Soft milk panels · pink / cyan / green accents · Footstrap LuCI to match<br>
-  <sub>Default theme: <b>Monokai milk</b> · Honey milk stays one click away · pink <b>4</b> on the front panel after boot</sub>
+  <sub>Default theme: <b>Monokai milk</b> — milky Monokai Pro · Honey milk one click away · pink <b>4</b> on the front panel after boot</sub>
 </p>
 
 ---
 
 If you’ve been waiting for OpenWrt on the **GL-BE14000** that doesn’t treat the box like a generic MT7988 brick — this is it.
 
-**MilkFlint4 1.0.1** is everyday MilkFlint on Flint 4: dashboard, Wi‑Fi, guests, DNS, AdGuard Home, banIP, SQM, WireGuard, schedules, device control, themes, upgrade, Performance Tuning — on **OpenWrt main / kernel 6.18**, with MT7988 / MT7996 / YT9224 / RTL8261C wired in properly. The front-panel LCD lights up with the MilkFlint4 logo and **stays on**.
+**MilkFlint4 1.0.1** is everyday MilkFlint on Flint 4: live dashboard, Wi‑Fi, guests, DNS, AdGuard Home, banIP, SQM, WireGuard, schedules, device control, themes, upgrade, Performance Tuning — on **OpenWrt main / kernel 6.18**, with MT7988 / MT7996 / YT9224 / RTL8261C wired in properly. The front-panel LCD lights up with the MilkFlint4 logo and **stays on**.
 
-Userspace includes OddBlueDog [**MilkFlint 0.87a**](https://github.com/OddBlueDog/openwrt/releases/tag/milkflint-0.87a) guts (VPN DNS, 1 Gbit CAKE threshold, queue-per-CPU IFBs). Flint 2–only and kernel **6.12** driver bits stay out. The look is ours: **Monokai milk** (plus Honey milk), Footstrap LuCI to match, Flint 4 board/WED/RSS, and the LCD splash.
+The look is ours: **Monokai milk** (soft charcoal / milk panels, pink `#ff6188`, cyan, green). Honey milk and friends live under **System → Themes**. Footstrap LuCI matches.
+
+Userspace includes OddBlueDog [**MilkFlint 0.87a**](https://github.com/OddBlueDog/openwrt/releases/tag/milkflint-0.87a) guts (VPN DNS, 1 Gbit CAKE threshold, queue-per-CPU IFBs). Flint 2–only and kernel **6.12** driver bits stay out.
 
 Keep a stock GL.iNet recovery image before you flash. Then grab a release, flash it, watch the pink **4** light up, and go break a speed test.
 
 ## Screenshots
 
-<p align="center">
-  <img src="milkflint/docs/forum/forum-01b-home-monokai-dark.png" width="900" alt="Home — Monokai milk dark">
-</p>
+Every card is the **same size** (3200×2000 → shown at 480×300) — **Monokai milk** dark. Captions are the page titles in the shot.
 
-<p align="center">
-  <img src="milkflint/docs/forum/forum-02b-wifi-dark.png" width="440" alt="Wi-Fi — dark">
-  &nbsp;
-  <img src="milkflint/docs/forum/forum-06b-sqm-dark.png" width="440" alt="Smart Queue — dark">
-</p>
+<table>
+  <tr>
+    <td align="center" width="50%"><img src="milkflint/docs/readme/home-monokai-dark.png" width="480" alt="Home"><br><sub><b>Home</b> — live status</sub></td>
+    <td align="center" width="50%"><img src="milkflint/docs/readme/themes-monokai-dark.png" width="480" alt="Themes"><br><sub><b>Themes</b> — Monokai milk in use</sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="50%"><img src="milkflint/docs/readme/roaming-monokai-dark.png" width="480" alt="Wi-Fi roaming"><br><sub><b>Wi‑Fi roaming</b> — 802.11r/k/v + usteer</sub></td>
+    <td align="center" width="50%"><img src="milkflint/docs/readme/mesh-monokai-dark.png" width="480" alt="Mesh"><br><sub><b>Mesh</b> — mesh11sd Main / peers</sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="50%"><img src="milkflint/docs/readme/wifi-monokai-dark.png" width="480" alt="Networks & radios"><br><sub><b>Networks & radios</b> — 2.4 / 5 / 6 GHz</sub></td>
+    <td align="center" width="50%"><img src="milkflint/docs/readme/sqm-monokai-dark.png" width="480" alt="Smart Queue"><br><sub><b>Smart Queue</b> — CAKE</sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="50%"><img src="milkflint/docs/readme/tuning-monokai-dark.png" width="480" alt="Performance tuning"><br><sub><b>Performance tuning</b></sub></td>
+    <td align="center" width="50%"><img src="milkflint/docs/readme/firewall-monokai-dark.png" width="480" alt="Firewall"><br><sub><b>Firewall</b> — rules</sub></td>
+  </tr>
+</table>
 
-<p align="center">
-  <img src="milkflint/docs/forum/forum-03b-tuning-ul-mimo-dark.png" width="440" alt="Tuning — dark">
-  &nbsp;
-  <img src="milkflint/docs/forum/forum-09b-firewall-dark.png" width="440" alt="Firewall — dark">
-</p>
-
-More (incl. light variants): [`milkflint/docs/forum/`](milkflint/docs/forum/).
-
+More (incl. light variants): [`milkflint/docs/forum/`](milkflint/docs/forum/) · gallery: [`milkflint/docs/readme/`](milkflint/docs/readme/).
 ## Why it’s spicy
 
 ### Hardware that actually works
@@ -90,8 +96,8 @@ After a hard 10G PHY wedge: **power-cycle** (warm reboot is not enough). Upstrea
 
 | | |
 |---|---|
-| **UI** | Dashboard, Wi‑Fi, guests, DNS, AdGuard Home, banIP, SQM, VPN, schedules, device control, themes, upgrade, Performance Tuning — LuCI under **Advanced** |
-| **Theme** | **Monokai milk** default (pink / cyan / green on soft milk). Honey milk available. LuCI Footstrap matches |
+| **UI** | Live **Home** dashboard, Wi‑Fi, guests, DNS, AdGuard Home, banIP, SQM, VPN, schedules, device control, themes, upgrade, Performance Tuning — LuCI under **Advanced** |
+| **Theme** | **Monokai milk** default — milky Monokai Pro: charcoal / milk panels with pink `#ff6188`, cyan, and green. Honey milk, Plain milk, Moss, Minimamilk one click away. LuCI Footstrap matches |
 | **LCD** | Boot splash paints the MilkFlint4 logo on the 320×240 panel and leaves it on |
 | **0.87a userspace** | VPN **Use VPN’s DNS** · multi-queue CAKE from **1 Gbit** Ethernet / **500 Mbit** PPPoE · queue-per-CPU IFBs · Test Bench delay / stalled · CAKE ECN/DSCP retry |
 | **Steering** | Hardware **RSS** on `wan` (PDMA 0–3) |
