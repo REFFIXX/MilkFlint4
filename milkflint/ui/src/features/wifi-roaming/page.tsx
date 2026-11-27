@@ -27,6 +27,7 @@ import {
   readForm,
   toChanges,
   validateMobilityDomain,
+  validateSelection,
 } from './model';
 
 interface Data {
@@ -83,6 +84,7 @@ export function WifiRoamingPage(): ReactElement {
   }, [data?.form]);
 
   const domainError = current === undefined ? undefined : validateMobilityDomain(current.mobilityDomain);
+  const selectionError = current === undefined ? undefined : validateSelection(current);
   const aps = data === undefined ? [] : listApIfaces(data.wireless);
 
   if (error !== undefined && data === undefined) {
@@ -233,6 +235,7 @@ export function WifiRoamingPage(): ReactElement {
             <Field
               id={`${id}-all`}
               label="All AP networks"
+              error={selectionError}
               {...explain(
                 'Writes the same roaming settings to every non-guest AP interface on this router. Recommended: On for a single household SSID. Turn Off only when you want roaming on some SSIDs and not others.',
                 ['wireless.@wifi-iface'],
@@ -340,9 +343,9 @@ export function WifiRoamingPage(): ReactElement {
       <SaveBar
         visible={dirty}
         busy={state.phase === 'applying'}
-        invalid={loading || domainError !== undefined || !data.compatible}
+        invalid={loading || domainError !== undefined || selectionError !== undefined || !data.compatible}
         onSave={() => {
-          if (domainError !== undefined || !data.compatible) return;
+          if (domainError !== undefined || selectionError !== undefined || !data.compatible) return;
           void apply(toChanges(current, data.wireless, data.usteer, data.milkflint));
           setForm(undefined);
         }}

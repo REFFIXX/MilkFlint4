@@ -42,11 +42,13 @@ export function readForm(wireless: Section[], usteer: Section[], milkflint: Sect
   const usteerSec = usteer.find((s) => s['.type'] === 'usteer') ?? usteer[0];
   const meta = roamingMeta(milkflint);
   const applyAll = meta === undefined ? true : bool(meta, 'apply_all', true);
+  // When apply_all is off, keep an intentionally empty iface list empty —
+  // do not fall back to every AP (that would re-apply roaming on next save).
   const saved = list(meta, 'iface').filter((n) => aps.some((a) => a.name === n));
   const allNames = aps.map((a) => a.name);
   return {
     applyAll,
-    selected: applyAll ? allNames : saved.length > 0 ? saved : allNames,
+    selected: applyAll ? allNames : saved,
     ieee80211r: bool(sample, 'ieee80211r'),
     mobilityDomain: (str(sample, 'mobility_domain') ?? '4f57').slice(0, 4).toLowerCase(),
     ftOverDs: bool(sample, 'ft_over_ds', true),
@@ -58,6 +60,14 @@ export function readForm(wireless: Section[], usteer: Section[], milkflint: Sect
 
 export function validateMobilityDomain(v: string): string | undefined {
   if (!/^[0-9a-fA-F]{4}$/.test(v)) return 'Use exactly 4 hex digits (0–9, a–f).';
+  return undefined;
+}
+
+/** Block a save that would write roaming nowhere while “All AP networks” is off. */
+export function validateSelection(form: RoamingForm): string | undefined {
+  if (!form.applyAll && form.selected.length === 0) {
+    return 'Select at least one network, or turn on All AP networks.';
+  }
   return undefined;
 }
 

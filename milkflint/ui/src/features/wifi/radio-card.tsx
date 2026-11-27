@@ -182,8 +182,8 @@ export function RadioFields({
           {...explain(
             form.band === '6g'
               ? block === undefined
-                ? 'Auto picks the quietest Preferred Scanning Channel (PSC) at start-up. On 6 GHz, phones mainly scan PSCs (5, 9, 13, … every 16 MHz); non-PSC channels are harder for clients to find. Recommended: Auto, or a PSC if you pick by hand.'
-                : `At ${String(width)} MHz this takes up channels ${describeBlock(form.band, block)}. Prefer a Preferred Scanning Channel (PSC: 5, 9, 13, …) as primary so phones find the AP quickly; non-PSC primaries rely on out-of-band discovery. Channel ${form.channel} is the primary.`
+                ? 'Auto picks the quietest Preferred Scanning Channel (PSC) at start-up. On 6 GHz, phones mainly scan PSCs (5, 21, 37, 53, … every 16 channels / 80 MHz); non-PSC channels are harder for clients to find. Recommended: Auto, or a PSC if you pick by hand.'
+                : `At ${String(width)} MHz this takes up channels ${describeBlock(form.band, block)}. Prefer a Preferred Scanning Channel (PSC: 5, 21, 37, 53, …) as primary so phones find the AP quickly; non-PSC primaries rely on out-of-band discovery. Channel ${form.channel} is the primary.`
               : block === undefined
                 ? 'Auto picks the quietest one at start-up.'
                 : block.length === 1

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { readForm, toChanges, type RoamingForm } from '../src/features/wifi-roaming/model.ts';
+import { readForm, toChanges, validateSelection, type RoamingForm } from '../src/features/wifi-roaming/model.ts';
 import { section } from './uci-fixture.ts';
 
 const form: RoamingForm = {
@@ -61,4 +61,12 @@ test('readForm restores apply-all and selected ifaces', () => {
   const got = readForm(wireless, [], milkflint);
   assert.equal(got.applyAll, false);
   assert.deepEqual(got.selected, ['wifinet1']);
+});
+
+test('readForm keeps an intentionally empty iface list empty', () => {
+  const milkflint = [section('roaming', 'roaming', { apply_all: '0' })];
+  const got = readForm(wireless, [], milkflint);
+  assert.equal(got.applyAll, false);
+  assert.deepEqual(got.selected, []);
+  assert.match(validateSelection(got) ?? '', /Select at least one/);
 });
