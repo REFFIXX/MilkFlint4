@@ -6,6 +6,7 @@
 import { InfoIcon, TriangleAlertIcon } from 'lucide-react';
 import type { ReactElement } from 'react';
 import { CardHeading } from '@/components/card-heading';
+import { explain } from '@/components/explain';
 import { Field } from '@/components/field';
 import { Note } from '@/components/note';
 import { Button } from '@/components/ui/button';
@@ -58,8 +59,17 @@ function Speed({
   error: string | undefined;
   set: Set;
 }): ReactElement {
+  const way = id === 'downloadMbit' ? 'download' : 'upload';
   return (
-    <Field id={id} label={label} error={error}>
+    <Field
+      id={id}
+      label={label}
+      error={error}
+      {...explain(
+        `About 85–95% of what a speed test shows with Smart Queue off. Too high and the modem’s buffer fills first (latency spikes); too low and you leave speed on the table. Recommended: measure once with SQM off, then enter ~90% here. Sets sqm’s ${way} rate (kbit/s).`,
+        [`sqm.@queue.${way}`],
+      )}
+    >
       <div className="flex items-center gap-2">
         <Input
           id={id}

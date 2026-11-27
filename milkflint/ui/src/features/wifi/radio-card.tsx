@@ -180,11 +180,15 @@ export function RadioFields({
           id={id('channel')}
           label="Channel"
           {...explain(
-            block === undefined
-              ? 'Auto picks the quietest one at start-up.'
-              : block.length === 1
-                ? `One 20 MHz channel${dfs.size > 0 ? '; DFS marks the ones that need a radar check first' : ''}.`
-                : `At ${String(width)} MHz this takes up channels ${describeBlock(form.band, block)}${fixedBlocks ? ', whichever of them you pick' : ''}. Channel ${form.channel} is the primary: the network announces itself there, and devices that can’t use the whole width use the part it’s in.`,
+            form.band === '6g'
+              ? block === undefined
+                ? 'Auto picks the quietest Preferred Scanning Channel (PSC) at start-up. On 6 GHz, phones mainly scan PSCs (5, 9, 13, … every 16 MHz); non-PSC channels are harder for clients to find. Recommended: Auto, or a PSC if you pick by hand.'
+                : `At ${String(width)} MHz this takes up channels ${describeBlock(form.band, block)}. Prefer a Preferred Scanning Channel (PSC: 5, 9, 13, …) as primary so phones find the AP quickly; non-PSC primaries rely on out-of-band discovery. Channel ${form.channel} is the primary.`
+              : block === undefined
+                ? 'Auto picks the quietest one at start-up.'
+                : block.length === 1
+                  ? `One 20 MHz channel${dfs.size > 0 ? '; DFS marks the ones that need a radar check first' : ''}.`
+                  : `At ${String(width)} MHz this takes up channels ${describeBlock(form.band, block)}${fixedBlocks ? ', whichever of them you pick' : ''}. Channel ${form.channel} is the primary: the network announces itself there, and devices that can’t use the whole width use the part it’s in.`,
             [`${radio}.channel`],
           )}
         >
@@ -360,7 +364,7 @@ export function RadioFields({
               label="MU-MIMO"
               status={form.beamforming ? undefined : 'Needs beamforming.'}
               {...explain(
-                'Beamforming to several devices at once. Some Wi-Fi cards handle it badly: turn it off if one keeps dropping out.',
+                'Beamforming to several devices at once for better multi-client throughput. Recommended: On on this Flint 4 (MT7996). Turn Off if a particular client keeps dropping when the air is busy — some older cards mishandle MU-MIMO.',
                 [`${radio}.mu_beamformer`, `${radio}.he_mu_beamformer`, `${radio}.mu_beamformee`],
               )}
             >

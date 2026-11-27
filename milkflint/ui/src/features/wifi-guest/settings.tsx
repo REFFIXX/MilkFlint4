@@ -450,10 +450,10 @@ export function NetworkSettings({
           <Field
             id={`${id}-isolate`}
             label="Keep devices apart"
-            {...explain('Devices on it can’t reach each other, on any band. They never reach yours.', [
-              ...options(aps, 'isolate'),
-              ...options(aps, 'bridge_isolate'),
-            ])}
+            {...explain(
+              'Devices on it can’t reach each other, on any band. They never reach yours. Recommended: On for guest and IoT networks; Off only when printers or cast devices on this SSID must talk to each other.',
+              [...options(aps, 'isolate'), ...options(aps, 'bridge_isolate')],
+            )}
           >
             <Switch
               id={`${id}-isolate`}

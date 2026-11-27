@@ -1,0 +1,62 @@
+#!/bin/sh
+# Poll wan carrier_changes while ≥2 Wi-Fi radios are up. If the counter
+# climbs by ≥4 in a 60s window, pulse the fan and bounce wan (openwrt#26690).
+
+STATE=/tmp/milkflint4-wan-watch
+mkdir -p "$STATE"
+
+pulse_fan() {
+	cd=/sys/class/thermal/cooling_device0
+	[ -w "$cd/cur_state" ] || return 0
+	prev=$(cat "$cd/cur_state" 2>/dev/null || echo 0)
+	[ "$prev" -ge 1 ] 2>/dev/null || echo 1 > "$cd/cur_state" 2>/dev/null || true
+	sleep 10
+	now=$(cat "$cd/cur_state" 2>/dev/null || echo 0)
+	[ "$prev" = 0 ] && [ "$now" = 1 ] && echo 0 > "$cd/cur_state" 2>/dev/null || true
+}
+
+bounce_wan() {
+	logger -t milkflint4-wan-watch "bouncing wan after flap storm"
+	ip link set wan down 2>/dev/null || true
+	sleep 1
+	ip link set wan up 2>/dev/null || true
+}
+
+radios_up() {
+	n=0
+	for d in /sys/class/ieee80211/phy*/device/net/*/operstate; do
+		[ -f "$d" ] || continue
+		[ "$(cat "$d" 2>/dev/null)" = up ] && n=$((n + 1))
+	done
+	echo "$n"
+}
+
+[ -d /sys/class/net/wan ] || exit 0
+
+prev=$(cat /sys/class/net/wan/carrier_changes 2>/dev/null || echo 0)
+echo "$prev" > "$STATE/carrier"
+echo "$(date +%s)" > "$STATE/at"
+
+while sleep 30; do
+	[ -d /sys/class/net/wan ] || continue
+	now=$(cat /sys/class/net/wan/carrier_changes 2>/dev/null || echo 0)
+	old=$(cat "$STATE/carrier" 2>/dev/null || echo 0)
+	echo "$now" > "$STATE/carrier"
+	delta=$((now - old))
+	[ "$delta" -lt 0 ] && delta=0
+
+	ru=$(radios_up)
+	if [ "$ru" -ge 2 ] && [ "$delta" -ge 4 ]; then
+		# cooldown 5 minutes between recoveries
+		last=$(cat "$STATE/last_fix" 2>/dev/null || echo 0)
+		ts=$(date +%s)
+		if [ $((ts - last)) -ge 300 ]; then
+			logger -t milkflint4-wan-watch \
+				"carrier_changes +$delta in ~30s with $ru radios; fan pulse + bounce"
+			pulse_fan
+			bounce_wan
+			echo "$ts" > "$STATE/last_fix"
+			echo "$(cat /sys/class/net/wan/carrier_changes 2>/dev/null || echo 0)" > "$STATE/carrier"
+		fi
+	fi
+done

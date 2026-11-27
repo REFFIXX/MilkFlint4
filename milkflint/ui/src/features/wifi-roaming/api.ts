@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { call } from '@/lib/ubus';
+import { call, exec } from '@/lib/ubus';
 
 const statusSchema = z.object({
   wpadFull: z.boolean().optional(),
@@ -27,4 +27,9 @@ export function getRoamingStatus(): Promise<RoamingStatus> {
     neighbors: [],
     error: 'status unavailable',
   }));
+}
+
+/** Reload wireless + usteer after a roaming save so FT/k/v take effect. */
+export function reloadRoaming(): Promise<void> {
+  return exec('milkflint.roaming', 'reload').catch(() => undefined);
 }

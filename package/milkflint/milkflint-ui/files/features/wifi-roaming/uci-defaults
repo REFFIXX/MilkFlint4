@@ -1,10 +1,18 @@
 #!/bin/sh
 # Seed usteer config if the package installed an empty tree; leave disabled
-# until the Wi-Fi roaming page turns it on.
+# until the Wi-Fi roaming page turns it on. Also seed milkflint.roaming so
+# apply-all / selected SSIDs have a place to persist.
 [ -e /etc/config/usteer ] || touch /etc/config/usteer
 uci -q show usteer.usteer >/dev/null 2>&1 || {
 	uci set usteer.usteer=usteer
 	uci set usteer.usteer.disabled='1'
 	uci commit usteer
+}
+
+[ -e /etc/config/milkflint ] || touch /etc/config/milkflint
+uci -q show milkflint.roaming >/dev/null 2>&1 || {
+	uci set milkflint.roaming=roaming
+	uci set milkflint.roaming.apply_all='1'
+	uci commit milkflint
 }
 exit 0

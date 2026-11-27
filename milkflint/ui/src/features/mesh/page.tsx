@@ -88,11 +88,11 @@ function downloadText(filename: string, text: string): void {
 
 const ROLE_HELP: Record<MeshRole, string> = {
   'main-auto':
-    'Recommended for most homes: plug WAN into your modem for Main; leave WAN unplugged on other APs so they become peers.',
+    'Recommended for most homes: plug WAN into your modem for Main; leave WAN unplugged on other APs so they become peers. Uses portal_detect=1 (mesh11sd decides from WAN).',
   'main-fixed':
-    'Always the Main (portal) router, even with no WAN cable. Use when this box must stay Main no matter what.',
+    'Always the Main (portal) router, even with no WAN cable. Uses portal_detect=0. Pick this when this box must stay Main no matter what.',
   peer:
-    'This unit is only an access point. Leave its WAN unplugged so mesh11sd treats it as a Mesh Peer, not a second Main.',
+    'UI intent: this box is only an access point. Still writes portal_detect=1 (not 5 / TPE) — leave WAN unplugged so mesh11sd stays a Mesh Peer. Plug WAN in and it can become a second Main.',
 };
 
 export function MeshPage(): ReactElement {
@@ -206,6 +206,17 @@ export function MeshPage(): ReactElement {
                 );
               })}
             </div>
+            {current.role === 'peer' && (
+              <Alert variant="warning">
+                <AlertTitle>Keep WAN unplugged on this Access point</AlertTitle>
+                <AlertDescription>
+                  MilkFlint stores “Access point” as <code className="font-mono">milkflint.mesh.role=peer</code> while
+                  mesh11sd still uses <code className="font-mono">portal_detect=1</code> (same as Main · auto). That is
+                  intentional: code <code className="font-mono">5</code> is a specialised TPE trunk peer, not a home AP.
+                  With WAN up, mesh11sd may promote this node to Main — leave WAN empty so it stays a Mesh Peer.
+                </AlertDescription>
+              </Alert>
+            )}
             <Field
               id={`${id}-auto`}
               label="Auto-config (mesh11sd)"
@@ -508,7 +519,7 @@ export function MeshPage(): ReactElement {
           reset();
         }}
       />
-      <ApplyStatus state={state} onDismiss={reset} />
+      <ApplyStatus state={state} />
     </>
   );
 }

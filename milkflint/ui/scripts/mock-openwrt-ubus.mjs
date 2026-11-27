@@ -124,6 +124,9 @@ const configs = {
     mesh: { '.type': 'mesh', '.name': 'mesh', '.index': 1, role: 'main-auto' },
     mode: { '.type': 'mode', '.name': 'mode', '.index': 2, mode: 'router' },
     datastats: { '.type': 'datastats', '.name': 'datastats', '.index': 3, enabled: '1' },
+    roaming: { '.type': 'roaming', '.name': 'roaming', '.index': 4, apply_all: '1' },
+    steering: { '.type': 'steering', '.name': 'steering', '.index': 5, layout: 'auto', rss: '1' },
+    wifi: { '.type': 'wifi', '.name': 'wifi', '.index': 6 },
   },
   network: {
     loopback: {
@@ -207,7 +210,23 @@ const configs = {
     },
     lan_wan: { '.type': 'forwarding', '.name': 'lan_wan', '.index': 3, src: 'lan', dest: 'wan' },
   },
-  sqm: {},
+  sqm: {
+    eth1: {
+      '.type': 'queue',
+      '.name': 'eth1',
+      '.index': 0,
+      enabled: '1',
+      interface: 'eth1',
+      download: '900000',
+      upload: '90000',
+      qdisc: 'cake',
+      script: 'piece_of_cake.qos',
+      linklayer: 'ethernet',
+      overhead: '44',
+      iqdisc_opts: 'nat dual-dsthost ingress',
+      eqdisc_opts: 'nat dual-srchost',
+    },
+  },
   system: {
     '@system[0]': {
       '.type': 'system',
@@ -390,9 +409,27 @@ function deviceStatus() {
       type: 'Network device',
       up: true,
       carrier: true,
-      speed: '1000F',
-      'link-supported': ['1000baseT-F', '2500baseT-F'],
+      speed: '10000F',
+      'link-supported': ['1000baseT-F', '2500baseT-F', '10000baseT-F'],
       statistics: { rx_bytes: 8e9, tx_bytes: 1e9, rx_packets: 4e6, tx_packets: 9e5 },
+    },
+    'phy0-ap0': {
+      type: 'Network device',
+      up: true,
+      carrier: true,
+      statistics: { rx_bytes: 2e8, tx_bytes: 5e8 },
+    },
+    'phy1-ap0': {
+      type: 'Network device',
+      up: true,
+      carrier: true,
+      statistics: { rx_bytes: 4e8, tx_bytes: 9e8 },
+    },
+    'phy2-ap0': {
+      type: 'Network device',
+      up: true,
+      carrier: true,
+      statistics: { rx_bytes: 1e8, tx_bytes: 3e8 },
     },
     'br-lan': {
       type: 'Bridge',
@@ -476,7 +513,81 @@ function milkflintStub(object, method, params = {}) {
     case 'milkflint stats':
       return statsPayload();
     case 'milkflint sqm_status':
-      return { qdiscs: [], steering: { cpus: 4, napi: [0], rps: [0, 1, 2, 3] } };
+      return {
+        qdiscs: [
+          {
+            kind: 'cake',
+            dev: 'ifb4eth1',
+            handle: '1:',
+            root: true,
+            bytes: 12_000_000 + cpuTick * 80_000,
+            packets: 90_000 + cpuTick * 40,
+            drops: 2,
+            backlog: 0,
+            options: { bandwidth: 900_000_000, diffserv: 'diffserv3', overhead: 44 },
+            tins: [
+              { sent_bytes: 2e6, avg_delay_us: 120, base_delay_us: 40, drops: 0 },
+              { sent_bytes: 8e6, avg_delay_us: 800, base_delay_us: 200, drops: 1 },
+              { sent_bytes: 2e6, avg_delay_us: 400, base_delay_us: 100, drops: 1 },
+            ],
+          },
+          {
+            kind: 'cake',
+            dev: 'eth1',
+            handle: '2:',
+            root: true,
+            bytes: 1_500_000 + cpuTick * 20_000,
+            packets: 20_000 + cpuTick * 10,
+            drops: 0,
+            backlog: 0,
+            options: { bandwidth: 90_000_000, overhead: 44 },
+            tins: [{ sent_bytes: 1.5e6, avg_delay_us: 300, base_delay_us: 80, drops: 0 }],
+          },
+        ],
+        steering: { cpus: 4, napi: [0], rps: [0, 1, 2, 3] },
+      };
+    case 'milkflint pipeline':
+      return {
+        cpu: statsPayload().cpu,
+        rss: {
+          dev: 'eth1',
+          rings: 4,
+          table: [64, 64, 64, 64],
+          hash: 'toeplitz',
+        },
+        rings: [0, 1, 2, 3].map((ring) => ({
+          ring,
+          irq: { irq: 100 + ring, cpus: [ring], count: 10_000 + cpuTick * 20 + ring },
+          thread: {
+            name: `napi/mtk_eth-${ring + 1}`,
+            cpus: [ring],
+            time: 5_000 + cpuTick * 10 + ring * 3,
+            wait: 1000,
+            runs: 200 + cpuTick,
+          },
+        })),
+        tx: {
+          irq: { irq: 99, cpus: [0], count: 8_000 + cpuTick * 5 },
+          thread: { name: 'napi/mtk_eth-0', cpus: [0], time: 2_000 + cpuTick * 4, wait: 500, runs: 100 },
+        },
+        eth_threads: [],
+        wifi: {
+          irqs: [
+            { name: 'mt7996', irq: 200, cpus: [2], count: 50_000 + cpuTick * 30 },
+          ],
+          threads: [
+            { name: 'napi/phy0-0', cpus: [1], time: 3_000 + cpuTick * 6, wait: 800, runs: 150 },
+            { name: 'napi/phy1-0', cpus: [2], time: 4_000 + cpuTick * 8, wait: 900, runs: 180 },
+            { name: 'napi/phy2-0', cpus: [3], time: 2_500 + cpuTick * 5, wait: 700, runs: 120 },
+            { name: 'mt76-tx', cpus: [1, 2, 3], time: 1_500 + cpuTick * 3, wait: 400, runs: 90 },
+          ],
+        },
+        rps: [
+          { dev: 'eth1', queues: [[0], [1], [2], [3]] },
+          { dev: 'eth0', queues: [[0, 1, 2, 3]] },
+        ],
+        xps: [],
+      };
     case 'milkflint neighbors':
       return { neighbors: [] };
     case 'milkflint.home get':
@@ -637,7 +748,42 @@ function milkflintStub(object, method, params = {}) {
       };
     }
     case 'milkflint.tuning status':
-      return { applied: false, profile: null, available: [] };
+      return {
+        radios: [
+          { phy: 'phy0', low: 5000, high: 12000, threshold: 15000 },
+          { phy: 'phy1', low: 5000, high: 12000, threshold: 15000 },
+          { phy: 'phy2', low: 5000, high: 12000, threshold: 15000 },
+        ],
+        steering: {
+          cpus: 4,
+          ethernet: [0],
+          wifi: [1, 2, 3],
+          rps: [0, 1, 2, 3],
+          realtime: false,
+        },
+        gro: [
+          {
+            dev: 'eth1',
+            mode: 'fraglist',
+            auto: 'fraglist',
+            udp: true,
+            max: 65536,
+            whole: true,
+            offload: true,
+            now: { gro: true, list: true, udp: true, max: 65536 },
+          },
+        ],
+        kernel: { hz: 1000, waits: true },
+        knobs: {
+          rx_delay: 0,
+          cake_ecn: 0,
+          cake_l4s: null,
+          cake_loaded: true,
+          wifi_retries: 4,
+          wifi_vo_aggr: false,
+        },
+        wed: { wanted: false, loaded: false, active: false },
+      };
     case 'milkflint.wifiscan results':
       return { scanning: false, radios: {}, results: [] };
     case 'milkflint.radarscan status':
@@ -881,6 +1027,10 @@ function handleCall(session, object, method, params = {}) {
           ]
         : [],
     });
+  }
+
+  if (object === 'milkflint.roaming' && method === 'reload') {
+    return ok({ reloaded: true });
   }
 
   if (object === 'milkflint.mesh' && method === 'status') {
