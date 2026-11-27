@@ -1,0 +1,10 @@
+{
+  "name": "milkflint4",
+  "version": "1.0.0",
+  "description": "MilkFlint4 agent tooling: OpenWrt Flint 4 firmware releases, milkflint UI checks, and research helpers.",
+  "author": {
+    "name": "REFFIX"
+  },
+  "license": "MIT",
+  "keywords": ["openwrt", "gl-be14000", "flint4", "milkflint", "firmware"]
+}
