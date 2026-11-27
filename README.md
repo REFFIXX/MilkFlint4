@@ -118,12 +118,13 @@ CPU `performance` · RSS forced · RX coalesce 20 µs · software + hardware flo
 - Not Flint 2 with the labels swapped  
 - Not the OddBlueDog **6.12** kernel driver series — this is **6.18** + OpenWrt main cake_mq backports  
 
-### 1.0.1
+### 1.1
 
-- **Front-panel LCD splash** — logo stays on after boot  
-- Everything from **1.0**: stable Flint 4 / 6.18, Monokai milk, full 0.87a userspace, muru fix  
+- **Wi‑Fi roaming** (802.11r/k/v + `usteer`) and **802.11s mesh** (`mesh11sd`) in the MilkFlint UI  
+- Image ships `wpad-mbedtls`, `usteer`, `mesh11sd`  
+- Everything from **1.0.1**: LCD splash · **1.0**: Flint 4 / 6.18, Monokai milk, 0.87a userspace  
 
-Notes: [`docs/RELEASE-1.0.1.md`](docs/RELEASE-1.0.1.md) · [`docs/RELEASE-1.0.md`](docs/RELEASE-1.0.md) · [`docs/RELEASE-0.9.md`](docs/RELEASE-0.9.md)
+Notes: [`docs/RELEASE-1.1.md`](docs/RELEASE-1.1.md) · [`docs/RELEASE-1.0.1.md`](docs/RELEASE-1.0.1.md) · [`docs/RELEASE-1.0.md`](docs/RELEASE-1.0.md)
 
 ## Install
 
