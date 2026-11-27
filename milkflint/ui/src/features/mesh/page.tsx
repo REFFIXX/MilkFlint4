@@ -128,7 +128,7 @@ export function MeshPage(): ReactElement {
     return (
       <>
         <PageHeader title="Mesh" description="802.11s backhaul with mesh11sd." />
-        <LoadError error={error} onRetry={() => void reload()} />
+        <LoadError error={error} retry={() => void reload()} />
       </>
     );
   }
