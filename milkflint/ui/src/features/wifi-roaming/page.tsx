@@ -117,25 +117,31 @@ export function WifiRoamingPage(): ReactElement {
       <Card className="mb-4">
         <CardContent className="flex flex-col gap-2 py-4 text-sm text-muted-foreground">
           <p>
-            Clients keep the same SSID while moving between this Flint 4 and other OpenWrt 25.x APs. Match the{' '}
-            <strong className="text-foreground">mobility domain</strong> and enable the same toggles on every AP.
+            Roaming keeps phones and laptops on the same Wi-Fi name while they walk from one access point to another —
+            without a long reconnect. Turn the same switches on here and on every other OpenWrt 25.x AP that shares your
+            SSID, and use one shared <strong className="text-foreground">mobility domain</strong>.
           </p>
           <p>
-            Needs full <code className="font-mono text-foreground">wpad-mbedtls</code> (shipped in this image). See{' '}
-            <GoLink href={`${href('mesh')}`}>Mesh</GoLink> to deploy more APs.
+            Recommended starter: Fast Transition, 802.11k, 802.11v, and usteer all On, with mobility domain{' '}
+            <code className="font-mono text-foreground">a1b2</code> (or any four hex digits you copy everywhere). Needs
+            full <code className="font-mono text-foreground">wpad-mbedtls</code> (shipped in this image). Use{' '}
+            <GoLink href={`${href('mesh')}`}>Mesh</GoLink> when you are adding more APs.
           </p>
         </CardContent>
       </Card>
 
       <div className="flex flex-col gap-4 pb-24">
         <Card>
-          <CardHeading title="Essentials" description="802.11r fast transition, neighbor reports, and BSS transition." />
+          <CardHeading
+            title="Essentials"
+            description="The three standards that make handoff smooth: fast re-auth, smarter scanning, and gentle steering."
+          />
           <CardContent className="flex flex-col gap-1">
             <Field
               id={`${id}-r`}
               label="Fast Transition (802.11r)"
               {...explain(
-                'Lets phones and laptops re-authenticate quickly when they move between APs. Every AP with this SSID must share the same mobility domain.',
+                'Lets phones and laptops re-authenticate in a flash when they move between APs, instead of a full login each time. Recommended: turn this On for every AP that shares this SSID, and use the same mobility domain everywhere.',
                 ['wireless.@wifi-iface.ieee80211r', 'wireless.@wifi-iface.mobility_domain'],
               )}
               status={current.ieee80211r ? <Badge variant="success">On</Badge> : <Badge variant="secondary">Off</Badge>}
@@ -151,7 +157,7 @@ export function WifiRoamingPage(): ReactElement {
               id={`${id}-md`}
               label="Mobility domain"
               {...explain(
-                'Four hex digits shared by every AP in the roaming set. Pick one value and copy it to each OpenWrt AP.',
+                'A four-hex-digit club ID that ties your APs into one roaming set. Recommended: pick one value (for example a1b2), save it here, then copy the same four digits onto every other AP. Mismatched domains break Fast Transition.',
                 ['wireless.@wifi-iface.mobility_domain'],
               )}
               error={domainError}
@@ -171,7 +177,7 @@ export function WifiRoamingPage(): ReactElement {
               id={`${id}-ft`}
               label="FT over distribution system"
               {...explain(
-                'Prefer FT over the wired/LAN path between APs when available. Leave on unless an AP fails to complete FT.',
+                'Sends the Fast Transition handshake over your wired LAN between APs when that path is available. Recommended: On. Turn Off only if a particular AP fails to finish FT and devices stick to the old AP.',
                 ['wireless.@wifi-iface.ft_over_ds'],
               )}
             >
@@ -187,7 +193,7 @@ export function WifiRoamingPage(): ReactElement {
               id={`${id}-k`}
               label="Neighbor reports (802.11k)"
               {...explain(
-                'APs advertise nearby BSS candidates so clients can scan smarter. Needs full wpad and pairs well with usteer.',
+                'Lets each AP tell clients about nearby APs so they scan less and switch sooner. Recommended: On. Needs full wpad and works best with usteer steering below.',
                 ['wireless.@wifi-iface.ieee80211k'],
               )}
               status={current.ieee80211k ? <Badge variant="success">On</Badge> : <Badge variant="secondary">Off</Badge>}
@@ -199,7 +205,7 @@ export function WifiRoamingPage(): ReactElement {
               id={`${id}-v`}
               label="BSS transition (802.11v)"
               {...explain(
-                'Lets the network suggest a better AP. Used by usteer for steering; harmless if clients ignore it.',
+                'Lets the network suggest a better AP when signal or load is poor. Recommended: On when you also run usteer. Harmless if a phone ignores the hint.',
                 ['wireless.@wifi-iface.bss_transition'],
               )}
               status={current.bssTransition ? <Badge variant="success">On</Badge> : <Badge variant="secondary">Off</Badge>}
@@ -214,13 +220,16 @@ export function WifiRoamingPage(): ReactElement {
         </Card>
 
         <Card>
-          <CardHeading title="Networks" description="Which AP interfaces get these roaming options." />
+          <CardHeading
+            title="Networks"
+            description="Choose which Wi-Fi names on this router get the roaming settings above."
+          />
           <CardContent className="flex flex-col gap-1">
             <Field
               id={`${id}-all`}
               label="All AP networks"
               {...explain(
-                'Write the same roaming settings to every non-guest AP interface on this router.',
+                'Writes the same roaming settings to every non-guest AP interface on this router. Recommended: On for a single household SSID. Turn Off only when you want roaming on some SSIDs and not others.',
                 ['wireless.@wifi-iface'],
               )}
             >
@@ -257,13 +266,16 @@ export function WifiRoamingPage(): ReactElement {
         </Card>
 
         <Card>
-          <CardHeading title="Steering" description="usteer helps clients pick a better AP using 802.11k/v." />
+          <CardHeading
+            title="Steering"
+            description="Optional helper that nudges clients toward a stronger or less busy AP."
+          />
           <CardContent className="flex flex-col gap-1">
             <Field
               id={`${id}-usteer`}
               label="Enable usteer"
               {...explain(
-                'Runs one steering daemon on this router. Do not also run dawn. Other APs should share SSID, FT settings, and ideally run usteer too.',
+                'Runs OpenWrt’s usteer daemon so this router can steer clients using 802.11k/v neighbor data. Recommended: On for multi-AP homes. Do not also run dawn. Other APs should share the SSID and FT settings, and ideally run usteer too.',
                 ['usteer.@usteer.disabled'],
               )}
               status={
@@ -287,8 +299,15 @@ export function WifiRoamingPage(): ReactElement {
         </Card>
 
         <Card>
-          <CardHeading title="Status" description="What this router sees right now." />
+          <CardHeading
+            title="Status"
+            description="Live check: which interfaces have Fast Transition, and which neighbor APs usteer can see."
+          />
           <CardContent className="flex flex-col gap-3 text-sm">
+            <p className="text-muted-foreground">
+              After you save, FT ifaces should list your AP networks. Neighbors appear once other APs share the SSID and
+              roaming settings — empty is normal on a single router.
+            </p>
             <div className="flex flex-wrap gap-2">
               <Badge variant="outline">FT ifaces: {(status?.ftIfaces ?? []).length}</Badge>
               <Badge variant="outline">Neighbors: {(status?.neighbors ?? []).length}</Badge>
@@ -304,7 +323,10 @@ export function WifiRoamingPage(): ReactElement {
               </div>
             ))}
             {(status?.neighbors ?? []).length === 0 && (
-              <p className="text-muted-foreground">No usteer neighbors yet — enable roaming on peer APs with the same SSID.</p>
+              <p className="text-muted-foreground">
+                No usteer neighbors yet. Enable the same roaming options on peer APs, or open Mesh → Deploy other APs to
+                add them.
+              </p>
             )}
           </CardContent>
         </Card>

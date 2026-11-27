@@ -103,6 +103,7 @@ cd milkflint/ui
 node scripts/mock-openwrt-ubus.mjs          # :8088 simulated OpenWrt 25.x ubus
 MILKFLINT_VM=http://127.0.0.1:8088 pnpm exec vite   # :5288 MilkFlint UI
 # optional: node scripts/verify-roaming-mesh-sim.mjs
+# optional: node scripts/verify-all-pages.mjs   # crawl every sidebar route
 ```
 
-Open `http://127.0.0.1:5288/milkflint/` — password any. Seeded tri-band APs, usteer neighbors, and mesh peers.
+Open `http://127.0.0.1:5288/milkflint/` — password any. Seeded tri-band APs, usteer neighbors, mesh peers, and stubs so every sidebar page loads.

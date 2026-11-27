@@ -87,9 +87,12 @@ function downloadText(filename: string, text: string): void {
 }
 
 const ROLE_HELP: Record<MeshRole, string> = {
-  'main-auto': 'WAN plugged → portal; unplugged → peer. Default mesh11sd auto-detect (portal_detect=1).',
-  'main-fixed': 'Always the routed portal, even without a WAN link (portal_detect=0).',
-  peer: 'Ordinary access-point peer. Leave WAN unplugged so auto-detect becomes Mesh Peer — not a VXLAN trunk peer.',
+  'main-auto':
+    'Recommended for most homes: plug WAN into your modem for Main; leave WAN unplugged on other APs so they become peers.',
+  'main-fixed':
+    'Always the Main (portal) router, even with no WAN cable. Use when this box must stay Main no matter what.',
+  peer:
+    'This unit is only an access point. Leave its WAN unplugged so mesh11sd treats it as a Mesh Peer, not a second Main.',
 };
 
 export function MeshPage(): ReactElement {
@@ -142,7 +145,7 @@ export function MeshPage(): ReactElement {
     <>
       <PageHeader
         title="Mesh"
-        description="Wire this Flint 4 as Main or peer, then export a first-boot script for other OpenWrt 25.x APs."
+        description="Join this Flint 4 to an 802.11s backhaul: pick Main or peer, match identity, then deploy more APs."
       />
 
       {!data.compatible && (
@@ -161,15 +164,22 @@ export function MeshPage(): ReactElement {
           <AlertDescription>
             With auto-config on, do not hand-edit wireless or network for the mesh. Change role and identity here, then
             reboot if portal detection does not take effect. Pair with{' '}
-            <GoLink href={href('wifi-roaming')}>Wi-Fi roaming</GoLink> on the gate SSIDs.
+            <GoLink href={href('wifi-roaming')}>Wi-Fi roaming</GoLink> on the gate SSIDs so phones roam across APs.
           </AlertDescription>
         </Alert>
       )}
 
       <div className="flex flex-col gap-4 pb-24">
         <Card>
-          <CardHeading title="Role" description="Main (portal) or access-point peer on this Flint 4." />
+          <CardHeading
+            title="Role"
+            description="One Main talks to your ISP; the others are access-point peers on the same mesh."
+          />
           <CardContent className="flex flex-col gap-3">
+            <p className="text-sm text-muted-foreground">
+              Recommended path: leave this Flint 4 on <strong className="text-foreground">Main · auto</strong> with the
+              modem on WAN, then flash other APs as peers with the script below (WAN unplugged on those).
+            </p>
             <div className="grid gap-3 sm:grid-cols-3">
               {(
                 [
@@ -200,7 +210,7 @@ export function MeshPage(): ReactElement {
               id={`${id}-auto`}
               label="Auto-config (mesh11sd)"
               {...explain(
-                'When on, mesh11sd builds wireless/network for the mesh. Start with confidence-test (off) on new hardware, then turn on.',
+                'When on, mesh11sd builds the wireless and network settings for the mesh for you. Recommended: Off (confidence-test) on brand-new hardware until mesh11sd status looks healthy, then On for day-to-day use.',
                 ['mesh11sd.setup.auto_config'],
               )}
               status={
@@ -218,7 +228,10 @@ export function MeshPage(): ReactElement {
             <Field
               id={`${id}-en`}
               label="mesh11sd daemon"
-              {...explain('Master enable for the mesh11sd service.', ['mesh11sd.setup.enabled'])}
+              {...explain(
+                'Master power switch for the mesh11sd service that runs the 802.11s mesh. Recommended: On whenever you want this node in the mesh.',
+                ['mesh11sd.setup.enabled'],
+              )}
             >
               <Switch id={`${id}-en`} checked={current.enabled} onCheckedChange={(v) => set('enabled', v)} />
             </Field>
@@ -226,14 +239,18 @@ export function MeshPage(): ReactElement {
         </Card>
 
         <Card>
-          <CardHeading title="Shared identity" description="Same values on every node in the mesh." />
+          <CardHeading
+            title="Shared identity"
+            description="Every node must agree on these values — copy them onto each AP or use the deploy script."
+          />
           <CardContent className="flex flex-col gap-1">
             <Field
               id={`${id}-mid`}
               label="Mesh ID"
-              {...explain('Seed hashed to the 802.11s mesh ID. Must match on every node.', [
-                'mesh11sd.setup.auto_mesh_id',
-              ])}
+              {...explain(
+                'A shared name that becomes the 802.11s mesh ID after hashing. Recommended: one memorable lab name (for example MilkFlintLab) used on every node. Different IDs will not form one mesh.',
+                ['mesh11sd.setup.auto_mesh_id'],
+              )}
             >
               <Input
                 id={`${id}-mid`}
@@ -245,9 +262,10 @@ export function MeshPage(): ReactElement {
             <Field
               id={`${id}-mkey`}
               label="Mesh key (optional)"
-              {...explain('Extra seed for the SAE mesh key. Same on every node if set.', [
-                'mesh11sd.setup.auto_mesh_key',
-              ])}
+              {...explain(
+                'Optional extra secret mixed into the mesh SAE key. Recommended: leave blank for a simple home mesh, or set the same strong phrase on every node if you want a private backhaul password.',
+                ['mesh11sd.setup.auto_mesh_key'],
+              )}
             >
               <Input
                 id={`${id}-mkey`}
@@ -261,7 +279,10 @@ export function MeshPage(): ReactElement {
             <Field
               id={`${id}-band`}
               label="Mesh band"
-              {...explain('Radio band for the 802.11s backhaul.', ['mesh11sd.setup.auto_mesh_band'])}
+              {...explain(
+                'Which radio carries the AP-to-AP backhaul (not the band phones use for everyday Wi-Fi). Recommended: 5 GHz when the APs are close and you want speed; 2.4 GHz when walls are thick and you need range. Match this on every node.',
+                ['mesh11sd.setup.auto_mesh_band'],
+              )}
             >
               <Select value={current.band} onValueChange={(v) => set('band', v as MeshBand)}>
                 <SelectTrigger id={`${id}-band`} className="max-w-xs">
@@ -278,7 +299,7 @@ export function MeshPage(): ReactElement {
               id={`${id}-ssid`}
               label="Gate SSID base"
               {...explain(
-                'User Wi-Fi SSID seed. Max 22 characters when the MAC suffix is on. Spaces are stripped.',
+                'The Wi-Fi name guests and phones see on the mesh gate APs. Recommended: your household name (for example MilkFlint). Keep it under 22 characters if the MAC suffix is On; spaces are stripped.',
                 ['mesh11sd.setup.mesh_gate_base_ssid'],
               )}
             >
@@ -293,18 +314,20 @@ export function MeshPage(): ReactElement {
             <Field
               id={`${id}-suffix`}
               label="SSID MAC suffix"
-              {...explain('Append the last 4 hex digits of the mesh MAC to the gate SSID.', [
-                'mesh11sd.setup.ssid_suffix_enable',
-              ])}
+              {...explain(
+                'Appends the last four hex digits of each AP’s mesh MAC to the gate SSID so nodes stay unique while testing. Recommended: On while you bring APs online; Off later if you want one clean SSID everywhere and rely on roaming instead.',
+                ['mesh11sd.setup.ssid_suffix_enable'],
+              )}
             >
               <Switch id={`${id}-suffix`} checked={current.ssidSuffix} onCheckedChange={(v) => set('ssidSuffix', v)} />
             </Field>
             <Field
               id={`${id}-enc`}
               label="Gate encryption"
-              {...explain('Security for mesh gate APs. OWE (4) is the mesh11sd default.', [
-                'mesh11sd.setup.mesh_gate_encryption',
-              ])}
+              {...explain(
+                'How phones authenticate to the gate Wi-Fi. Recommended: OWE (Opportunistic Wireless Encryption) for open-looking but encrypted guest-style gates — mesh11sd’s default. Choose WPA2/WPA3 when you want a normal passworded SSID.',
+                ['mesh11sd.setup.mesh_gate_encryption'],
+              )}
             >
               <Select
                 value={current.gateEncryption}
@@ -326,7 +349,10 @@ export function MeshPage(): ReactElement {
               <Field
                 id={`${id}-gkey`}
                 label="Gate key"
-                {...explain('Wi-Fi password for the gate SSID.', ['mesh11sd.setup.mesh_gate_key'])}
+                {...explain(
+                  'The Wi-Fi password phones type for the gate SSID. Recommended: 8+ characters, same on every node that shares this encryption mode.',
+                  ['mesh11sd.setup.mesh_gate_key'],
+                )}
               >
                 <Input
                   id={`${id}-gkey`}
@@ -342,8 +368,16 @@ export function MeshPage(): ReactElement {
         </Card>
 
         <Card>
-          <CardHeading title="Topology" description="This node and discovered mesh peers." />
+          <CardHeading
+            title="Topology"
+            description="A live map of this node and any mesh peers that have joined."
+          />
           <CardContent className="flex flex-col gap-3">
+            <p className="text-sm text-muted-foreground">
+              What to expect: this Flint 4 shows as Main or Peer. Healthy peers list a hostname, MAC, signal (dBm — closer
+              to 0 is stronger), and a routing metric (lower is better). Empty peers usually means other APs are not
+              flashed yet, or Mesh ID / band do not match.
+            </p>
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="outline">{status?.local?.hostname ?? 'This node'}</Badge>
               <Badge variant={current.role === 'peer' ? 'secondary' : 'success'}>
@@ -359,7 +393,8 @@ export function MeshPage(): ReactElement {
             <div className="grid gap-2 sm:grid-cols-2">
               {(status?.peers ?? []).length === 0 && (
                 <p className="text-sm text-muted-foreground sm:col-span-2">
-                  No peers yet. Flash other APs with the first-boot script below, same Mesh ID, then wait for HWMP paths.
+                  No peers yet. Use Deploy other APs below, keep the same Mesh ID and band, power the new AP near this
+                  one, then wait a minute for paths to appear.
                 </p>
               )}
               {(status?.peers ?? []).map((p) => (
@@ -383,19 +418,43 @@ export function MeshPage(): ReactElement {
         <Card>
           <CardHeading
             title="Deploy other APs"
-            description="Copy a first-boot script for OpenWrt 25.12+ Firmware Selector builds."
+            description="Step-by-step: build an OpenWrt 25.12+ image for another AP and drop this first-boot script in."
           />
           <CardContent className="flex flex-col gap-3">
-            <p className="text-sm text-muted-foreground">
-              On firmware-selector.openwrt.org, pick the AP model and OpenWrt 25.12+, customize packages (
-              <code className="font-mono text-foreground">-wpad-basic-mbedtls wpad-mbedtls mesh11sd ip-full vxlan</code>
-              ), paste this script, request the build, and flash. The script starts in{' '}
-              <strong className="text-foreground">confidence-test</strong> mode (
-              <code className="font-mono text-foreground">auto_config=0</code>
-              ). One node with WAN → ISP becomes Main; others leave WAN unplugged. After{' '}
-              <code className="font-mono text-foreground">mesh11sd status</code> looks healthy, set{' '}
-              <code className="font-mono text-foreground">auto_config=1</code>.
-            </p>
+            <ol className="list-decimal space-y-2 pl-5 text-sm text-muted-foreground">
+              <li>
+                Open{' '}
+                <a
+                  className="text-primary underline-offset-2 hover:underline"
+                  href="https://firmware-selector.openwrt.org"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  firmware-selector.openwrt.org
+                </a>
+                , pick the AP model and OpenWrt <strong className="text-foreground">25.12+</strong>.
+              </li>
+              <li>
+                Customize packages: remove basic wpad and add{' '}
+                <code className="font-mono text-foreground">-wpad-basic-mbedtls wpad-mbedtls mesh11sd ip-full vxlan</code>
+                .
+              </li>
+              <li>Paste the script below into the first-boot / custom script box, request the build, then flash the AP.</li>
+              <li>
+                Plug the new AP in with <strong className="text-foreground">WAN unplugged</strong> (peer). Only the Main
+                keeps WAN → modem. Match Mesh ID and band with this page.
+              </li>
+              <li>
+                The script starts in <strong className="text-foreground">confidence-test</strong> (
+                <code className="font-mono text-foreground">auto_config=0</code>
+                ). When <code className="font-mono text-foreground">mesh11sd status</code> looks healthy, set{' '}
+                <code className="font-mono text-foreground">auto_config=1</code> (or turn Auto-config On here and save).
+              </li>
+              <li>
+                Then open <GoLink href={href('wifi-roaming')}>Wi-Fi roaming</GoLink> and enable the same Fast Transition
+                options on every gate SSID.
+              </li>
+            </ol>
             <pre className="max-h-56 overflow-auto rounded-lg border bg-muted/40 p-3 font-mono text-xs leading-5">
               {script}
             </pre>

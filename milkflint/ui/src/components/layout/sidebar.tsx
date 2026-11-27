@@ -11,11 +11,14 @@ import { PageSearch } from './page-search';
 import { ThemeToggle } from './theme-toggle';
 import { useDecorativeIcons } from '@/lib/presentation';
 
+/** Flint outline from milkflint/logo.svg (Milk4 mark). */
 const STONE =
-  'M39.1 6.6 51.9 17.4Q55 20 55.5 24L57.5 40Q58 44 55.2 46.8L44.8 57.2Q42 60 38 60H23Q19 60 16.5 56.9L8.5 47.1Q6 44 6.8 40.1L10.2 22.9Q11 19 14.4 16.9L32.6 6.1Q36 4 39.1 6.6Z';
-const MILK = 'M0 37C11 30.5 21 30.5 32 35.5S52 41 64 34V64H0Z';
+  'M33.8 5.2 51.8 16.8Q55.4 19.4 56 23.6L57.8 41Q58.4 45.4 55 48.4L42.2 58.8Q39 61.2 35 61.2H22.6Q18.4 61.2 15.6 57.8L7.6 47.4Q5 44.2 5.8 40L10.2 21Q11.2 17.2 15 15L29.8 5.6Q32 4.4 33.8 5.2Z';
+const MILK = 'M0 37C11 30.5 21 30 32 35.2S51 42 64 34V64H0Z';
+/** Open-top 4 in Monokai pink — the Milk4 identity. */
+const FOUR = 'M40.5 12.5 32.5 24.5h11.5M41.2 12.5V30';
 
-/** MilkFlint's mark: a flint, chipped to a point, half full of milk (docs/logo.svg). */
+/** Milk4 mark: flint shape, milk fill, pink 4 (milkflint/logo.svg). */
 export function Logo({ className, ...props }: ComponentProps<'svg'>): ReactElement {
   const clip = useId();
   return (
@@ -23,8 +26,16 @@ export function Logo({ className, ...props }: ComponentProps<'svg'>): ReactEleme
       <clipPath id={clip}>
         <path d={STONE} />
       </clipPath>
-      <path d={STONE} strokeWidth="3.2" strokeLinejoin="round" className="fill-brand-stone stroke-brand-stone" />
+      <path d={STONE} strokeWidth="3" strokeLinejoin="round" className="fill-brand-stone stroke-brand-stone" />
       <path d={MILK} className="fill-brand-milk" clipPath={`url(#${clip})`} />
+      <path
+        d={FOUR}
+        fill="none"
+        strokeWidth="3.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="stroke-primary"
+      />
     </svg>
   );
 }
