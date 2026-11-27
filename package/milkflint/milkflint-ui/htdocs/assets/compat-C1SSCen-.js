@@ -1,0 +1,1 @@
+function e(e){let t=e?.release?.distribution??``,n=e?.release?.version??``;return/^milkflint/i.test(t)?!0:/^25\./.test(n)}export{e as t};

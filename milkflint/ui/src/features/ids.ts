@@ -7,6 +7,8 @@ export const featureIds = [
   'mode',
   'wifi',
   'wifi-guest',
+  'wifi-roaming',
+  'mesh',
   'wifi-scan',
   'radar-scan',
   'clients',

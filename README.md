@@ -159,6 +159,18 @@ First MilkFlint4 flash: don’t keep settings. Later MilkFlint4 → MilkFlint4: 
 
 Reset + power-on → recovery at `http://192.168.1.1` (PC at `192.168.1.2/24`) → vendor image from [dl.gl-inet.com](https://dl.gl-inet.com/).
 
+## Add OpenWrt 25.x access points
+
+MilkFlint4 ships **Wi‑Fi roaming** (802.11r/k/v + `usteer`) and **802.11s mesh** (`mesh11sd`). Use other OpenWrt **25.12+** boxes as APs — same mobility domain for roaming, same mesh identity for backhaul.
+
+1. Flash each AP with OpenWrt **25.12+** plus `mesh11sd` and full `wpad-mbedtls` (drop `wpad-basic-*`). Firmware Selector → customize packages, e.g. `-wpad-basic-mbedtls wpad-mbedtls mesh11sd ip-full vxlan`.
+2. On the Flint 4 **Mesh** page, copy the **first-boot script** (same `auto_mesh_id` / gate SSID / key) and paste it into Firmware Selector’s “Script to run on first boot”, or run it once on a fresh AP.
+3. One node with **WAN → ISP** = Main/portal (`portal_detect=1`). Other nodes = peers (WAN unplugged, or `portal_detect=5`).
+4. On every AP SSID used for clients: match the **mobility domain** and enable 802.11r/k/v; run `usteer` (or rely on the MilkFlint router + matching FT). Do **not** run dawn and usteer together.
+5. Stuck? Check channel tracking, flip `auto_config` 0→1 after a confidence test, power-cycle the peer, and don’t hand-edit wireless/network while mesh11sd auto-config owns the mesh.
+
+Roaming and Mesh live under **Wi‑Fi** in the MilkFlint UI. LuCI stays the escape hatch.
+
 ## Build
 
 ```bash
@@ -166,7 +178,7 @@ git clone https://github.com/REFFIXX/MilkFlint4.git
 cd MilkFlint4
 ./scripts/feeds update -a && ./scripts/feeds install -a
 cp milkflint/diffconfig .config && make defconfig
-make download && make -j$(nproc)
+make download && make -j$(nproc) IGNORE_ERRORS='n m'
 ```
 
 ```text
@@ -178,6 +190,10 @@ UI (Node **24** + pnpm **12**):
 ```bash
 cd milkflint/ui && pnpm install && pnpm exec vite build && node scripts/package.ts
 ```
+
+### Windows (WSL2)
+
+Prefer **WSL2 Ubuntu 24.04** with the tree on **ext4** (`~/src/MilkFlint4`), never `/mnt/c/...`. Install the same apt set as CI (see [`.github/workflows/build-firmware.yml`](.github/workflows/build-firmware.yml)), then feeds → `cp milkflint/diffconfig .config` → `make defconfig` → `make -j$(nproc) world` with `IGNORE_ERRORS='n m'`. For UI-only iteration (seconds): `cd milkflint/ui && pnpm install && pnpm exec vite build`. Full notes: [`docs/DEV-WSL.md`](docs/DEV-WSL.md).
 
 | Path | Role |
 |---|---|

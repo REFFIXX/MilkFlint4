@@ -13,7 +13,7 @@
 				"luci": [ "getTimezones", "getUnixtime", "getBuiltinEthernetPorts" ],
 				"session": [ "destroy" ]
 			},
-			"uci": [ "network", "wireless", "dhcp", "firewall", "system", "sqm", "milkflint", "dnsproxy", "upnpd", "nlbwmon" ],
+			"uci": [ "network", "wireless", "dhcp", "firewall", "system", "sqm", "milkflint", "dnsproxy", "upnpd", "nlbwmon", "usteer", "mesh11sd" ],
 			"cgi-io": [ "backup" ]
 		},
 		"write": {
@@ -22,7 +22,7 @@
 				"system": [ "reboot" ],
 				"luci": [ "setPassword", "setLocaltime" ]
 			},
-			"uci": [ "network", "wireless", "dhcp", "firewall", "system", "sqm", "milkflint", "dnsproxy", "upnpd", "nlbwmon" ]
+			"uci": [ "network", "wireless", "dhcp", "firewall", "system", "sqm", "milkflint", "dnsproxy", "upnpd", "nlbwmon", "usteer", "mesh11sd" ]
 		}
 	}
 }

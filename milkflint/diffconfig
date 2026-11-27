@@ -78,6 +78,22 @@ CONFIG_PACKAGE_kmod-usb-serial-option=y
 CONFIG_PACKAGE_uqmi=y
 CONFIG_PACKAGE_luci-proto-qmi=y
 
+# Wi-Fi roaming (802.11k/r/v) + 802.11s mesh — OpenWrt 25.x path
+# Full wpad is required for 802.11k (wpad-basic lacks it).
+CONFIG_PACKAGE_wpad-mbedtls=y
+# CONFIG_PACKAGE_wpad-basic is not set
+# CONFIG_PACKAGE_wpad-basic-mbedtls is not set
+# CONFIG_PACKAGE_wpad-basic-openssl is not set
+# CONFIG_PACKAGE_wpad-basic-wolfssl is not set
+# CONFIG_PACKAGE_wpad-mini is not set
+CONFIG_PACKAGE_usteer=y
+# CONFIG_PACKAGE_dawn is not set
+CONFIG_PACKAGE_mesh11sd=y
+# mesh11sd full function (vxlan guest tunnel + bridge helpers)
+CONFIG_PACKAGE_ip-full=y
+CONFIG_PACKAGE_vxlan=y
+CONFIG_PACKAGE_kmod-nft-bridge=y
+
 CONFIG_DISPLAY_SUPPORT=y
 
 # Out-of-tree PF_RING is not 6.18-ready (dev_get_flags); keep ALL_KMODS otherwise.

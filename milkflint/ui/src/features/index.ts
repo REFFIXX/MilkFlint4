@@ -17,6 +17,7 @@ import { feature as internet } from './internet/feature';
 import { feature as ipv6 } from './ipv6/feature';
 import { feature as lan } from './lan/feature';
 import { feature as logs } from './logs/feature';
+import { feature as mesh } from './mesh/feature';
 import { feature as mode } from './mode/feature';
 import { feature as networkQuality } from './network-quality/feature';
 import { feature as radarScan } from './radar-scan/feature';
@@ -36,6 +37,7 @@ import { feature as upnp } from './upnp/feature';
 import { feature as vpnClient } from './vpn-client/feature';
 import { feature as wifiDriver } from './wifi-driver/feature';
 import { feature as wifiGuest } from './wifi-guest/feature';
+import { feature as wifiRoaming } from './wifi-roaming/feature';
 import { feature as wifiScan } from './wifi-scan/feature';
 import { feature as wifi } from './wifi/feature';
 
@@ -46,6 +48,8 @@ const byId: { readonly [K in FeatureId]: Feature & { id: K } } = {
   mode,
   wifi,
   'wifi-guest': wifiGuest,
+  'wifi-roaming': wifiRoaming,
+  mesh,
   'wifi-scan': wifiScan,
   'radar-scan': radarScan,
   clients,

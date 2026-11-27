@@ -1,0 +1,10 @@
+#!/bin/sh
+# Seed usteer config if the package installed an empty tree; leave disabled
+# until the Wi-Fi roaming page turns it on.
+[ -e /etc/config/usteer ] || touch /etc/config/usteer
+uci -q show usteer.usteer >/dev/null 2>&1 || {
+	uci set usteer.usteer=usteer
+	uci set usteer.usteer.disabled='1'
+	uci commit usteer
+}
+exit 0
