@@ -19,7 +19,7 @@
 
 <p align="center">
   Soft milk panels · pink / cyan / green accents · Footstrap LuCI to match<br>
-  <sub>Default theme: <b>Monokai milk</b> · Honey milk stays one click away · pink <b>4</b> on the front panel after boot</sub>
+  <sub>Default theme: <b>Monokai milk</b> — milky Monokai Pro · Honey milk one click away · pink <b>4</b> on the front panel after boot</sub>
 </p>
 
 ---
@@ -28,7 +28,7 @@ If you’ve been waiting for OpenWrt on the **GL-BE14000** that doesn’t treat 
 
 **MilkFlint4** is everyday MilkFlint on Flint 4: live dashboard, Wi‑Fi 7, guests, DNS, AdGuard Home, banIP, SQM, WireGuard, schedules, device control, themes, upgrade, Performance Tuning — plus **Wi‑Fi roaming** and **802.11s mesh** for OpenWrt 25.x APs — on **OpenWrt main / kernel 6.18**, with MT7988 / MT7996 / YT9224 / RTL8261C wired in properly. The front-panel LCD lights up with the MilkFlint4 logo and **stays on**.
 
-The look is ours: **Monokai milk** (milky Monokai Pro — pink, cyan, green on soft charcoal), Footstrap LuCI to match, Flint 4 board/WED/RSS, and the LCD splash. Honey milk and friends are one click away under **System → Themes**.
+The look is ours: **Monokai milk** (soft charcoal / milk panels, pink `#ff6188`, cyan, green). Honey milk and friends live under **System → Themes**. Footstrap LuCI matches.
 
 Userspace includes OddBlueDog [**MilkFlint 0.87a**](https://github.com/OddBlueDog/openwrt/releases/tag/milkflint-0.87a) guts (VPN DNS, 1 Gbit CAKE threshold, queue-per-CPU IFBs). Flint 2–only and kernel **6.12** driver bits stay out.
 
@@ -97,7 +97,7 @@ After a hard 10G PHY wedge: **power-cycle** (warm reboot is not enough). Upstrea
 | | |
 |---|---|
 | **UI** | Live **Home** dashboard, Wi‑Fi, guests, DNS, AdGuard Home, banIP, SQM, VPN, schedules, device control, themes, upgrade, Performance Tuning — LuCI under **Advanced** |
-| **Theme** | **Monokai milk** default — milky Monokai Pro: soft charcoal / milk panels with pink `#ff6188`, cyan, and green. Honey milk, Plain milk, Moss, Minimamilk one click away. LuCI Footstrap matches |
+| **Theme** | **Monokai milk** default — milky Monokai Pro: charcoal / milk panels with pink `#ff6188`, cyan, and green. Honey milk, Plain milk, Moss, Minimamilk one click away. LuCI Footstrap matches |
 | **Roaming** | **Wi‑Fi → Wi‑Fi roaming**: 802.11r/k/v + `usteer`, shared mobility domain, “Why?” hints with recommended settings |
 | **Mesh** | **Wi‑Fi → Mesh**: `mesh11sd` Main/peer roles, shared identity, live topology, first-boot script to deploy more OpenWrt 25.x APs |
 | **LCD** | Boot splash paints the MilkFlint4 logo on the 320×240 panel and leaves it on |
