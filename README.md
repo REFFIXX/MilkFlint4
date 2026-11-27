@@ -26,32 +26,47 @@
 
 If you’ve been waiting for OpenWrt on the **GL-BE14000** that doesn’t treat the box like a generic MT7988 brick — this is it.
 
-**MilkFlint4 1.0.1** is everyday MilkFlint on Flint 4: dashboard, Wi‑Fi, guests, DNS, AdGuard Home, banIP, SQM, WireGuard, schedules, device control, themes, upgrade, Performance Tuning — on **OpenWrt main / kernel 6.18**, with MT7988 / MT7996 / YT9224 / RTL8261C wired in properly. The front-panel LCD lights up with the MilkFlint4 logo and **stays on**.
+**MilkFlint4** is everyday MilkFlint on Flint 4: live dashboard, Wi‑Fi 7, guests, DNS, AdGuard Home, banIP, SQM, WireGuard, schedules, device control, themes, upgrade, Performance Tuning — plus **Wi‑Fi roaming** and **802.11s mesh** for OpenWrt 25.x APs — on **OpenWrt main / kernel 6.18**, with MT7988 / MT7996 / YT9224 / RTL8261C wired in properly. The front-panel LCD lights up with the MilkFlint4 logo and **stays on**.
 
-Userspace includes OddBlueDog [**MilkFlint 0.87a**](https://github.com/OddBlueDog/openwrt/releases/tag/milkflint-0.87a) guts (VPN DNS, 1 Gbit CAKE threshold, queue-per-CPU IFBs). Flint 2–only and kernel **6.12** driver bits stay out. The look is ours: **Monokai milk** (plus Honey milk), Footstrap LuCI to match, Flint 4 board/WED/RSS, and the LCD splash.
+The look is ours: **Monokai milk** (milky Monokai Pro — pink, cyan, green on soft charcoal), Footstrap LuCI to match, Flint 4 board/WED/RSS, and the LCD splash. Honey milk and friends are one click away under **System → Themes**.
+
+Userspace includes OddBlueDog [**MilkFlint 0.87a**](https://github.com/OddBlueDog/openwrt/releases/tag/milkflint-0.87a) guts (VPN DNS, 1 Gbit CAKE threshold, queue-per-CPU IFBs). Flint 2–only and kernel **6.12** driver bits stay out.
 
 Keep a stock GL.iNet recovery image before you flash. Then grab a release, flash it, watch the pink **4** light up, and go break a speed test.
 
 ## Screenshots
 
-<p align="center">
-  <img src="milkflint/docs/forum/forum-01b-home-monokai-dark.png" width="900" alt="Home — Monokai milk dark">
-</p>
+All cards are the same size — **Monokai milk** dark.
 
 <p align="center">
-  <img src="milkflint/docs/forum/forum-02b-wifi-dark.png" width="440" alt="Wi-Fi — dark">
+  <img src="milkflint/docs/readme/home-monokai-dark.png" width="480" height="300" alt="Home — Monokai milk dark">
   &nbsp;
-  <img src="milkflint/docs/forum/forum-06b-sqm-dark.png" width="440" alt="Smart Queue — dark">
+  <img src="milkflint/docs/readme/themes-monokai-dark.png" width="480" height="300" alt="Themes — Monokai milk in use">
 </p>
+<p align="center"><sub>Home dashboard · Themes — <b>Monokai milk</b> is the default</sub></p>
 
 <p align="center">
-  <img src="milkflint/docs/forum/forum-03b-tuning-ul-mimo-dark.png" width="440" alt="Tuning — dark">
+  <img src="milkflint/docs/readme/roaming-monokai-dark.png" width="480" height="300" alt="Wi-Fi roaming — Monokai milk dark">
   &nbsp;
-  <img src="milkflint/docs/forum/forum-09b-firewall-dark.png" width="440" alt="Firewall — dark">
+  <img src="milkflint/docs/readme/mesh-monokai-dark.png" width="480" height="300" alt="Mesh — Monokai milk dark">
 </p>
+<p align="center"><sub>Wi‑Fi roaming (802.11r/k/v + usteer) · 802.11s Mesh (mesh11sd)</sub></p>
 
-More (incl. light variants): [`milkflint/docs/forum/`](milkflint/docs/forum/).
+<p align="center">
+  <img src="milkflint/docs/readme/wifi-monokai-dark.png" width="480" height="300" alt="Wi-Fi — Monokai milk dark">
+  &nbsp;
+  <img src="milkflint/docs/readme/sqm-monokai-dark.png" width="480" height="300" alt="Smart Queue — Monokai milk dark">
+</p>
+<p align="center"><sub>Tri-band Wi‑Fi · Smart Queue (CAKE)</sub></p>
 
+<p align="center">
+  <img src="milkflint/docs/readme/tuning-monokai-dark.png" width="480" height="300" alt="Performance Tuning — Monokai milk dark">
+  &nbsp;
+  <img src="milkflint/docs/readme/firewall-monokai-dark.png" width="480" height="300" alt="Firewall — Monokai milk dark">
+</p>
+<p align="center"><sub>Performance Tuning · Firewall</sub></p>
+
+More (incl. light variants): [`milkflint/docs/forum/`](milkflint/docs/forum/) · gallery source: [`milkflint/docs/readme/`](milkflint/docs/readme/).
 ## Why it’s spicy
 
 ### Hardware that actually works
@@ -90,14 +105,17 @@ After a hard 10G PHY wedge: **power-cycle** (warm reboot is not enough). Upstrea
 
 | | |
 |---|---|
-| **UI** | Dashboard, Wi‑Fi, guests, DNS, AdGuard Home, banIP, SQM, VPN, schedules, device control, themes, upgrade, Performance Tuning — LuCI under **Advanced** |
-| **Theme** | **Monokai milk** default (pink / cyan / green on soft milk). Honey milk available. LuCI Footstrap matches |
+| **UI** | Live **Home** dashboard, Wi‑Fi, guests, DNS, AdGuard Home, banIP, SQM, VPN, schedules, device control, themes, upgrade, Performance Tuning — LuCI under **Advanced** |
+| **Theme** | **Monokai milk** default — milky Monokai Pro: soft charcoal / milk panels with pink `#ff6188`, cyan, and green. Honey milk, Plain milk, Moss, Minimamilk one click away. LuCI Footstrap matches |
+| **Roaming** | **Wi‑Fi → Wi‑Fi roaming**: 802.11r/k/v + `usteer`, shared mobility domain, “Why?” hints with recommended settings |
+| **Mesh** | **Wi‑Fi → Mesh**: `mesh11sd` Main/peer roles, shared identity, live topology, first-boot script to deploy more OpenWrt 25.x APs |
 | **LCD** | Boot splash paints the MilkFlint4 logo on the 320×240 panel and leaves it on |
 | **0.87a userspace** | VPN **Use VPN’s DNS** · multi-queue CAKE from **1 Gbit** Ethernet / **500 Mbit** PPPoE · queue-per-CPU IFBs · Test Bench delay / stalled · CAKE ECN/DSCP retry |
 | **Steering** | Hardware **RSS** on `wan` (PDMA 0–3) |
 | **SQM** | Multi-queue CAKE on by default; per-host fairness; egress single CAKE on `mtk_soc_eth` |
 | **Wi‑Fi** | UL MU-MIMO/OFDMA **off** by default (latency-first) · US country · 6 GHz PSC **37** · BE latency tweak on 5+6 GHz |
 | **WED** | `mt7996e wed_enable=Y` by default |
+| **Packages** | Image ships `wpad-mbedtls`, `usteer`, `mesh11sd` for roaming + mesh |
 | **kmods** | Full `CONFIG_ALL_KMODS` — do **not** pull snapshot `kmod-*` from downloads.openwrt.org |
 
 ### Performance defaults
@@ -161,7 +179,15 @@ Reset + power-on → recovery at `http://192.168.1.1` (PC at `192.168.1.2/24`) �
 
 ## Add OpenWrt 25.x access points
 
-MilkFlint4 ships **Wi‑Fi roaming** (802.11r/k/v + `usteer`) and **802.11s mesh** (`mesh11sd`). Use other OpenWrt **25.12+** boxes as APs — same mobility domain for roaming, same mesh identity for backhaul.
+MilkFlint4 ships **Wi‑Fi roaming** (802.11r/k/v + `usteer`) and **802.11s mesh** (`mesh11sd`) as first-class **Wi‑Fi** pages — with plain-language “Why?” help and recommended settings.
+
+<p align="center">
+  <img src="milkflint/docs/readme/roaming-monokai-dark.png" width="480" height="300" alt="Wi-Fi roaming">
+  &nbsp;
+  <img src="milkflint/docs/readme/mesh-monokai-dark.png" width="480" height="300" alt="Mesh">
+</p>
+
+Use other OpenWrt **25.12+** boxes as APs — same mobility domain for roaming, same mesh identity for backhaul.
 
 1. Flash each AP with OpenWrt **25.12+** plus `mesh11sd` and full `wpad-mbedtls` (drop `wpad-basic-*`). Firmware Selector → customize packages, e.g. `-wpad-basic-mbedtls wpad-mbedtls mesh11sd ip-full vxlan`.
 2. On the Flint 4 **Mesh** page, copy the **first-boot script** (same `auto_mesh_id` / gate SSID / key) and paste it into Firmware Selector’s “Script to run on first boot”, or run it once on a fresh AP.
@@ -170,7 +196,7 @@ MilkFlint4 ships **Wi‑Fi roaming** (802.11r/k/v + `usteer`) and **802.11s mesh
 5. On every AP SSID used for clients: match the **mobility domain** and enable 802.11r/k/v; run `usteer` (or rely on the MilkFlint router + matching FT). Do **not** run dawn and usteer together.
 6. Stuck? Check channel tracking, power-cycle a confidence-test peer, and don’t hand-edit wireless/network while mesh11sd auto-config owns the mesh.
 
-Roaming and Mesh live under **Wi‑Fi** in the MilkFlint UI. LuCI stays the escape hatch.
+LuCI stays the escape hatch under **Advanced**.
 
 ## Build
 
