@@ -12,27 +12,59 @@
 <p align="center">
   <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/badge/status-stable-a9dc76?style=flat-square&labelColor=2d2a2e" alt="stable"></a>
   <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/badge/kernel-6.18-78dce8?style=flat-square&labelColor=2d2a2e" alt="kernel 6.18"></a>
+  <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/badge/roaming-802.11r%2Fk%2Fv-ff6188?style=flat-square&labelColor=2d2a2e" alt="Wi-Fi roaming"></a>
+  <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/badge/mesh-802.11s-ab9df2?style=flat-square&labelColor=2d2a2e" alt="802.11s mesh"></a>
   <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/badge/theme-Monokai%20milk-fcfcfa?style=flat-square&labelColor=2d2a2e&color=ff6188" alt="Monokai milk"></a>
   <a href="https://github.com/REFFIXX/MilkFlint4/releases"><img src="https://img.shields.io/badge/LCD-logo%20on-ffd866?style=flat-square&labelColor=2d2a2e" alt="LCD splash"></a>
   <a href="https://openwrt.org"><img src="https://img.shields.io/badge/base-OpenWrt%20main-fc9867?style=flat-square&labelColor=2d2a2e" alt="OpenWrt main"></a>
-</p>
-
-<p align="center">
-  Soft milk panels · pink / cyan / green accents · Footstrap LuCI to match<br>
-  <sub>Default theme: <b>Monokai milk</b> — milky Monokai Pro · Honey milk one click away · pink <b>4</b> on the front panel after boot</sub>
 </p>
 
 ---
 
 If you’ve been waiting for OpenWrt on the **GL-BE14000** that doesn’t treat the box like a generic MT7988 brick — this is it.
 
-**MilkFlint4** is everyday MilkFlint on Flint 4: live dashboard, Wi‑Fi 7, guests, DNS, AdGuard Home, banIP, SQM, WireGuard, schedules, device control, themes, upgrade, Performance Tuning — plus **Wi‑Fi roaming** and **802.11s mesh** for OpenWrt 25.x APs — on **OpenWrt main / kernel 6.18**, with MT7988 / MT7996 / YT9224 / RTL8261C wired in properly. The front-panel LCD lights up with the MilkFlint4 logo and **stays on**.
+**MilkFlint4** is everyday MilkFlint on Flint 4: live dashboard, Wi‑Fi 7, guests, DNS, AdGuard Home, banIP, SQM, WireGuard, schedules, device control, themes, upgrade, Performance Tuning — on **OpenWrt main / kernel 6.18**, with MT7988 / MT7996 / YT9224 / RTL8261C wired in properly. The front-panel LCD lights up with the MilkFlint4 logo and **stays on**.
 
 The look is ours: **Monokai milk** (soft charcoal / milk panels, pink `#ff6188`, cyan, green). Honey milk and friends live under **System → Themes**. Footstrap LuCI matches.
 
-Userspace includes OddBlueDog [**MilkFlint 0.87a**](https://github.com/OddBlueDog/openwrt/releases/tag/milkflint-0.87a) guts (VPN DNS, 1 Gbit CAKE threshold, queue-per-CPU IFBs). Flint 2–only and kernel **6.12** driver bits stay out.
-
 Keep a stock GL.iNet recovery image before you flash. Then grab a release, flash it, watch the pink **4** light up, and go break a speed test.
+
+<h2><span style="color:#ff6188">●</span> Features</h2>
+
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <p><img src="https://img.shields.io/badge/Wi--Fi%20roaming-ff6188?style=flat-square&labelColor=2d2a2e" alt="Wi-Fi roaming"></p>
+      <p><b>Wi‑Fi → Wi‑Fi roaming</b><br>
+      802.11r / k / v + <code>usteer</code>, shared mobility domain, “Why?” hints with recommended settings for multi‑AP handoff.</p>
+    </td>
+    <td width="50%" valign="top">
+      <p><img src="https://img.shields.io/badge/802.11s%20mesh-ab9df2?style=flat-square&labelColor=2d2a2e" alt="802.11s mesh"></p>
+      <p><b>Wi‑Fi → Mesh</b><br>
+      <code>mesh11sd</code> Main / peer roles, shared identity, live topology, first-boot script to deploy more OpenWrt <b>25.x</b> APs.</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <p><img src="https://img.shields.io/badge/Monokai%20milk-fcfcfa?style=flat-square&labelColor=2d2a2e&color=ff6188" alt="Monokai milk"></p>
+      <p>Soft charcoal / milk panels · pink / cyan / green · Honey milk, Plain milk, Moss, Minimamilk one click away · Footstrap LuCI.</p>
+    </td>
+    <td width="50%" valign="top">
+      <p><img src="https://img.shields.io/badge/LCD%20splash-ffd866?style=flat-square&labelColor=2d2a2e" alt="LCD splash"></p>
+      <p>MilkFlint4 logo on the 320×240 panel at boot — and it <b>stays on</b>. Pink <b>4</b> on the front like it owns the place.</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <p><img src="https://img.shields.io/badge/Wi--Fi%207-78dce8?style=flat-square&labelColor=2d2a2e" alt="Wi-Fi 7"></p>
+      <p>MT7996 tri‑band · <b>WED</b> on by default · latency-first radio defaults · full MilkFlint Wi‑Fi / guests / schedules.</p>
+    </td>
+    <td width="50%" valign="top">
+      <p><img src="https://img.shields.io/badge/10G%20%2B%20SQM-a9dc76?style=flat-square&labelColor=2d2a2e" alt="10G + SQM"></p>
+      <p>Real <code>wan</code> on RTL8261C · multi-queue CAKE · RSS · AdGuard Home, banIP, WireGuard, Performance Tuning.</p>
+    </td>
+  </tr>
+</table>
 
 ## Screenshots
 
@@ -57,11 +89,9 @@ Keep a stock GL.iNet recovery image before you flash. Then grab a release, flash
 
 More screenshots (light + dark): [`milkflint/docs/forum/`](milkflint/docs/forum/).
 
-## Why it’s spicy
+<h2><span style="color:#78dce8">●</span> Hardware</h2>
 
-### Hardware that actually works
-
-Not “it boots.” *Wired in properly.*
+Not “it boots.” *Wired in properly* — MT7988 / MT7996 / YT9224 / RTL8261C treated as a Flint 4, not a generic brick.
 
 | Piece | What’s going on |
 |---|---|
@@ -75,7 +105,10 @@ Not “it boots.” *Wired in properly.*
 
 After a hard 10G PHY wedge: **power-cycle** (warm reboot is not enough). Upstream refs: openwrt#26690 / #26691.
 
-### Ports
+<details>
+<summary><b>Ports &amp; board</b></summary>
+
+<br>
 
 | Role | Interface |
 |---|---|
@@ -91,38 +124,33 @@ After a hard 10G PHY wedge: **power-cycle** (warm reboot is not enough). Upstrea
 | Panel / fan | ST7789 + CST3530 · PWM from ~45 °C |
 | Console | `ttyS0` 115200 8N1 |
 
-### What’s in the image
+</details>
+
+<h2><span style="color:#a9dc76">●</span> What’s in the image</h2>
 
 | | |
 |---|---|
-| **UI** | Live **Home** dashboard, Wi‑Fi, guests, DNS, AdGuard Home, banIP, SQM, VPN, schedules, device control, themes, upgrade, Performance Tuning — LuCI under **Advanced** |
-| **Theme** | **Monokai milk** default — milky Monokai Pro: charcoal / milk panels with pink `#ff6188`, cyan, and green. Honey milk, Plain milk, Moss, Minimamilk one click away. LuCI Footstrap matches |
-| **Roaming** | **Wi‑Fi → Wi‑Fi roaming**: 802.11r/k/v + `usteer`, shared mobility domain, “Why?” hints with recommended settings |
-| **Mesh** | **Wi‑Fi → Mesh**: `mesh11sd` Main/peer roles, shared identity, live topology, first-boot script to deploy more OpenWrt 25.x APs |
-| **LCD** | Boot splash paints the MilkFlint4 logo on the 320×240 panel and leaves it on |
-| **0.87a userspace** | VPN **Use VPN’s DNS** · multi-queue CAKE from **1 Gbit** Ethernet / **500 Mbit** PPPoE · queue-per-CPU IFBs · Test Bench delay / stalled · CAKE ECN/DSCP retry |
-| **Steering** | Hardware **RSS** on `wan` (PDMA 0–3) |
-| **SQM** | Multi-queue CAKE on by default; per-host fairness; egress single CAKE on `mtk_soc_eth` |
-| **Wi‑Fi** | UL MU-MIMO/OFDMA **off** by default (latency-first) · US country · 6 GHz PSC **37** · BE latency tweak on 5+6 GHz |
-| **WED** | `mt7996e wed_enable=Y` by default |
-| **Packages** | Image ships `wpad-mbedtls`, `usteer`, `mesh11sd` for roaming + mesh |
-| **kmods** | Full `CONFIG_ALL_KMODS` — do **not** pull snapshot `kmod-*` from downloads.openwrt.org |
+| <img src="https://img.shields.io/badge/UI-ff6188?style=flat-square&labelColor=2d2a2e" alt="UI"> | Live **Home**, Wi‑Fi, guests, DNS, AdGuard Home, banIP, SQM, VPN, schedules, device control, themes, upgrade, Performance Tuning — LuCI under **Advanced** |
+| <img src="https://img.shields.io/badge/Roaming-ff6188?style=flat-square&labelColor=2d2a2e" alt="Roaming"> | **Wi‑Fi → Wi‑Fi roaming** — 802.11r/k/v + `usteer`, shared mobility domain, “Why?” recommended settings |
+| <img src="https://img.shields.io/badge/Mesh-ab9df2?style=flat-square&labelColor=2d2a2e" alt="Mesh"> | **Wi‑Fi → Mesh** — `mesh11sd` Main/peer, shared identity, live topology, first-boot script for OpenWrt 25.x APs |
+| <img src="https://img.shields.io/badge/Theme-fcfcfa?style=flat-square&labelColor=2d2a2e&color=ff6188" alt="Theme"> | **Monokai milk** default · Honey milk / Plain milk / Moss / Minimamilk · Footstrap LuCI |
+| <img src="https://img.shields.io/badge/LCD-ffd866?style=flat-square&labelColor=2d2a2e" alt="LCD"> | Boot splash paints the logo on the 320×240 panel and leaves it on |
+| <img src="https://img.shields.io/badge/SQM%20%2F%20VPN-a9dc76?style=flat-square&labelColor=2d2a2e" alt="SQM / VPN"> | Multi-queue CAKE (1 Gbit Eth / 500 Mbit PPPoE) · queue-per-CPU IFBs · VPN **Use VPN’s DNS** · CAKE ECN/DSCP retry |
+| <img src="https://img.shields.io/badge/Wi--Fi-78dce8?style=flat-square&labelColor=2d2a2e" alt="Wi-Fi"> | UL MU-MIMO/OFDMA **off** (latency-first) · US country · 6 GHz PSC **37** · WED on · BE latency tweak on 5+6 GHz |
+| <img src="https://img.shields.io/badge/Steering-fc9867?style=flat-square&labelColor=2d2a2e" alt="Steering"> | Hardware **RSS** on `wan` (PDMA 0–3) · multi-queue CAKE egress on `mtk_soc_eth` |
+| <img src="https://img.shields.io/badge/Packages-ab9df2?style=flat-square&labelColor=2d2a2e" alt="Packages"> | `wpad-mbedtls` · `usteer` · `mesh11sd` · full `CONFIG_ALL_KMODS` (don’t pull snapshot `kmod-*` from openwrt.org) |
 
-### Performance defaults
+**Performance defaults** — CPU `performance` · RSS forced · RX coalesce 20 µs · software + hardware flow offload + WED · large TCP buffers · high conntrack — seeded once by `99-milkflint4-flint4-perf`. Change later under **Performance Tuning**; edits stick.
 
-CPU `performance` · RSS forced · RX coalesce 20 µs · software + hardware flow offload + WED · large TCP buffers · high conntrack — seeded once by `99-milkflint4-flint4-perf`. Change later under **Performance Tuning**; edits stick.
+**This is not** stock GL.iNet UI / cloud, not Flint 2 with labels swapped, and not a **6.12** kernel driver tree — this is **6.18** + OpenWrt main `cake_mq` backports.
 
-### What this is *not*
-
-- Not stock GL.iNet UI / cloud stack  
-- Not Flint 2 with the labels swapped  
-- Not the OddBlueDog **6.12** kernel driver series — this is **6.18** + OpenWrt main cake_mq backports  
+<h2><span style="color:#ffd866">●</span> Releases</h2>
 
 ### 1.1
 
 - **Wi‑Fi roaming** (802.11r/k/v + `usteer`) and **802.11s mesh** (`mesh11sd`) in the MilkFlint UI  
 - Image ships `wpad-mbedtls`, `usteer`, `mesh11sd`  
-- Everything from **1.0.1**: LCD splash · **1.0**: Flint 4 / 6.18, Monokai milk, 0.87a userspace  
+- Everything from **1.0.1**: LCD splash · **1.0**: Flint 4 / 6.18, Monokai milk, MilkFlint userspace defaults  
 
 Notes: [`docs/RELEASE-1.1.md`](docs/RELEASE-1.1.md) · [`docs/RELEASE-1.0.1.md`](docs/RELEASE-1.0.1.md) · [`docs/RELEASE-1.0.md`](docs/RELEASE-1.0.md)
 
