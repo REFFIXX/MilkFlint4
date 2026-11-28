@@ -60,27 +60,24 @@ export function LcdPreview({ form, className }: { form: LcdForm; className?: str
         aria-label={`Front panel preview: ${blank ? 'blank' : SLIDE_LABELS[slide]}`}
       >
         <div
-          className="absolute inset-0 flex flex-col"
-          style={{
-            background: blank ? '#0a090a' : 'var(--color-card, #1e1b1e)',
-            color: 'var(--color-card-foreground, #fcfcfa)',
-          }}
+          className={cn(
+            'absolute inset-0 flex flex-col',
+            blank ? 'bg-background text-foreground' : 'bg-card text-card-foreground',
+          )}
         >
           {!blank && (
             <>
-              <div className="h-1 shrink-0" style={{ background: 'var(--color-primary, #fc618d)' }} />
+              <div className="h-1 shrink-0 bg-primary" />
               <div className="flex min-h-0 flex-1 flex-col gap-3 p-4">
-                <p className="text-lg font-semibold tracking-tight" style={{ color: 'var(--color-primary, #fc618d)' }}>
+                <p className="text-lg font-semibold tracking-tight text-primary">
                   {slide === 'splash' ? 'MilkFlint4' : SLIDE_LABELS[slide]}
                 </p>
-                <div className="h-px w-full opacity-40" style={{ background: 'var(--color-border, #403c41)' }} />
+                <div className="h-px w-full bg-border opacity-40" />
                 <p className="text-sm font-medium">{lines[0]}</p>
                 <p className="text-sm opacity-70">{lines[1]}</p>
-                <p className="mt-auto text-xs" style={{ color: 'var(--color-info, #78dce8)' }}>
-                  MilkFlint4
-                </p>
+                <p className="mt-auto text-xs text-info">MilkFlint4</p>
               </div>
-              <div className="h-1 shrink-0" style={{ background: 'var(--color-info, #78dce8)' }} />
+              <div className="h-1 shrink-0 bg-info" />
             </>
           )}
         </div>

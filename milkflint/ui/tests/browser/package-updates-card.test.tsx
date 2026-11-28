@@ -72,11 +72,11 @@ test('AdGuard Home Updates card shows installed version and no Check against a f
   );
   await expect.element(screen.getByRole('heading', { name: 'Package updates', exact: true })).toBeVisible();
   await expect.element(screen.getByText('v0.107.80')).toBeVisible();
-  await expect.element(screen.getByText(/ship with MilkFlint4 firmware releases/)).toBeVisible();
+  await expect.element(screen.getByText(/MilkFlint4 release image/)).toBeVisible();
   await expect.element(screen.getByRole('link', { name: /GitHub releases/ })).toBeVisible();
   expect(screen.container.querySelectorAll('button').length).toBeGreaterThan(0);
   for (const b of screen.container.querySelectorAll('button')) {
-    expect(b.textContent?.trim()).not.toBe('Check');
+    expect(b.textContent).not.toMatch(/^\s*Check\s*$/);
   }
 });
 

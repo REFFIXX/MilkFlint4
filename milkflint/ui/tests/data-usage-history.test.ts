@@ -74,7 +74,9 @@ test('deviceUsage diffs baseline to latest and skips brand-new absolute counters
     { key: mac(2), rx: 300, tx: 30 },
     { key: mac(3), rx: 100, tx: 1 },
   ]);
-  assert.deepEqual(deviceUsage([samples[2]!], 0), []);
+  const last = samples[2];
+  assert.ok(last !== undefined);
+  assert.deepEqual(deviceUsage([last], 0), []);
 });
 
 test('deviceUsage sums intervals across a mid-window counter reset', () => {

@@ -112,7 +112,7 @@ test('bypass domains: normalize, parse, reject junk, cap later in validate', () 
   const parsed = parseBypassDomains('netflix.com, Netflix.com\nexample.org bad..host');
   assert.deepEqual(parsed.domains, ['netflix.com', 'example.org']);
   assert.deepEqual(parsed.invalid, ['bad..host']);
-  assert.ok(BYPASS_DOMAIN_LIMIT >= 16);
+  assert.equal(BYPASS_DOMAIN_LIMIT, 64);
 });
 
 test('bypass domains: wanted writes fw4 sets, dhcp fill, and mark-clear rules', () => {
@@ -149,9 +149,11 @@ test('profiles: migrate single config, activate, rename, delete, sync', () => {
   const empty = { active: undefined, profiles: [] };
   const migrated = migrateFromConfig(empty, form());
   assert.equal(migrated.profiles.length, 1);
-  assert.equal(migrated.active, migrated.profiles[0]?.id);
-  assert.equal(migrated.profiles[0]?.endpointHost, 'us.vpn.example.com');
-  assert.ok(migrated.profiles[0]?.name.length);
+  const first = migrated.profiles[0];
+  assert.ok(first !== undefined);
+  assert.equal(migrated.active, first.id);
+  assert.equal(first.endpointHost, 'us.vpn.example.com');
+  assert.ok(first.name.length > 0);
 
   // blank tunnel stays empty
   assert.deepEqual(migrateFromConfig(empty, blankForm({ wanRates: undefined, sqm: false })), empty);
