@@ -590,6 +590,32 @@ function milkflintStub(object, method, params = {}) {
       };
     case 'milkflint neighbors':
       return { neighbors: [] };
+    case 'milkflint.devices sync':
+    case 'milkflint.devices get':
+      return { now: NOW(), retain: 30 * 24 * 3600, devices: [] };
+    case 'milkflint.lan connections':
+      return {
+        count: 12,
+        max: 65_536,
+        by_proto: [
+          { proto: 'tcp', count: 8 },
+          { proto: 'udp', count: 4 },
+        ],
+        hosts: [{ ip: '192.168.1.120', connections: 5, bytes: 48_000 }],
+        connections: [
+          {
+            family: 'ipv4',
+            proto: 'tcp',
+            src: '192.168.1.120',
+            dst: '1.1.1.1',
+            sport: 54321,
+            dport: 443,
+            state: 'ESTABLISHED',
+            packets: 120,
+            bytes: 48_000,
+          },
+        ],
+      };
     case 'milkflint.home get':
       return homeWidgets ? { widgets: homeWidgets } : {};
     case 'milkflint.home set':

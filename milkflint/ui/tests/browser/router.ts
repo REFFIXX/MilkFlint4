@@ -452,6 +452,32 @@ export function answer(s: Scenario, object: string, method: string, params: Reco
       return deviceControl(s);
     case 'milkflint neighbors':
       return { neighbors: [] };
+    case 'milkflint.devices sync':
+    case 'milkflint.devices get':
+      return { now: 1_700_000_000, retain: 30 * 24 * 3600, devices: [] };
+    case 'milkflint.lan connections':
+      return {
+        count: s === 'busy' ? 42 : 0,
+        max: 65_536,
+        by_proto: s === 'busy' ? [{ proto: 'tcp', count: 30 }, { proto: 'udp', count: 12 }] : [],
+        hosts: s === 'busy' ? [{ ip: '192.168.1.50', connections: 8, bytes: 12_000 }] : [],
+        connections:
+          s === 'busy'
+            ? [
+                {
+                  family: 'ipv4',
+                  proto: 'tcp',
+                  src: '192.168.1.50',
+                  dst: '1.1.1.1',
+                  sport: 54321,
+                  dport: 443,
+                  state: 'ESTABLISHED',
+                  packets: 100,
+                  bytes: 12_000,
+                },
+              ]
+            : [],
+      };
     default:
       return undefined;
   }
