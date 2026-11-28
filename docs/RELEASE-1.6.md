@@ -76,18 +76,6 @@ Theme everywhere remains **Monokai milk**.
 
 ---
 
-## Still deferred
-
-| Item | Notes |
-|---|---|
-| Hardware LCD soak (boot → slideshow → schedule OFF → ON) | Needs BE14000 desk time |
-| Touch / motion wake for Idle | Timer-only for now |
-| Real MilkFlint4 apk feed for AGH/banIP Install | Until then: firmware upgrades only |
-| 0.91a mt76 / hostapd / CAKE cherry-picks | Follow the audit doc; WED/MU matrix required |
-| Dynamic DNS on Remote access | Still “Coming soon” |
-
----
-
 ## Install
 
 ```text
