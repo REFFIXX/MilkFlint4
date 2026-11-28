@@ -12,12 +12,13 @@ import { rowClick } from '../firewall/forms';
 import { HeadRow, RowButton } from '../firewall/table-parts';
 import type { Device } from './api';
 import { connectionText, deviceLabel, reservedIp } from './model';
+import { displaySpeed } from './speed';
 
 const columns = [
   { label: 'Device', className: 'pl-5' },
   { label: 'Connection' },
   { label: 'Signal' },
-  { label: 'Link speed', className: 'text-right' },
+  { label: 'Speed', className: 'text-right' },
   { label: 'Connected', className: 'text-right' },
   { label: 'Edit', className: 'w-14 pr-4', hidden: true },
 ] as const;
@@ -60,6 +61,16 @@ function Address({ d }: { d: Device }): ReactElement {
   return (
     <span className="text-xs break-all text-muted-foreground">
       {d.ip === undefined ? 'no address' : <span className="font-mono">{d.ip}</span>} · <span className="font-mono">{d.mac}</span>
+    </span>
+  );
+}
+
+function Speed({ d }: { d: Device }): ReactElement {
+  const shown = displaySpeed({ down: d.down, up: d.up, linkRate: d.wifi?.rate, formatBitrate });
+  if (shown === undefined) return <span className="text-muted-foreground">—</span>;
+  return (
+    <span className={cn('whitespace-nowrap tabular', !shown.live && 'text-muted-foreground')} title={shown.live ? 'Live traffic' : 'Link rate'}>
+      {shown.text}
     </span>
   );
 }
@@ -121,8 +132,8 @@ export function DevicesList({
                     <SignalReading dbm={d.wifi.signal} snr={d.wifi.snr} />
                   )}
                 </td>
-                <td className="px-3 py-2.5 text-right whitespace-nowrap tabular">
-                  {d.wifi?.rate === undefined ? '—' : formatBitrate(d.wifi.rate)}
+                <td className="px-3 py-2.5 text-right">
+                  <Speed d={d} />
                 </td>
                 <td className="px-3 py-2.5 text-right whitespace-nowrap text-muted-foreground tabular">
                   {d.wifi?.connected === undefined ? '—' : formatDuration(d.wifi.connected)}
@@ -151,10 +162,10 @@ export function DevicesList({
               <Connection d={d} />
               {d.wifi !== undefined && <SignalReading dbm={d.wifi.signal} snr={d.wifi.snr} />}
             </span>
-            {d.wifi !== undefined && (d.wifi.rate !== undefined || d.wifi.connected !== undefined) && (
+            {(d.down !== undefined || d.up !== undefined || d.wifi?.rate !== undefined || d.wifi?.connected !== undefined) && (
               <span className="flex flex-wrap gap-x-4 pl-6.5 text-xs text-muted-foreground tabular">
-                {d.wifi.rate !== undefined && <span>Link {formatBitrate(d.wifi.rate)}</span>}
-                {d.wifi.connected !== undefined && <span>Connected {formatDuration(d.wifi.connected)}</span>}
+                <Speed d={d} />
+                {d.wifi?.connected !== undefined && <span>Connected {formatDuration(d.wifi.connected)}</span>}
               </span>
             )}
           </li>

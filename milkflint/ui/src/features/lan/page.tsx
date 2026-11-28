@@ -1,9 +1,6 @@
-// The LAN page: the router's address and the addresses it hands out, as
-// saved, first; then the address and the DHCP server's switch, with the
-// network size, the pool and the lease time under More settings. A save
-// that moves the router warns above the save bar and asks first, then
-// carries this page on to the new address.
-import { type ReactElement, useCallback, useState } from 'react';
+// The LAN page: Settings (pool), Addresses (IPv4+IPv6 leases), and Connections
+// (live conntrack sample). The tab is in the URL (#/lan/addresses).
+import { type ReactElement, useCallback, useState, useSyncExternalStore } from 'react';
 import { ApplyStatus } from '@/components/apply-status';
 import { CardHeading } from '@/components/card-heading';
 import { Field } from '@/components/field';
@@ -15,6 +12,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
+import { TabPanel, Tabs } from '@/components/ui/tabs';
 import { useApply } from '@/hooks/use-apply';
 import { useLoad } from '@/hooks/use-load';
 import { prefixLength } from '@/lib/api/network';
@@ -24,9 +22,13 @@ import { routerUrl } from '@/lib/router-url';
 import { Answer, AnswerCell, Figure, GoLink } from '@/components/page-kit';
 import { explain } from '@/components/explain';
 import { MoreSettings } from '@/components/more-settings';
+import { LanConnections } from './connections';
+import { LanLeases } from './leases';
 import {
   hostCount,
   type LanForm,
+  type LanTab,
+  lanTabs,
   leaseLabel,
   leaseTimes,
   moreSummary,
@@ -55,7 +57,6 @@ async function loadLan(): Promise<LanForm> {
   };
 }
 
-/** The network as saved: the router's address, the addresses devices get, the network's size. */
 function LanAnswer({ saved }: { saved: LanForm }): ReactElement {
   const r = range(saved);
   const prefix = Number(saved.prefix);
@@ -91,192 +92,195 @@ function LanAnswer({ saved }: { saved: LanForm }): ReactElement {
   );
 }
 
-export function LanPage(): ReactElement {
-  const { data, error, loading, reload } = useLoad(loadLan);
-  const [edit, setEdit] = useState<LanForm>();
-  const onApplied = useCallback(() => {
-    setEdit(undefined);
-    reload();
-  }, [reload]);
-  const { state, apply, applyAndMove } = useApply(onApplied);
-  const form = edit ?? data;
-  const errors = form === undefined ? {} : validate(form);
-  // Functional update: several edits in one render can't overwrite each other.
-  const set = <K extends keyof LanForm>(key: K, value: LanForm[K]): void => {
-    setEdit((current) => {
-      const base = current ?? data;
-      return base === undefined ? undefined : { ...base, [key]: value };
-    });
-  };
-  const dirty = edit !== undefined && JSON.stringify(edit) !== JSON.stringify(data);
-  const moving = form !== undefined && data !== undefined && moves(form, data);
-  const r = form === undefined ? undefined : range(form);
+function subPath(): string {
+  return window.location.hash.replace(/^#\/?/, '').split('/')[1] ?? '';
+}
 
-  const save = (): void => {
-    if (form === undefined || data === undefined) return;
-    if (moving) void applyAndMove(toChanges(form, data), routerUrl(form.ipaddr));
-    else void apply(toChanges(form, data));
-  };
+function currentTab(): LanTab {
+  const name = subPath();
+  return lanTabs.find((t) => t.id === name)?.id ?? 'settings';
+}
 
+function subscribe(listener: () => void): () => void {
+  window.addEventListener('hashchange', listener);
+  return () => {
+    window.removeEventListener('hashchange', listener);
+  };
+}
+
+function goTo(tab: LanTab): void {
+  window.location.hash = tab === 'settings' ? '#/lan' : `#/lan/${tab}`;
+}
+
+function SettingsTab({
+  data,
+  form,
+  errors,
+  set,
+  dirty,
+  moving,
+  state,
+  save,
+  onRevert,
+}: {
+  data: LanForm;
+  form: LanForm;
+  errors: Partial<Record<keyof LanForm, string>>;
+  set: <K extends keyof LanForm>(key: K, value: LanForm[K]) => void;
+  dirty: boolean;
+  moving: boolean;
+  state: ReturnType<typeof useApply>['state'];
+  save: () => void;
+  onRevert: () => void;
+}): ReactElement {
+  const r = range(form);
   return (
     <>
-      <PageHeader title="LAN" description="The router's own address, and the addresses it hands out to your devices." />
-      <div className="flex flex-col gap-4">
-        <ApplyStatus state={state} />
-        {error !== undefined && data === undefined ? (
-          <LoadError error={error} retry={reload} />
-        ) : loading || form === undefined || data === undefined ? (
-          <FormSkeleton />
-        ) : (
-          <>
-            <LanAnswer saved={data} />
-            <Card>
-              <CardHeading
-                title="Address and DHCP"
-                description="A new address or network size moves the router, and this page with it."
+      <LanAnswer saved={data} />
+      <Card>
+        <CardHeading
+          title="Address and DHCP"
+          description="A new address or network size moves the router, and this page with it."
+        />
+        <CardContent className="flex flex-col">
+          <div className="divide-y border-t">
+            <Field
+              id="ipaddr"
+              label="Router address"
+              {...explain('Where you open this page, and your devices’ gateway.', ['network.lan.ipaddr'])}
+              error={errors.ipaddr}
+            >
+              <Input
+                id="ipaddr"
+                className="font-mono"
+                value={form.ipaddr}
+                aria-invalid={errors.ipaddr !== undefined}
+                onChange={(e) => {
+                  set('ipaddr', e.target.value.trim());
+                }}
               />
-              <CardContent className="flex flex-col">
-                <div className="divide-y border-t">
-                  <Field
-                    id="ipaddr"
-                    label="Router address"
-                    {...explain('Where you open this page, and your devices’ gateway.', ['network.lan.ipaddr'])}
-                    error={errors.ipaddr}
-                  >
-                    <Input
-                      id="ipaddr"
-                      className="font-mono"
-                      value={form.ipaddr}
-                      aria-invalid={errors.ipaddr !== undefined}
-                      onChange={(e) => {
-                        set('ipaddr', e.target.value.trim());
-                      }}
-                    />
-                  </Field>
-                  <Field
-                    id="dhcp"
-                    label="DHCP server"
-                    {...explain(
-                      'Hands out addresses to your devices automatically. Off, each device needs a fixed address, or another DHCP server on the network.',
-                      ['dhcp.lan.ignore'],
-                    )}
-                  >
-                    <Switch
-                      id="dhcp"
-                      checked={form.dhcp}
-                      onCheckedChange={(v) => {
-                        set('dhcp', v);
-                      }}
-                    />
-                  </Field>
-                </div>
-                <MoreSettings summary={moreSummary(form)}>
-                  <Field
-                    id="prefix"
-                    label="Network size"
-                    {...explain(
-                      'How many addresses your network has. A larger one fits more devices; changing it moves the router like a new address does.',
-                      [form.cidrStyle ? 'network.lan.ipaddr (as address/prefix)' : 'network.lan.netmask'],
-                    )}
-                  >
-                    <Select
-                      value={form.prefix}
-                      onValueChange={(v) => {
-                        set('prefix', v);
-                      }}
-                    >
-                      <SelectTrigger id="prefix">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {prefixes.map((p) => (
-                          <SelectItem key={p} value={p}>
-                            /{p} · {netmaskOf(Number(p))} · {hostCount(Number(p)).toLocaleString('en-GB')} addresses
-                          </SelectItem>
-                        ))}
-                        {!(prefixes as readonly string[]).includes(form.prefix) && (
-                          <SelectItem value={form.prefix}>/{form.prefix}</SelectItem>
-                        )}
-                      </SelectContent>
-                    </Select>
-                  </Field>
-                  {form.dhcp && (
-                    <>
-                      <Field
-                        id="start"
-                        label="First address"
-                        {...explain("Offset from the network's start. The router hands out addresses from there.", [
-                          'dhcp.lan.start',
-                        ])}
-                        error={errors.start}
-                      >
-                        <Input
-                          id="start"
-                          inputMode="numeric"
-                          className="max-w-32 tabular"
-                          value={form.start}
-                          aria-invalid={errors.start !== undefined}
-                          onChange={(e) => {
-                            set('start', e.target.value.trim());
-                          }}
-                        />
-                      </Field>
-                      <Field
-                        id="limit"
-                        label="How many"
-                        {...explain(
-                          r !== undefined && errors.start === undefined && errors.limit === undefined
-                            ? `Devices get addresses from ${r.first} to ${r.last}.`
-                            : 'How many addresses the router hands out.',
-                          ['dhcp.lan.limit'],
-                        )}
-                        error={errors.limit}
-                      >
-                        <Input
-                          id="limit"
-                          inputMode="numeric"
-                          className="max-w-32 tabular"
-                          value={form.limit}
-                          aria-invalid={errors.limit !== undefined}
-                          onChange={(e) => {
-                            set('limit', e.target.value.trim());
-                          }}
-                        />
-                      </Field>
-                      <Field
-                        id="leasetime"
-                        label="Lease time"
-                        {...explain('How long a device keeps its address without checking in.', ['dhcp.lan.leasetime'])}
-                      >
-                        <Select
-                          value={form.leasetime}
-                          onValueChange={(v) => {
-                            set('leasetime', v);
-                          }}
-                        >
-                          <SelectTrigger id="leasetime">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {leaseTimes.map((t) => (
-                              <SelectItem key={t.value} value={t.value}>
-                                {t.label}
-                              </SelectItem>
-                            ))}
-                            {!leaseTimes.some((t) => t.value === form.leasetime) && (
-                              <SelectItem value={form.leasetime}>{form.leasetime}</SelectItem>
-                            )}
-                          </SelectContent>
-                        </Select>
-                      </Field>
-                    </>
+            </Field>
+            <Field
+              id="dhcp"
+              label="DHCP server"
+              {...explain(
+                'Hands out addresses to your devices automatically. Off, each device needs a fixed address, or another DHCP server on the network.',
+                ['dhcp.lan.ignore'],
+              )}
+            >
+              <Switch
+                id="dhcp"
+                checked={form.dhcp}
+                onCheckedChange={(v) => {
+                  set('dhcp', v);
+                }}
+              />
+            </Field>
+          </div>
+          <MoreSettings summary={moreSummary(form)}>
+            <Field
+              id="prefix"
+              label="Network size"
+              {...explain(
+                'How many addresses your network has. A larger one fits more devices; changing it moves the router like a new address does.',
+                [form.cidrStyle ? 'network.lan.ipaddr (as address/prefix)' : 'network.lan.netmask'],
+              )}
+            >
+              <Select
+                value={form.prefix}
+                onValueChange={(v) => {
+                  set('prefix', v);
+                }}
+              >
+                <SelectTrigger id="prefix">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {prefixes.map((p) => (
+                    <SelectItem key={p} value={p}>
+                      /{p} · {netmaskOf(Number(p))} · {hostCount(Number(p)).toLocaleString('en-GB')} addresses
+                    </SelectItem>
+                  ))}
+                  {!(prefixes as readonly string[]).includes(form.prefix) && (
+                    <SelectItem value={form.prefix}>/{form.prefix}</SelectItem>
                   )}
-                </MoreSettings>
-              </CardContent>
-            </Card>
-          </>
-        )}
-      </div>
+                </SelectContent>
+              </Select>
+            </Field>
+            {form.dhcp && (
+              <>
+                <Field
+                  id="start"
+                  label="First address"
+                  {...explain("Offset from the network's start. The router hands out addresses from there.", [
+                    'dhcp.lan.start',
+                  ])}
+                  error={errors.start}
+                >
+                  <Input
+                    id="start"
+                    inputMode="numeric"
+                    className="max-w-32 tabular"
+                    value={form.start}
+                    aria-invalid={errors.start !== undefined}
+                    onChange={(e) => {
+                      set('start', e.target.value.trim());
+                    }}
+                  />
+                </Field>
+                <Field
+                  id="limit"
+                  label="How many"
+                  {...explain(
+                    r !== undefined && errors.start === undefined && errors.limit === undefined
+                      ? `Devices get addresses from ${r.first} to ${r.last}.`
+                      : 'How many addresses the router hands out.',
+                    ['dhcp.lan.limit'],
+                  )}
+                  error={errors.limit}
+                >
+                  <Input
+                    id="limit"
+                    inputMode="numeric"
+                    className="max-w-32 tabular"
+                    value={form.limit}
+                    aria-invalid={errors.limit !== undefined}
+                    onChange={(e) => {
+                      set('limit', e.target.value.trim());
+                    }}
+                  />
+                </Field>
+                <Field
+                  id="leasetime"
+                  label="Lease time"
+                  {...explain('How long a device keeps its address without checking in.', ['dhcp.lan.leasetime'])}
+                >
+                  <Select
+                    value={form.leasetime}
+                    onValueChange={(v) => {
+                      set('leasetime', v);
+                    }}
+                  >
+                    <SelectTrigger id="leasetime">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {leaseTimes.map((t) => (
+                        <SelectItem key={t.value} value={t.value}>
+                          {t.label}
+                        </SelectItem>
+                      ))}
+                      {!leaseTimes.some((t) => t.value === form.leasetime) && (
+                        <SelectItem value={form.leasetime}>{form.leasetime}</SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                </Field>
+              </>
+            )}
+          </MoreSettings>
+        </CardContent>
+      </Card>
       <SaveArea
         visible={dirty}
         busy={state.phase === 'applying'}
@@ -294,10 +298,75 @@ export function LanPage(): ReactElement {
             : undefined
         }
         onSave={save}
-        onRevert={() => {
-          setEdit(undefined);
-        }}
+        onRevert={onRevert}
       />
+    </>
+  );
+}
+
+export function LanPage(): ReactElement {
+  const tab = useSyncExternalStore(subscribe, currentTab);
+  const { data, error, loading, reload } = useLoad(loadLan);
+  const [edit, setEdit] = useState<LanForm>();
+  const onApplied = useCallback(() => {
+    setEdit(undefined);
+    reload();
+  }, [reload]);
+  const { state, apply, applyAndMove } = useApply(onApplied);
+  const form = edit ?? data;
+  const errors = form === undefined ? {} : validate(form);
+  const set = <K extends keyof LanForm>(key: K, value: LanForm[K]): void => {
+    setEdit((current) => {
+      const base = current ?? data;
+      return base === undefined ? undefined : { ...base, [key]: value };
+    });
+  };
+  const dirty = edit !== undefined && JSON.stringify(edit) !== JSON.stringify(data);
+  const moving = form !== undefined && data !== undefined && moves(form, data);
+
+  const save = (): void => {
+    if (form === undefined || data === undefined) return;
+    if (moving) void applyAndMove(toChanges(form, data), routerUrl(form.ipaddr));
+    else void apply(toChanges(form, data));
+  };
+
+  return (
+    <>
+      <PageHeader
+        title="LAN"
+        description="The router’s address and DHCP pool, the leases it has handed out, and live connections through it."
+      />
+      <div className="flex flex-col gap-4">
+        <ApplyStatus state={state} />
+        <Tabs label="LAN sections" prefix="lan" items={lanTabs} value={tab} onChange={goTo} />
+        <TabPanel prefix="lan" id="settings" value={tab} className="flex flex-col gap-4">
+          {error !== undefined && data === undefined ? (
+            <LoadError error={error} retry={reload} />
+          ) : loading || form === undefined || data === undefined ? (
+            <FormSkeleton />
+          ) : (
+            <SettingsTab
+              data={data}
+              form={form}
+              errors={errors}
+              set={set}
+              dirty={dirty}
+              moving={moving}
+              state={state}
+              save={save}
+              onRevert={() => {
+                setEdit(undefined);
+              }}
+            />
+          )}
+        </TabPanel>
+        <TabPanel prefix="lan" id="addresses" value={tab}>
+          {tab === 'addresses' && <LanLeases />}
+        </TabPanel>
+        <TabPanel prefix="lan" id="connections" value={tab}>
+          {tab === 'connections' && <LanConnections />}
+        </TabPanel>
+      </div>
     </>
   );
 }

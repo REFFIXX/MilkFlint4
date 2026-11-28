@@ -2,23 +2,23 @@
 // online and how (Wi-Fi by band, or wired), then the list. A row opens the
 // device's side sheet: rename it, reserve its address, and the way to block
 // it or see its data usage. Polled every 5 s.
-import { SearchIcon, XIcon } from 'lucide-react';
+import { InfoIcon, SearchIcon, XIcon } from 'lucide-react';
 import { type ReactElement, useCallback, useMemo, useState } from 'react';
 import { ApplyStatus } from '@/components/apply-status';
 import { PageHeader } from '@/components/layout/page-header';
+import { Note } from '@/components/note';
 import { FormSkeleton, LoadError } from '@/components/page-states';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useApply } from '@/hooks/use-apply';
-import { usePoll } from '@/hooks/use-poll';
 import { href } from '@/lib/router';
 import { useRouterMode } from '@/lib/router-mode';
 import { Answer, AnswerCell, Figure, GoLink } from '@/components/page-kit';
-import { loadClients } from './api';
 import { DeviceSheet } from './device-sheet';
 import { DevicesList } from './devices-list';
 import { type DeviceCounts, deviceCounts, matches } from './model';
+import { useClients } from './use-clients';
 
 const plural = (n: number, one: string, many: string): string => `${String(n)} ${n === 1 ? one : many}`;
 
@@ -54,7 +54,7 @@ function DevicesAnswer({ counts }: { counts: DeviceCounts }): ReactElement {
 }
 
 export function ClientsPage(): ReactElement {
-  const { data, error, loading, refresh } = usePoll(loadClients, 5000);
+  const { data, error, loading, refresh } = useClients();
   const { state, apply } = useApply(refresh);
   const mode = useRouterMode();
   const [editing, setEditing] = useState<string>();
@@ -84,6 +84,10 @@ export function ClientsPage(): ReactElement {
           counts !== undefined && (
             <>
               <DevicesAnswer counts={counts} />
+              <Note tone="info" icon={<InfoIcon />} title="First seen and live speed">
+                First seen is kept on the router for 30 days of silence, then forgotten. Live speed uses Wi‑Fi traffic
+                counters (same idea as Home); wired devices show link speed when the radio isn’t involved.
+              </Note>
               <div className="mt-2 flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
                 <h2 className="text-base font-semibold">
                   Devices{' '}

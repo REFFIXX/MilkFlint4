@@ -5,7 +5,7 @@ import type { Feature } from '../types';
 export const feature = {
   id: 'lan',
   title: 'LAN',
-  description: "The router's own address, and the addresses it hands out to your devices.",
+  description: "The router's address and DHCP pool, leases, and live connections.",
   icon: NetworkIcon,
   group: 'network',
   order: 30,

@@ -1,0 +1,11 @@
+{
+	"milkflint-clients": {
+		"description": "MilkFlint web interface: All devices first-seen store",
+		"read": {
+			"ubus": { "milkflint.devices": [ "get", "sync" ] }
+		},
+		"write": {
+			"ubus": { "milkflint.devices": [ "sync" ] }
+		}
+	}
+}
