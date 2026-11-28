@@ -33,7 +33,7 @@ function ProtoBars({ rows }: { rows: readonly { proto: string; count: number }[]
     <div className="flex flex-col gap-2">
       {rows.slice(0, 6).map((r) => (
         <div key={r.proto} className="flex items-center gap-3 text-sm">
-          <span className="w-14 shrink-0 font-mono uppercase text-muted-foreground">{r.proto}</span>
+          <span className="w-14 shrink-0 font-mono text-muted-foreground uppercase">{r.proto}</span>
           <div className="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-muted" aria-hidden="true">
             <div className="h-full bg-chart-2" style={{ width: `${String((r.count / top) * 100)}%` }} />
           </div>
@@ -50,7 +50,10 @@ export function LanConnections(): ReactElement {
   const [sort, setSort] = useState<ConnSort>('bytes');
   const shown = useMemo(() => {
     if (data === undefined) return [];
-    return sortConnections(data.connections.filter((c) => connectionMatches(c, query)), sort);
+    return sortConnections(
+      data.connections.filter((c) => connectionMatches(c, query)),
+      sort,
+    );
   }, [data, query, sort]);
 
   if (error !== undefined && data === undefined) return <LoadError error={error} retry={refresh} />;
@@ -61,9 +64,7 @@ export function LanConnections(): ReactElement {
     <div className="flex flex-col gap-4">
       <Answer columns={3} label="Connections now">
         <AnswerCell title="Tracked now" value={<Figure>{formatNumber(data.count)}</Figure>}>
-          {data.max === null
-            ? 'Open flows the firewall is tracking.'
-            : `Of ${formatNumber(data.max)} the kernel will hold.`}
+          {data.max === null ? 'Open flows the firewall is tracking.' : `Of ${formatNumber(data.max)} the kernel will hold.`}
         </AnswerCell>
         <AnswerCell title="In this table" value={<Figure>{shown.length}</Figure>}>
           Top flows by bytes{query.trim() === '' ? '' : ', matching the search'}.
@@ -76,8 +77,8 @@ export function LanConnections(): ReactElement {
       </Answer>
 
       <Note tone="info" icon={<InfoIcon />} title="From conntrack">
-        Live connections come from the kernel’s conntrack table (the same place Smart Queue and banIP look). The table is a
-        sample of the largest flows — not every packet path — so it’s for spotting who is talking where, not for accounting.
+        Live connections come from the kernel’s conntrack table (the same place Smart Queue and banIP look). The table is a sample
+        of the largest flows — not every packet path — so it’s for spotting who is talking where, not for accounting.
       </Note>
 
       {data.byProto.length > 0 && (
@@ -91,8 +92,7 @@ export function LanConnections(): ReactElement {
 
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
         <h2 className="text-base font-semibold">
-          Top connections{' '}
-          <span className="text-sm font-normal text-muted-foreground tabular">· {String(shown.length)}</span>
+          Top connections <span className="text-sm font-normal text-muted-foreground tabular">· {String(shown.length)}</span>
         </h2>
         <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto">
           <Select

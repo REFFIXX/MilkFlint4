@@ -13,7 +13,11 @@ export function trafficRate(prevBytes: number | undefined, curBytes: number | un
 }
 
 /** Down and up as one short line for the devices list, or undefined when neither is known. */
-export function formatLiveSpeed(down: number | undefined, up: number | undefined, formatBitrate: (bps: number) => string): string | undefined {
+export function formatLiveSpeed(
+  down: number | undefined,
+  up: number | undefined,
+  formatBitrate: (bps: number) => string,
+): string | undefined {
   if (down === undefined && up === undefined) return undefined;
   if (down !== undefined && up !== undefined) return `↓ ${formatBitrate(down)} · ↑ ${formatBitrate(up)}`;
   if (down !== undefined) return `↓ ${formatBitrate(down)}`;

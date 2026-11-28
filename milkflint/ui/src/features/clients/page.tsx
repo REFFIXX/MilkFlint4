@@ -85,8 +85,8 @@ export function ClientsPage(): ReactElement {
             <>
               <DevicesAnswer counts={counts} />
               <Note tone="info" icon={<InfoIcon />} title="First seen and live speed">
-                First seen is kept on the router for 30 days of silence, then forgotten. Live speed uses Wi‑Fi traffic
-                counters (same idea as Home); wired devices show link speed when the radio isn’t involved.
+                First seen is kept on the router for 30 days of silence, then forgotten. Live speed uses Wi‑Fi traffic counters
+                (same idea as Home); wired devices show link speed when the radio isn’t involved.
               </Note>
               <div className="mt-2 flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
                 <h2 className="text-base font-semibold">

@@ -19,8 +19,7 @@ import {
 } from '../src/features/ssh/model.ts';
 
 // Real keys from ssh-keygen (ed25519 + rsa 2048)
-const ED25519 =
-  'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDkMKdmhMuEP8E/YnnrMkNttih48Q24+yO8GM3BfrHqy milkflint-test';
+const ED25519 = 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDkMKdmhMuEP8E/YnnrMkNttih48Q24+yO8GM3BfrHqy milkflint-test';
 const ED25519_FP = 'SHA256:8vPwbCuZ2NOsZBCGPreRVHkeGoiwjuDPWSLwgDlP/b0';
 const RSA =
   'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCPb6TNcbpNX5XpeZItrEfpuXyARYcwKGcljM9XWitUCsIbzdgIEjqUPnpeTLl6CjwieoIbUpWAXNRcNrCCZjnSgXctI8UhrYyo3c/KTOCEE0VqZ2bADuwbhnRF/x19Y0EN6t1x4iGYXZTmdQOkMe9jmSShru4DFSihXJaW0LTphovnF7fKg/mjK8XZBlF0PDdlZFjrAVGim5Dn1Vn497dgs3HBWQBdWf0OH/rx6SGAv9cXy6Wl1O3nVmtfgE69HY7Ow0+dZ23Xyucm13dVJJMLy5IwkSJJlY+zKSx/B+YSSmDXP+uKWrgrRiGQt56BoFd705qLdI4f2qB8/PZBNIb/ rsa-test';

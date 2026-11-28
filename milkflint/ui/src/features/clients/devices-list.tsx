@@ -69,7 +69,10 @@ function Speed({ d }: { d: Device }): ReactElement {
   const shown = displaySpeed({ down: d.down, up: d.up, linkRate: d.wifi?.rate, formatBitrate });
   if (shown === undefined) return <span className="text-muted-foreground">—</span>;
   return (
-    <span className={cn('whitespace-nowrap tabular', !shown.live && 'text-muted-foreground')} title={shown.live ? 'Live traffic' : 'Link rate'}>
+    <span
+      className={cn('whitespace-nowrap tabular', !shown.live && 'text-muted-foreground')}
+      title={shown.live ? 'Live traffic' : 'Link rate'}
+    >
       {shown.text}
     </span>
   );

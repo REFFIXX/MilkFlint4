@@ -159,4 +159,3 @@ export function sortConnections<T extends { bytes: number | null; packets: numbe
   });
   return copy;
 }
-

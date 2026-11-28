@@ -47,10 +47,7 @@ export function LanLeases(): ReactElement {
   const { data, error, loading, refresh } = usePoll(loadLanLeases, 10_000);
   const [query, setQuery] = useState('');
   const shown = useMemo(
-    () =>
-      (data ?? []).filter((l) =>
-        leaseMatches({ address: l.address, mac: l.mac, name: l.name, duid: l.duid }, query),
-      ),
+    () => (data ?? []).filter((l) => leaseMatches({ address: l.address, mac: l.mac, name: l.name, duid: l.duid }, query)),
     [data, query],
   );
 
@@ -62,8 +59,8 @@ export function LanLeases(): ReactElement {
     <div className="flex flex-col gap-4">
       <LeaseAnswer leases={data} />
       <Note tone="info" icon={<InfoIcon />} title="IPv4 and IPv6">
-        Devices that only use SLAAC may show an IPv6 address here without an IPv4 lease. Names come from the lease or the
-        router’s host hints. For renaming and reservations, use{' '}
+        Devices that only use SLAAC may show an IPv6 address here without an IPv4 lease. Names come from the lease or the router’s
+        host hints. For renaming and reservations, use{' '}
         <a href={href('clients')} className="font-medium link">
           All devices
         </a>
@@ -143,7 +140,9 @@ export function LanLeases(): ReactElement {
           <ul className="divide-y md:hidden">
             {shown.map((l) => (
               <li key={`${l.family}-${l.address}-${l.mac ?? l.duid ?? ''}`} className="flex flex-col gap-1 px-4 py-3 text-sm">
-                <span className={l.name === undefined ? 'text-muted-foreground' : 'font-medium'}>{l.name ?? 'Unnamed device'}</span>
+                <span className={l.name === undefined ? 'text-muted-foreground' : 'font-medium'}>
+                  {l.name ?? 'Unnamed device'}
+                </span>
                 <span className="font-mono text-xs break-all">{l.address}</span>
                 <span className="text-xs text-muted-foreground">
                   {l.family === 'ipv4' ? 'IPv4' : 'IPv6'}

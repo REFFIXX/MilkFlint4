@@ -1,12 +1,7 @@
 // First-seen merge and 30-day forget for milkflint.devices.
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import {
-  forgetStale,
-  formatFirstSeen,
-  mergeFirstSeen,
-  RETAIN_SECONDS,
-} from '../src/features/clients/first-seen.ts';
+import { forgetStale, formatFirstSeen, mergeFirstSeen, RETAIN_SECONDS } from '../src/features/clients/first-seen.ts';
 
 const NOW = 1_700_000_000;
 const MAC_A = 'aa:bb:cc:dd:ee:01';

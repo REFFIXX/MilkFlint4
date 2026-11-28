@@ -93,9 +93,15 @@ test('the folded More settings line says what’s set', () => {
 
 test('lease and connection search match address, name, protocol and ports', () => {
   assert.equal(leaseMatches({ address: '192.168.1.50', mac: 'aa:bb:cc:dd:ee:01', name: 'tv', duid: undefined }, 'TV'), true);
-  assert.equal(leaseMatches({ address: '192.168.1.50', mac: 'aa:bb:cc:dd:ee:01', name: undefined, duid: undefined }, 'ff:'), false);
   assert.equal(
-    connectionMatches({ src: '192.168.1.10', dst: '1.1.1.1', proto: 'tcp', sport: 1234, dport: 443, state: 'ESTABLISHED' }, '443'),
+    leaseMatches({ address: '192.168.1.50', mac: 'aa:bb:cc:dd:ee:01', name: undefined, duid: undefined }, 'ff:'),
+    false,
+  );
+  assert.equal(
+    connectionMatches(
+      { src: '192.168.1.10', dst: '1.1.1.1', proto: 'tcp', sport: 1234, dport: 443, state: 'ESTABLISHED' },
+      '443',
+    ),
     true,
   );
   assert.equal(

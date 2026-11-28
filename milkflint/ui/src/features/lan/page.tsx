@@ -212,9 +212,7 @@ function SettingsTab({
                 <Field
                   id="start"
                   label="First address"
-                  {...explain("Offset from the network's start. The router hands out addresses from there.", [
-                    'dhcp.lan.start',
-                  ])}
+                  {...explain("Offset from the network's start. The router hands out addresses from there.", ['dhcp.lan.start'])}
                   error={errors.start}
                 >
                   <Input
