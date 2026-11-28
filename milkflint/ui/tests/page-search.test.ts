@@ -56,6 +56,8 @@ test('a tab or card is found by its name or another word for it, and opens it', 
   assert.equal(first('zones'), '#/firewall/zones');
   assert.equal(first('your lists'), '#/banip/lists');
   assert.equal(first('https'), '#/admin-password/https');
+  assert.equal(first('ssh keys'), '#/admin-password/ssh-keys');
+  assert.equal(first('dropbear'), '#/admin-password/ssh');
   assert.equal(first('diagnostics'), '#/tuning/diagnostics');
   const hit = searchPages('radar log', pages, groupOf)[0];
   assert.equal(hit?.section?.title, 'Radar log');
