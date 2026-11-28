@@ -47,7 +47,13 @@ config lcd 'lcd'
   option idle_minutes '10'
   option slideshow '1'
   option dwell_seconds '8'
-  list slides 'splash' 'wan' 'wifi' 'clients' 'vpn' 'system'
+  # One `list` per value — a single line with many values is not valid UCI.
+  list slides 'splash'
+  list slides 'wan'
+  list slides 'wifi'
+  list slides 'clients'
+  list slides 'vpn'
+  list slides 'system'
 ```
 
 Backend: evolve `milkflint4-lcd-splash` → small **lcdd** (or procd script + painter) that:
