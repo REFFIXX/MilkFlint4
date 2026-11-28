@@ -1,9 +1,12 @@
 // rpcd plugin for the "data-statistics" feature: nlbwmon's traffic
-// accounting per device, and its accounting periods.
+// accounting per device, its accounting periods, and optional 24 h samples
+// in /tmp (milkflint.datastats.history).
 'use strict';
 
-import { popen, access } from 'fs';
+import { popen, access, readfile } from 'fs';
 import { cursor } from 'uci';
+
+const HISTORY_STATE = '/tmp/milkflint/usage-history.json';
 
 function nlbw(args) {
 	const fd = popen(`nlbw ${args} 2>/dev/null`, 'r');
@@ -12,6 +15,15 @@ function nlbw(args) {
 	const out = fd.read('all');
 	fd.close();
 	return out;
+}
+
+function read_history() {
+	try {
+		return json(readfile(HISTORY_STATE) ?? 'null');
+	}
+	catch (e) {
+		return null;
+	}
 }
 
 return {
@@ -43,6 +55,26 @@ return {
 					parsed = null;
 				}
 				return parsed ?? { columns: [], data: [] };
+			}
+		},
+		// last-24h samples (absolute nlbwmon counters per MAC); empty while off
+		history: {
+			args: { hours: 24 },
+			call: function(req) {
+				const on = cursor().get('milkflint', 'datastats', 'history') == '1';
+				const hours = int(req.args.hours ?? 24);
+				const span = (hours == 1 || hours == 4 || hours == 8 || hours == 24) ? hours * 3600 : 24 * 3600;
+				const now = time();
+				const state = on ? read_history() : null;
+				const since = now - span;
+				const samples = filter(state?.samples ?? [], (s) => (s?.t ?? 0) >= since);
+				return {
+					enabled: on,
+					now,
+					interval: state?.interval ?? 300,
+					since,
+					samples
+				};
 			}
 		}
 	}

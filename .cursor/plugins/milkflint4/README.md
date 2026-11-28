@@ -19,7 +19,7 @@ Cursor picks up plugins under `~/.cursor/plugins/local/` automatically (reload w
 
 | Kind | What it gives you |
 |------|-------------------|
-| **Rules** | Always-on project conventions (version tags, UI check gate, research sources) |
+| **Rules** | Always-on conventions + UX prefs (Monokai, LCD Setup, help tips, config-safe upgrades) |
 | **Skills** | `firmware-release`, `ui-check`, `openwrt-research` |
 | **Commands** | `/milkflint-status` — CI + release snapshot |
 

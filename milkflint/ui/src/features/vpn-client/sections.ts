@@ -44,9 +44,24 @@ export function leakSection(zone: SourceZone): string {
 /** The home network's devices that don't use it ("everyone except"). */
 export const CLIENT_SKIP = `${CLIENT}_skip`;
 
+/**
+ * Sites that go direct: fw4 nft sets dnsmasq fills from the domain list, and
+ * the MARK rules that clear the tunnel mark for those destinations (after the
+ * device mark, like CLIENT_SKIP).
+ */
+export const CLIENT_BYPASS4 = `${CLIENT}_bypass4`;
+export const CLIENT_BYPASS6 = `${CLIENT}_bypass6`;
+export const CLIENT_BYPASS_DHCP = `${CLIENT}_bypass`;
+export const CLIENT_BYPASS_RULE4 = `${CLIENT}_direct4`;
+export const CLIENT_BYPASS_RULE6 = `${CLIENT}_direct6`;
+
 export const CLIENT_FIREWALL: readonly string[] = [
   CLIENT,
   CLIENT_SKIP,
+  CLIENT_BYPASS4,
+  CLIENT_BYPASS6,
+  CLIENT_BYPASS_RULE4,
+  CLIENT_BYPASS_RULE6,
   ...SOURCE_ZONES.flatMap((z) => [forwardSection(z), markSection(z), leakSection(z)]),
 ];
 

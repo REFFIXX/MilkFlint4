@@ -16,6 +16,7 @@ import type { FeatureId } from './ids';
 import { feature as internet } from './internet/feature';
 import { feature as ipv6 } from './ipv6/feature';
 import { feature as lan } from './lan/feature';
+import { feature as lcdSetup } from './lcd-setup/feature';
 import { feature as logs } from './logs/feature';
 import { feature as mesh } from './mesh/feature';
 import { feature as mode } from './mode/feature';
@@ -25,6 +26,7 @@ import { feature as portForwards } from './port-forwards/feature';
 import { feature as remoteAccess } from './remote-access/feature';
 import { feature as schedules } from './schedules/feature';
 import { feature as sqm } from './sqm/feature';
+import { feature as startup } from './startup/feature';
 import { feature as systemOverview } from './system-overview/feature';
 import { feature as testBench } from './test-bench/feature';
 import { feature as themes } from './themes/feature';
@@ -70,10 +72,12 @@ const byId: { readonly [K in FeatureId]: Feature & { id: K } } = {
   banip,
   upnp,
   'system-overview': systemOverview,
+  startup,
   'admin-password': adminPassword,
   https,
   upgrade,
   time,
+  'lcd-setup': lcdSetup,
   schedules,
   logs,
   'backup-reset': backupReset,

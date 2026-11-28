@@ -62,7 +62,10 @@ async function login(page) {
   const password = page.locator('input[type="password"]');
   if (await password.count()) {
     await password.fill('sim');
-    await page.getByRole('button', { name: /log in|sign in|continue/i }).first().click();
+    await page
+      .getByRole('button', { name: /log in|sign in|continue/i })
+      .first()
+      .click();
     await page.waitForTimeout(800);
   }
 }
@@ -101,6 +104,18 @@ for (const id of featureIds) {
 
 const failed = results.filter((r) => !r.ok);
 const logoOk = results.some((r) => r.logoHasFour);
-console.log(JSON.stringify({ logoOk, passed: results.length - failed.length, failed: failed.length, results: failed, consoleErrors: consoleErrors.slice(0, 30) }, null, 2));
+console.log(
+  JSON.stringify(
+    {
+      logoOk,
+      passed: results.length - failed.length,
+      failed: failed.length,
+      results: failed,
+      consoleErrors: consoleErrors.slice(0, 30),
+    },
+    null,
+    2,
+  ),
+);
 await browser.close();
 process.exit(failed.length ? 1 : 0);

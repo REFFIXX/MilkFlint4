@@ -21,6 +21,7 @@ import {
 import { type ReactElement, type ReactNode, useCallback, useId, useRef, useState } from 'react';
 import { ApplyStatus } from '@/components/apply-status';
 import { CardHeading } from '@/components/card-heading';
+import { explain } from '@/components/explain';
 import { Field } from '@/components/field';
 import { PageHeader } from '@/components/layout/page-header';
 import { Note } from '@/components/note';
@@ -45,6 +46,8 @@ import { isMac } from '../firewall/model';
 import { Choice } from '../firewall/parts';
 import { Cell, CheckItem, NoWireGuard, Traffic } from '../remote-access/parts';
 import { loadClient } from './api';
+import { BYPASS_EXPLAIN } from './bypass';
+import { deadTunnelCopy, isHandshakeStale } from './handshake';
 import {
   activeDnsOf,
   type ClientForm,
@@ -63,7 +66,20 @@ import {
   type Who,
   whoSummary,
 } from './model';
-import { CLIENT, CLIENT_META, CLIENT_PEER, CLIENT_TABLE } from './sections';
+import {
+  activateProfile,
+  applyProfile,
+  defaultProfileName,
+  deleteProfile,
+  newProfileId,
+  type ProfileStore,
+  profileFromForm,
+  renameProfile,
+  syncActiveProfile,
+  upsertProfile,
+} from './profiles';
+import { saveProfiles } from './profiles-api';
+import { CLIENT, CLIENT_BYPASS4, CLIENT_BYPASS_DHCP, CLIENT_META, CLIENT_PEER, CLIENT_TABLE } from './sections';
 
 function ImportDialog({
   open,
@@ -284,7 +300,12 @@ interface Connection {
   peer?: WgPeer;
 }
 
-function connectionState(form: ClientForm, running: WgInterface | undefined, now: number): Connection {
+function connectionState(
+  form: ClientForm,
+  running: WgInterface | undefined,
+  now: number,
+  profileName: string | undefined,
+): Connection {
   if (!form.enabled)
     return {
       tone: 'off',
@@ -301,11 +322,12 @@ function connectionState(form: ClientForm, running: WgInterface | undefined, now
       text: 'Check the server’s address: the router has to find it first.',
     };
   }
+  const where = profileName !== undefined && profileName !== '' ? ` · ${profileName}` : '';
   if (isConnected(peer, now)) {
     return {
       tone: 'ok',
       badge: 'Connected',
-      headline: `Connected to ${peer.endpoint ?? serverText(form)}`,
+      headline: `Connected to ${peer.endpoint ?? serverText(form)}${where}`,
       text: `Last handshake ${formatDuration(now - peer.latest_handshake)} ago.`,
       peer,
     };
@@ -314,15 +336,25 @@ function connectionState(form: ClientForm, running: WgInterface | undefined, now
     return {
       tone: 'warn',
       badge: 'No answer',
-      headline: 'No answer from the server yet',
+      headline: `No answer from the server yet${where}`,
       text: 'Check the keys and the server’s address and port.',
+      peer,
+    };
+  }
+  if (isHandshakeStale(peer, now)) {
+    const dead = deadTunnelCopy(form.killSwitch);
+    return {
+      tone: 'warn',
+      badge: 'Not answering',
+      headline: `${dead.headline}${where}`,
+      text: `${dead.text} Last handshake ${formatDuration(now - peer.latest_handshake)} ago.`,
       peer,
     };
   }
   return {
     tone: 'warn',
     badge: 'No answer',
-    headline: `No answer from the server for ${formatDuration(now - peer.latest_handshake)}`,
+    headline: `No answer from the server for ${formatDuration(now - peer.latest_handshake)}${where}`,
     text: form.killSwitch
       ? 'With the kill switch on, its devices have no internet meanwhile.'
       : 'Its devices go out directly meanwhile.',
@@ -542,13 +574,17 @@ const SERVER_ERRORS = ['host', 'port', 'public', 'private', 'psk', 'addresses', 
 export function VpnClientPage(): ReactElement {
   const { data, error, loading, reload } = useLoad(loadClient);
   const [edit, setEdit] = useState<ClientForm>();
+  const [profilesEdit, setProfilesEdit] = useState<ProfileStore>();
   const [importing, setImporting] = useState(false);
   const [imported, setImported] = useState<string[]>();
   const [details, setDetails] = useState(false);
   const [confirmRemove, setConfirmRemove] = useState(false);
+  const [renameId, setRenameId] = useState<string>();
+  const [renameValue, setRenameValue] = useState('');
   const renew = useRef(false);
   const onApplied = useCallback(() => {
     setEdit(undefined);
+    setProfilesEdit(undefined);
     setImported(undefined);
     // a new server, keys or port on a tunnel that was already up
     if (renew.current)
@@ -563,8 +599,11 @@ export function VpnClientPage(): ReactElement {
 
   const saved = data?.form;
   const form = edit ?? saved;
+  const profiles = profilesEdit ?? data?.profiles;
   const errors: Errors = form === undefined || data === undefined ? {} : validate(form, data);
-  const dirty = edit !== undefined && JSON.stringify(edit) !== JSON.stringify(saved);
+  const dirty =
+    (edit !== undefined && JSON.stringify(edit) !== JSON.stringify(saved)) ||
+    (profilesEdit !== undefined && JSON.stringify(profilesEdit) !== JSON.stringify(data?.profiles));
   const invalid = Object.keys(errors).length > 0;
   const fix = data === undefined || dirty ? [] : drift(data);
   const running = status?.interfaces.find((i) => i.name === CLIENT);
@@ -572,9 +611,13 @@ export function VpnClientPage(): ReactElement {
   const now = status?.now ?? 0;
   const blank = form?.privateKey === '' && form.publicKey === '';
   const serverWrong = SERVER_ERRORS.some((k) => errors[k] !== undefined);
+  const activeName = profiles?.profiles.find((p) => p.id === profiles.active)?.name;
 
   const set = <K extends keyof ClientForm>(key: K, value: ClientForm[K]): void => {
     if (form !== undefined) setEdit({ ...form, [key]: value });
+  };
+  const setProfiles = (next: ProfileStore): void => {
+    setProfilesEdit(next);
   };
   const useConf = (text: string): string | undefined => {
     if (form === undefined) return 'Not loaded yet.';
@@ -600,11 +643,19 @@ export function VpnClientPage(): ReactElement {
       );
     setImported(notes);
     setEdit(next);
+    if (profiles !== undefined) {
+      const id = newProfileId(profiles.profiles);
+      const name = defaultProfileName(
+        next.endpointHost,
+        profiles.profiles.map((p) => p.name),
+      );
+      setProfiles(upsertProfile({ ...profiles, active: id }, profileFromForm(next, name, id)));
+    }
     // what it read in, to check before saving
     setDetails(true);
     return undefined;
   };
-  const conn = form === undefined ? undefined : connectionState(saved ?? form, running, now);
+  const conn = form === undefined ? undefined : connectionState(saved ?? form, running, now, activeName);
   const importButton = (
     <Button
       variant={blank ? 'default' : 'outline'}
@@ -735,6 +786,93 @@ export function VpnClientPage(): ReactElement {
             )}
             <div className={cn('grid items-start gap-4', !blank && 'xl:grid-cols-[minmax(0,1fr)_22rem]')}>
               <div className="flex min-w-0 flex-col gap-4">
+                {!blank && profiles !== undefined && (
+                  <Card>
+                    <CardHeading
+                      title="Profiles"
+                      description="Named servers (USA, France…). One is active; the rest stay on this router."
+                      action={
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setImporting(true);
+                          }}
+                        >
+                          <PlusIcon />
+                          Add profile
+                        </Button>
+                      }
+                    />
+                    <CardContent className="flex flex-col gap-2">
+                      {profiles.profiles.length === 0 ? (
+                        <p className="text-sm text-muted-foreground">No saved profiles yet — import a config to make one.</p>
+                      ) : (
+                        <ul className="divide-y border-t">
+                          {profiles.profiles.map((p) => {
+                            const active = p.id === profiles.active;
+                            return (
+                              <li key={p.id} className="flex flex-wrap items-center gap-2 py-3">
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <span className="font-medium">{p.name}</span>
+                                    {active && <Badge variant="success">Active</Badge>}
+                                  </div>
+                                  <p className="truncate font-mono text-xs text-muted-foreground">
+                                    {p.endpointHost === '' ? 'No server yet' : `${p.endpointHost}:${p.endpointPort}`}
+                                  </p>
+                                </div>
+                                <div className="flex flex-wrap gap-1">
+                                  {!active && (
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      disabled={state.phase === 'applying'}
+                                      onClick={() => {
+                                        setProfiles(activateProfile(profiles, p.id));
+                                        setEdit(applyProfile(form, p));
+                                        setDetails(true);
+                                      }}
+                                    >
+                                      Activate
+                                    </Button>
+                                  )}
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => {
+                                      setRenameId(p.id);
+                                      setRenameValue(p.name);
+                                    }}
+                                  >
+                                    Rename
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-destructive hover:bg-destructive-subtle hover:text-destructive"
+                                    disabled={profiles.profiles.length <= 1 && active}
+                                    onClick={() => {
+                                      const next = deleteProfile(profiles, p.id);
+                                      setProfiles(next);
+                                      const nextActive = next.profiles.find((x) => x.id === next.active);
+                                      if (nextActive !== undefined && p.id === profiles.active)
+                                        setEdit(applyProfile(form, nextActive));
+                                    }}
+                                  >
+                                    <Trash2Icon />
+                                    Delete
+                                  </Button>
+                                </div>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      )}
+                    </CardContent>
+                  </Card>
+                )}
+
                 <Card>
                   <CardHeading title="Who uses it" description="The rest, and the router itself, go out directly as before." />
                   <CardContent className="flex flex-col gap-4">
@@ -894,6 +1032,26 @@ export function VpnClientPage(): ReactElement {
                           </div>
                         </Field>
                       )}
+                      <Field
+                        id="vpn-bypass"
+                        label="Sites that go direct"
+                        {...explain(BYPASS_EXPLAIN, [
+                          `milkflint.${CLIENT_META}.bypass_domain`,
+                          `dhcp.${CLIENT_BYPASS_DHCP}`,
+                          `firewall.${CLIENT_BYPASS4}`,
+                        ])}
+                        error={errors['bypass']}
+                      >
+                        <Input
+                          id="vpn-bypass"
+                          value={form.bypassDomains.join(', ')}
+                          placeholder="netflix.com, example.org"
+                          aria-invalid={errors['bypass'] !== undefined}
+                          onChange={(e) => {
+                            set('bypassDomains', e.target.value === '' ? [] : e.target.value.split(/,\s*/));
+                          }}
+                        />
+                      </Field>
                     </div>
                   </CardContent>
                 </Card>
@@ -979,18 +1137,68 @@ export function VpnClientPage(): ReactElement {
         busy={state.phase === 'applying'}
         invalid={invalid}
         onSave={() => {
-          if (data === undefined || form === undefined) return;
+          if (data === undefined || form === undefined || profiles === undefined) return;
+          const synced = syncActiveProfile(profiles, form);
           const applied = summary(data.exists ? data.form : undefined, form, data);
           const changes = toChanges(form, data);
           renew.current =
             form.enabled && changes.some((c) => c.config === 'network' && 'section' in c && c.section === data.peerSection);
-          void apply(changes, { note: applied.join(' ') });
+          void (async () => {
+            try {
+              await saveProfiles(synced);
+              setProfilesEdit(synced);
+            } catch {
+              // apply still runs; profiles stay dirty for another try
+            }
+            void apply(changes, { note: applied.join(' ') });
+          })();
         }}
         onRevert={() => {
           setEdit(undefined);
+          setProfilesEdit(undefined);
           setImported(undefined);
         }}
       />
+      <Dialog
+        open={renameId !== undefined}
+        onOpenChange={(o) => {
+          if (!o) setRenameId(undefined);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Rename profile</DialogTitle>
+            <DialogDescription>A short name for this server, like USA or France.</DialogDescription>
+          </DialogHeader>
+          <Input
+            value={renameValue}
+            maxLength={64}
+            onChange={(e) => {
+              setRenameValue(e.target.value);
+            }}
+          />
+          <DialogFooter>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setRenameId(undefined);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              disabled={renameValue.trim() === '' || profiles === undefined || renameId === undefined}
+              onClick={() => {
+                if (profiles === undefined || renameId === undefined) return;
+                setProfiles(renameProfile(profiles, renameId, renameValue));
+                setRenameId(undefined);
+              }}
+            >
+              Rename
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <ImportDialog
         open={importing}
         onClose={() => {

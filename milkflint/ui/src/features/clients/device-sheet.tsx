@@ -15,7 +15,9 @@ import { href } from '@/lib/router';
 import { DialogField, SwitchRow } from '../firewall/parts';
 import { GoLink } from '@/components/page-kit';
 import type { ClientsData, Device } from './api';
+import { formatFirstSeen } from './first-seen';
 import { connectionText, deviceLabel, editChanges, nameError, reservedIp, reserveError } from './model';
+import { formatLiveSpeed } from './speed';
 
 export function DeviceSheet({
   device,
@@ -66,6 +68,10 @@ export function DeviceSheet({
         </h3>
         <InfoRow label="Connection">{connectionText(device)}</InfoRow>
         <InfoRow label="Address">{device.ip === undefined ? 'None yet' : <span className="font-mono">{device.ip}</span>}</InfoRow>
+        <InfoRow label="First seen">{formatFirstSeen(device.firstSeen) ?? 'Not recorded yet'}</InfoRow>
+        {(device.down !== undefined || device.up !== undefined) && (
+          <InfoRow label="Live speed">{formatLiveSpeed(device.down, device.up, formatBitrate) ?? '—'}</InfoRow>
+        )}
         {device.wifi !== undefined && (
           <>
             <InfoRow label="Signal">

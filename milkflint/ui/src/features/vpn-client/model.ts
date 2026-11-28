@@ -16,8 +16,15 @@ import { isKey, joinEndpoint, type WgConf } from '@/lib/api/wireguard';
 import { isMac } from '../firewall/model';
 import type { GuestId } from '../wifi-guest/guest';
 import { overlaps } from '../wifi-guest/model';
+import { BYPASS_DOMAIN_LIMIT, isBypassDomain, normalizeBypassDomain, parseBypassDomains } from './bypass';
+import { HOSTNAME } from './hostnames';
 import {
   CLIENT,
+  CLIENT_BYPASS4,
+  CLIENT_BYPASS6,
+  CLIENT_BYPASS_DHCP,
+  CLIENT_BYPASS_RULE4,
+  CLIENT_BYPASS_RULE6,
   CLIENT_FIREWALL,
   CLIENT_MARK,
   CLIENT_META,
@@ -66,6 +73,11 @@ export interface ClientForm {
   shaper: boolean;
   downMbit: string;
   upMbit: string;
+  /**
+   * Domains whose resolved addresses skip the tunnel for VPN-routed devices
+   * (dnsmasq nft sets + MARK clear). Empty: no bypass.
+   */
+  bypassDomains: string[];
 }
 
 export interface Device {
@@ -135,6 +147,8 @@ export interface ClientData {
    * through a VPN); undefined: it's off, or not in this firmware.
    */
   adguard?: 'tunnel' | 'automatic' | undefined;
+  /** dhcp config sections (for the bypass ipset this page owns). */
+  presentDhcp: Section[];
 }
 
 export type Errors = Partial<Record<string, string>>;
@@ -160,6 +174,7 @@ export function blankForm(d: Pick<ClientData, 'wanRates' | 'sqm'>): ClientForm {
     shaper: d.sqm && d.wanRates !== undefined,
     downMbit: d.wanRates === undefined ? '' : String(Math.floor(d.wanRates.down * TUNNEL_SHARE)),
     upMbit: d.wanRates === undefined ? '' : String(Math.floor(d.wanRates.up * TUNNEL_SHARE)),
+    bypassDomains: [],
   };
 }
 
@@ -213,8 +228,6 @@ function v4Of(address: string): { ip: number; prefix: number } | undefined {
   return n === undefined || !/^\d+$/.test(bits) ? undefined : { ip: n, prefix: Number(bits) };
 }
 
-const HOSTNAME = /^(?=.{1,253}$)([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*$/i;
-
 function portOk(v: string, lo: number): boolean {
   return /^\d+$/.test(v) && Number(v) >= lo && Number(v) <= 65535;
 }
@@ -262,7 +275,15 @@ export function validate(f: ClientForm, d: ClientData): Errors {
     const rate = (v: string): boolean => /^\d+(\.\d+)?$/.test(v) && Number(v) > 0;
     if (!rate(f.downMbit) || !rate(f.upMbit)) e['shaper'] = 'Both rates, in Mbit/s.';
   }
+  const bypass = parseBypassDomains(f.bypassDomains);
+  if (bypass.invalid.length > 0) e['bypass'] = `Not a domain: ${bypass.invalid[0] ?? ''}.`;
+  else if (bypass.domains.length > BYPASS_DOMAIN_LIMIT) e['bypass'] = `At most ${String(BYPASS_DOMAIN_LIMIT)} domains.`;
   return e;
+}
+
+/** Domains that skip the tunnel, normalized and unique. */
+export function bypassOf(f: ClientForm): string[] {
+  return parseBypassDomains(f.bypassDomains).domains;
 }
 
 // ---- the sections ----
@@ -273,6 +294,7 @@ function owned(d: ClientData): Owned[] {
     ...d.present.network.filter((s) => s['.type'] === CLIENT_PEER_TYPE).map((s) => ({ config: 'network', name: s['.name'] })),
     ...[...CLIENT_RULES, ...CLIENT_RULES6].map((name) => ({ config: 'network', name })),
     ...CLIENT_FIREWALL.map((name) => ({ config: 'firewall', name })),
+    { config: 'dhcp', name: CLIENT_BYPASS_DHCP },
     ...(d.present.sqm === undefined ? [] : [{ config: 'sqm', name: CLIENT_QUEUE }]),
     { config: 'milkflint', name: CLIENT_META },
   ];
@@ -441,7 +463,8 @@ export function wanted(f: ClientForm, d: ClientData): Wanted[] {
     });
   }
   const dns = dnsOf(f);
-  if (f.useVpnDns || dns.length > 0) {
+  const bypass = bypassOf(f);
+  if (f.useVpnDns || dns.length > 0 || bypass.length > 0) {
     w.push({
       config: 'milkflint',
       type: 'vpn_client',
@@ -449,6 +472,79 @@ export function wanted(f: ClientForm, d: ClientData): Wanted[] {
       values: {
         use_vpn_dns: f.useVpnDns ? '1' : '0',
         dns,
+        bypass_domain: bypass.length > 0 ? bypass : undefined,
+      },
+    });
+  }
+
+  // sites that go direct: fw4 sets + dnsmasq fill + clear the tunnel mark
+  if (bypass.length > 0) {
+    const mask = CLIENT_MARK.split('/')[1] ?? '0xf0000000';
+    w.push({
+      config: 'firewall',
+      type: 'ipset',
+      name: CLIENT_BYPASS4,
+      values: {
+        name: CLIENT_BYPASS4,
+        family: 'ipv4',
+        match: 'dest_ip',
+        timeout: '3600',
+        enabled,
+      },
+    });
+    w.push({
+      config: 'firewall',
+      type: 'ipset',
+      name: CLIENT_BYPASS6,
+      values: {
+        name: CLIENT_BYPASS6,
+        family: 'ipv6',
+        match: 'dest_ip',
+        timeout: '3600',
+        enabled,
+      },
+    });
+    w.push({
+      config: 'firewall',
+      type: 'rule',
+      name: CLIENT_BYPASS_RULE4,
+      values: {
+        name: 'Skip-VPN-Sites-v4',
+        src: '*',
+        dest: '*',
+        proto: 'all',
+        family: 'ipv4',
+        ipset: `${CLIENT_BYPASS4} dest`,
+        mark: CLIENT_MARK,
+        target: 'MARK',
+        set_xmark: `0x0/${mask}`,
+        enabled,
+      },
+    });
+    w.push({
+      config: 'firewall',
+      type: 'rule',
+      name: CLIENT_BYPASS_RULE6,
+      values: {
+        name: 'Skip-VPN-Sites-v6',
+        src: '*',
+        dest: '*',
+        proto: 'all',
+        family: 'ipv6',
+        ipset: `${CLIENT_BYPASS6} dest`,
+        mark: CLIENT_MARK,
+        target: 'MARK',
+        set_xmark: `0x0/${mask}`,
+        enabled,
+      },
+    });
+    w.push({
+      config: 'dhcp',
+      type: 'ipset',
+      name: CLIENT_BYPASS_DHCP,
+      values: {
+        name: [CLIENT_BYPASS4, CLIENT_BYPASS6],
+        domain: bypass,
       },
     });
   }
@@ -456,18 +552,20 @@ export function wanted(f: ClientForm, d: ClientData): Wanted[] {
 }
 
 export function toChanges(f: ClientForm, d: ClientData): ReturnType<typeof reconcile> {
-  return reconcile(wanted(f, d), owned(d), d.present);
+  return reconcile(wanted(f, d), owned(d), { ...d.present, dhcp: d.presentDhcp });
 }
 
 /** Everything the VPN client is made of, for Remove. */
 export function removal(d: ClientData): ReturnType<typeof reconcile> {
-  return reconcile([], owned(d), d.present);
+  return reconcile([], owned(d), { ...d.present, dhcp: d.presentDhcp });
 }
 
 /** What saving now would change although the settings didn't: someone edited its sections elsewhere. */
 export function drift(d: ClientData): ReturnType<typeof reconcile> {
   return d.exists ? toChanges(d.form, d) : [];
 }
+
+export { isBypassDomain, normalizeBypassDomain, parseBypassDomains };
 
 // ---- in words ----
 
@@ -574,6 +672,13 @@ export function describe(f: ClientForm, d: ClientData): Line[] {
           },
     );
   }
+  const bypass = bypassOf(f);
+  if (bypass.length > 0) {
+    lines.push({
+      ok: true,
+      text: `Sites that go direct (${bypass.join(', ')}): their addresses skip the tunnel for its devices. CDN and DoH limits apply — see the tip on that list.`,
+    });
+  }
   return lines;
 }
 
@@ -614,6 +719,10 @@ export function summary(before: ClientForm | undefined, after: ClientForm, d: Cl
         ? `Set the Smart Queue inside the tunnel to ${after.downMbit} down, ${after.upMbit} up (Mbit/s).`
         : 'Took the Smart Queue out of the tunnel.',
     );
+  }
+  if (before !== undefined && JSON.stringify(bypassOf(before)) !== JSON.stringify(bypassOf(after))) {
+    const next = bypassOf(after);
+    out.push(next.length === 0 ? 'Cleared the sites that go direct.' : `Sites that go direct: ${next.join(', ')}.`);
   }
   if (out.length === 0) out.push('Saved.');
   return out;

@@ -50,6 +50,7 @@ const form = (over: Partial<ClientForm> = {}): ClientForm => ({
   shaper: false,
   downMbit: '',
   upMbit: '',
+  bypassDomains: [],
   ...over,
 });
 
@@ -59,6 +60,7 @@ const data = (f: ClientForm = form(), over: Partial<ClientData> = {}): ClientDat
   form: f,
   peerSection: 'wg_out_server',
   present: { network: [], firewall: [], sqm: [], milkflint: [] },
+  presentDhcp: [],
   wanZone: 'wan',
   lanZone: 'lan',
   guestZones: [{ id: 'guest', label: 'My visitors!' }],

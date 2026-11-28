@@ -1,0 +1,20 @@
+{
+	"milkflint-ssh": {
+		"description": "MilkFlint web interface: SSH (Dropbear) settings and authorized keys",
+		"read": {
+			"ubus": { "milkflint.ssh": [ "keys" ] },
+			"uci": [ "dropbear" ]
+		},
+		"write": {
+			"ubus": {
+				"milkflint.ssh": [ "set_keys" ],
+				"file": [ "exec" ]
+			},
+			"uci": [ "dropbear" ],
+			"file": {
+				"/etc/init.d/dropbear restart": [ "exec" ],
+				"/etc/init.d/dropbear reload": [ "exec" ]
+			}
+		}
+	}
+}

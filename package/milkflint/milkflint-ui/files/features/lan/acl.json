@@ -1,0 +1,13 @@
+{
+	"milkflint-lan": {
+		"description": "MilkFlint web interface: LAN leases and live connections",
+		"read": {
+			"ubus": {
+				"milkflint.lan": [ "connections" ],
+				"luci-rpc": [ "getDHCPLeases", "getHostHints" ],
+				"milkflint": [ "neighbors" ]
+			},
+			"uci": [ "network", "dhcp" ]
+		}
+	}
+}

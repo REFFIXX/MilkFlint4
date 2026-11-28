@@ -1,0 +1,14 @@
+---
+description: Durable MilkFlint4 UI/firmware UX preferences (LCD, Monokai, tips, config-safe upgrades)
+alwaysApply: true
+---
+
+# MilkFlint4 UX preferences
+
+- **Theme:** Always **Monokai milk** everywhere (React shell, LuCI Footstrap, LCD branding). Default stays `monokai-milk` / `DEFAULT_THEME_ID`; do not change the shipped default look.
+- **Polish:** Motion and interaction quality matter — keep UI smooth and delightful (“AMAZING”), not merely functional.
+- **LCD Setup menu:** New LCD work lives under a dedicated sidebar page **LCD Setup** in `milkflint/ui` (own feature id + route), not only as boot splash docs.
+- **LCD features:** Support custom device-status **slideshow** and panel **ON / OFF / Idle** scheduling (beyond always-on splash).
+- **Help tips:** Hardware UX pages (LCD Setup and similar) must ship field/page help tips (`explain` / hints) so controls are self-explanatory.
+- **Config-safe upgrades:** Prefer keep-settings sysupgrades; add careful UCI/config migration when changing defaults. Do not break existing configs that already flash cleanly.
+- **Upstream pull:** When planning features, prefer sensible ports from OddBlueDog `milkflint-0.91a` over inventing parallel flows.

@@ -1,0 +1,11 @@
+{
+	"milkflint-startup": {
+		"description": "MilkFlint web interface: Startup (init.d services and /etc/rc.local)",
+		"read": {
+			"ubus": { "milkflint.startup": [ "list", "rc_local" ] }
+		},
+		"write": {
+			"ubus": { "milkflint.startup": [ "action", "set_rc_local" ] }
+		}
+	}
+}

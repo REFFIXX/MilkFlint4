@@ -123,7 +123,7 @@ const configs = {
     defaults: { '.type': 'defaults', '.name': 'defaults', '.index': 0 },
     mesh: { '.type': 'mesh', '.name': 'mesh', '.index': 1, role: 'main-auto' },
     mode: { '.type': 'mode', '.name': 'mode', '.index': 2, mode: 'router' },
-    datastats: { '.type': 'datastats', '.name': 'datastats', '.index': 3, enabled: '1' },
+    datastats: { '.type': 'datastats', '.name': 'datastats', '.index': 3, enabled: '1', history: '0' },
     roaming: { '.type': 'roaming', '.name': 'roaming', '.index': 4, apply_all: '1' },
     steering: { '.type': 'steering', '.name': 'steering', '.index': 5, layout: 'auto', rss: '1' },
     wifi: { '.type': 'wifi', '.name': 'wifi', '.index': 6 },
@@ -437,7 +437,14 @@ function deviceStatus() {
       'bridge-members': ['eth0', 'phy0-ap0', 'phy1-ap0', 'phy2-ap0'],
       statistics: { rx_bytes: 3e9, tx_bytes: 6e9 },
     },
-    lan1: { type: 'Network device', devtype: 'dsa', up: true, carrier: true, speed: '1000F', statistics: { rx_bytes: 1e8, tx_bytes: 2e7 } },
+    lan1: {
+      type: 'Network device',
+      devtype: 'dsa',
+      up: true,
+      carrier: true,
+      speed: '1000F',
+      statistics: { rx_bytes: 1e8, tx_bytes: 2e7 },
+    },
     lan2: { type: 'Network device', devtype: 'dsa', up: true, carrier: false, statistics: { rx_bytes: 0, tx_bytes: 0 } },
     lan3: { type: 'Network device', devtype: 'dsa', up: true, carrier: false, statistics: { rx_bytes: 0, tx_bytes: 0 } },
     lan4: { type: 'Network device', devtype: 'dsa', up: true, carrier: false, statistics: { rx_bytes: 0, tx_bytes: 0 } },
@@ -572,9 +579,7 @@ function milkflintStub(object, method, params = {}) {
         },
         eth_threads: [],
         wifi: {
-          irqs: [
-            { name: 'mt7996', irq: 200, cpus: [2], count: 50_000 + cpuTick * 30 },
-          ],
+          irqs: [{ name: 'mt7996', irq: 200, cpus: [2], count: 50_000 + cpuTick * 30 }],
           threads: [
             { name: 'napi/phy0-0', cpus: [1], time: 3_000 + cpuTick * 6, wait: 800, runs: 150 },
             { name: 'napi/phy1-0', cpus: [2], time: 4_000 + cpuTick * 8, wait: 900, runs: 180 },
@@ -590,6 +595,32 @@ function milkflintStub(object, method, params = {}) {
       };
     case 'milkflint neighbors':
       return { neighbors: [] };
+    case 'milkflint.devices sync':
+    case 'milkflint.devices get':
+      return { now: NOW(), retain: 30 * 24 * 3600, devices: [] };
+    case 'milkflint.lan connections':
+      return {
+        count: 12,
+        max: 65_536,
+        by_proto: [
+          { proto: 'tcp', count: 8 },
+          { proto: 'udp', count: 4 },
+        ],
+        hosts: [{ ip: '192.168.1.120', connections: 5, bytes: 48_000 }],
+        connections: [
+          {
+            family: 'ipv4',
+            proto: 'tcp',
+            src: '192.168.1.120',
+            dst: '1.1.1.1',
+            sport: 54321,
+            dport: 443,
+            state: 'ESTABLISHED',
+            packets: 120,
+            bytes: 48_000,
+          },
+        ],
+      };
     case 'milkflint.home get':
       return homeWidgets ? { widgets: homeWidgets } : {};
     case 'milkflint.home set':
@@ -631,8 +662,41 @@ function milkflintStub(object, method, params = {}) {
         custom: Array.isArray(params.custom) ? params.custom : themeSettings.custom,
       };
       return { saved: true };
+    case 'milkflint.startup list':
+      return {
+        services: [
+          { name: 'firewall', start: 19, stop: 90, enabled: true, running: true },
+          { name: 'network', start: 20, stop: 90, enabled: true, running: true },
+          { name: 'dnsmasq', start: 19, stop: 110, enabled: true, running: true },
+          { name: 'odhcpd', start: 35, stop: 85, enabled: true, running: true },
+          { name: 'dropbear', start: 50, stop: 10, enabled: true, running: true },
+          { name: 'uhttpd', start: 50, stop: 10, enabled: true, running: true },
+          { name: 'rpcd', start: 12, stop: 89, enabled: true, running: true },
+          { name: 'cron', start: 50, stop: 90, enabled: true, running: true },
+        ],
+      };
+    case 'milkflint.startup action':
+      return { ok: true, code: 0, running: params.action !== 'stop', enabled: params.action !== 'disable' };
+    case 'milkflint.startup rc_local':
+      return {
+        data: '#!/bin/sh\n# Put your custom commands here that should be executed once\n# the system init finished. By default this file does nothing.\n\nexit 0\n',
+      };
+    case 'milkflint.startup set_rc_local':
+      return { saved: true };
+    case 'milkflint.ssh keys':
+      return { text: '', tcp_ports: [22, 80, 443] };
+    case 'milkflint.ssh set_keys':
+      return { saved: true };
     case 'milkflint.adguardhome status':
-      return { installed: true, enabled: false, configured: false, mode: 'router', running: false, state: 'off' };
+      return {
+        installed: true,
+        enabled: false,
+        configured: false,
+        mode: 'router',
+        running: false,
+        state: 'off',
+        version: '0.107.80-r1',
+      };
     case 'milkflint.adguardhome insights':
       return { queries: [], top: [] };
     case 'milkflint.banip status':
@@ -643,6 +707,7 @@ function milkflintStub(object, method, params = {}) {
         state: 'off',
         table: false,
         elements: 0,
+        version: '1.9.1-r2',
         drops: { step: 300, end: NOW(), counted: [], logged: [], flood: [], hour: 0, day: 0, source: 'counters' },
         now: NOW(),
       };
@@ -680,11 +745,34 @@ function milkflintStub(object, method, params = {}) {
     case 'milkflint.banip mail_get':
       return { enabled: false };
     case 'milkflint.vpn status':
-      return { installed: true, now: NOW(), interfaces: [] };
+      return {
+        installed: true,
+        now: NOW(),
+        interfaces: [],
+        client: {
+          enabled: false,
+          kill_switch: true,
+          connected: false,
+          stale: false,
+          handshake_age: null,
+          profile: null,
+          fallthrough: false,
+        },
+      };
+    case 'milkflint.vpn profiles':
+      return { active: null, profiles: [] };
+    case 'milkflint.vpn set_profiles':
+      return { active: params.active ?? null, profiles: params.profiles ?? [] };
     case 'milkflint.traffic periods':
       return { installed: true, enabled: true, periods: [] };
     case 'milkflint.traffic usage':
       return { columns: ['mac', 'ip', 'conns', 'rx_bytes', 'rx_pkts', 'tx_bytes', 'tx_pkts'], data: [] };
+    case 'milkflint.traffic history': {
+      const hours = Number(params.hours ?? 24);
+      const span = hours === 1 || hours === 4 || hours === 8 || hours === 24 ? hours * 3600 : 24 * 3600;
+      const now = NOW();
+      return { enabled: false, now, interval: 300, since: now - span, samples: [] };
+    }
     case 'milkflint.devicecontrol status':
       return {
         now: NOW(),
@@ -890,7 +978,7 @@ function handleCall(session, object, method, params = {}) {
     const c = params.config;
     staged[c] ??= {};
     staged[c][params.section] ??= { values: {} };
-    Object.assign(staged[c][params.section].values ??= {}, params.values ?? {});
+    Object.assign((staged[c][params.section].values ??= {}), params.values ?? {});
     return ok({});
   }
 
@@ -1004,7 +1092,8 @@ function handleCall(session, object, method, params = {}) {
     return ok({ data: '' });
   }
   if (object === 'file' && method === 'exec') return ok({ code: 0, stdout: '', stderr: '' });
-  if (object === 'file' && method === 'stat') return ok({ type: 'file', size: 0, mode: 420, atime: NOW(), mtime: NOW(), ctime: NOW() });
+  if (object === 'file' && method === 'stat')
+    return ok({ type: 'file', size: 0, mode: 420, atime: NOW(), mtime: NOW(), ctime: NOW() });
   if (object === 'file' && method === 'list') return ok({ entries: [] });
   if (object === 'file' && method === 'write') return ok({});
 
@@ -1077,7 +1166,13 @@ function handleCall(session, object, method, params = {}) {
   const stub = milkflintStub(object, method, params);
   if (stub !== undefined) return ok(stub);
 
-  if (object.startsWith('milkflint.') || object === 'luci' || object === 'luci-rpc' || object === 'iwinfo' || object.startsWith('network')) {
+  if (
+    object.startsWith('milkflint.') ||
+    object === 'luci' ||
+    object === 'luci-rpc' ||
+    object === 'iwinfo' ||
+    object.startsWith('network')
+  ) {
     return ok({});
   }
 

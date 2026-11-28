@@ -10,6 +10,7 @@ import { type ReactElement, useState } from 'react';
 import { ApplyStatus } from '@/components/apply-status';
 import { PageHeader } from '@/components/layout/page-header';
 import { FormSkeleton, LoadError } from '@/components/page-states';
+import { PackageUpdatesCard } from '@/components/package-updates-card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { TabPanel, Tabs } from '@/components/ui/tabs';
@@ -223,6 +224,7 @@ export function BanipPage(): ReactElement {
             </TabPanel>
           </>
         )}
+        <PackageUpdatesCard packageLabel="banIP" apkName="banip" version={s.version} />
         <LicenseCard s={s} />
       </div>
       {advanced && (

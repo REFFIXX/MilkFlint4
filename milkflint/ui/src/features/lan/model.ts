@@ -100,3 +100,62 @@ export function moreSummary(f: LanForm): string {
   const r = range(f);
   return `${size} · ${f.limit} addresses${r === undefined ? '' : ` from ${r.first}`} · lease ${leaseLabel(f.leasetime)}`;
 }
+
+export type LanTab = 'settings' | 'addresses' | 'connections';
+
+export const lanTabs: readonly { id: LanTab; label: string }[] = [
+  { id: 'settings', label: 'Settings' },
+  { id: 'addresses', label: 'Addresses' },
+  { id: 'connections', label: 'Connections' },
+];
+
+/** Whether a lease row matches the search box. */
+export function leaseMatches(
+  row: { address: string; mac?: string | undefined; name?: string | undefined; duid?: string | undefined },
+  query: string,
+): boolean {
+  const q = query.trim().toLowerCase();
+  return q === '' || [row.address, row.mac, row.name, row.duid].some((v) => v?.toLowerCase().includes(q) === true);
+}
+
+/** Whether a connection row matches the search box. */
+export function connectionMatches(
+  row: { src: string; dst: string; proto: string; sport: number | null; dport: number | null; state: string | null },
+  query: string,
+): boolean {
+  const q = query.trim().toLowerCase();
+  if (q === '') return true;
+  const ports = [row.sport, row.dport].filter((p): p is number => p !== null).map(String);
+  return [row.src, row.dst, row.proto, row.state, ...ports].some((v) => v?.toLowerCase().includes(q) === true);
+}
+
+export type ConnSort = 'bytes' | 'packets' | 'proto' | 'src';
+
+/** Sort connections for the live table (largest first for counters). */
+export function sortConnections<T extends { bytes: number | null; packets: number | null; proto: string; src: string }>(
+  rows: readonly T[],
+  sort: ConnSort,
+): T[] {
+  const copy = [...rows];
+  copy.sort((a, b) => {
+    switch (sort) {
+      case 'bytes':
+        return (b.bytes ?? 0) - (a.bytes ?? 0);
+      case 'packets':
+        return (b.packets ?? 0) - (a.packets ?? 0);
+      case 'proto': {
+        const byProto = a.proto.localeCompare(b.proto);
+        return byProto !== 0 ? byProto : (b.bytes ?? 0) - (a.bytes ?? 0);
+      }
+      case 'src': {
+        const bySrc = a.src.localeCompare(b.src);
+        return bySrc !== 0 ? bySrc : (b.bytes ?? 0) - (a.bytes ?? 0);
+      }
+      default: {
+        const _exhaustive: never = sort;
+        return _exhaustive;
+      }
+    }
+  });
+  return copy;
+}

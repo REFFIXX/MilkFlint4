@@ -70,11 +70,38 @@ const leaseSchema = z.object({
 });
 export type Lease = z.output<typeof leaseSchema>;
 
+const lease6Schema = z.object({
+  hostname: z.string().optional(),
+  macaddr: z.string().optional(),
+  duid: z.string().optional(),
+  ip6addr: z.string().optional(),
+  expires: z.number().optional(),
+});
+export type Lease6 = z.output<typeof lease6Schema>;
+
+const dhcpLeasesReply = z
+  .object({
+    dhcp_leases: z.array(leaseSchema).optional(),
+    dhcp6_leases: z.array(lease6Schema).optional(),
+  })
+  .loose();
+
 /** DHCPv4 leases (dnsmasq), with the hostnames devices sent. */
 export function getLeases(): Promise<Lease[]> {
-  return call('luci-rpc', 'getDHCPLeases', {}, z.object({ dhcp_leases: z.array(leaseSchema).optional() }).loose()).then(
-    (r) => r.dhcp_leases ?? [],
-  );
+  return call('luci-rpc', 'getDHCPLeases', {}, dhcpLeasesReply).then((r) => r.dhcp_leases ?? []);
+}
+
+/** DHCPv6 / SLAAC-seen leases from the same luci-rpc call. */
+export function getLeases6(): Promise<Lease6[]> {
+  return call('luci-rpc', 'getDHCPLeases', {}, dhcpLeasesReply).then((r) => r.dhcp6_leases ?? []);
+}
+
+/** Both IPv4 and IPv6 leases in one round trip. */
+export function getAllLeases(): Promise<{ v4: Lease[]; v6: Lease6[] }> {
+  return call('luci-rpc', 'getDHCPLeases', {}, dhcpLeasesReply).then((r) => ({
+    v4: r.dhcp_leases ?? [],
+    v6: r.dhcp6_leases ?? [],
+  }));
 }
 
 /** Interface name -> its IPv4 address with prefix, e.g. "192.168.1.1/24". */

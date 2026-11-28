@@ -57,6 +57,9 @@ const device = (over: Partial<Device>): Device => ({
   online: false,
   leaseExpires: undefined,
   reservation: undefined,
+  firstSeen: undefined,
+  down: undefined,
+  up: undefined,
   ...over,
 });
 const wifi = (band: string | undefined, ssid = 'home'): Device['wifi'] => ({
@@ -66,6 +69,8 @@ const wifi = (band: string | undefined, ssid = 'home'): Device['wifi'] => ({
   snr: 40,
   rate: 1e8,
   connected: 60,
+  txBytes: undefined,
+  rxBytes: undefined,
 });
 
 test('the answer counts online devices, on Wi-Fi by band (lowest first) and wired', () => {

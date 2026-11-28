@@ -4,13 +4,16 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
+  connectionMatches,
   hostCount,
   type LanForm,
   leaseLabel,
+  leaseMatches,
   moreSummary,
   moves,
   netmaskOf,
   range,
+  sortConnections,
   toChanges,
   validate,
 } from '../src/features/lan/model.ts';
@@ -86,4 +89,34 @@ test('the folded More settings line says what’s set', () => {
   assert.equal(moreSummary(form()), '/24 network · 150 addresses from 192.168.1.100 · lease 12 hours');
   assert.equal(moreSummary(form({ dhcp: false })), '/24 network');
   assert.equal(leaseLabel('2h'), '2h');
+});
+
+test('lease and connection search match address, name, protocol and ports', () => {
+  assert.equal(leaseMatches({ address: '192.168.1.50', mac: 'aa:bb:cc:dd:ee:01', name: 'tv', duid: undefined }, 'TV'), true);
+  assert.equal(
+    leaseMatches({ address: '192.168.1.50', mac: 'aa:bb:cc:dd:ee:01', name: undefined, duid: undefined }, 'ff:'),
+    false,
+  );
+  assert.equal(
+    connectionMatches(
+      { src: '192.168.1.10', dst: '1.1.1.1', proto: 'tcp', sport: 1234, dport: 443, state: 'ESTABLISHED' },
+      '443',
+    ),
+    true,
+  );
+  assert.equal(
+    connectionMatches({ src: '192.168.1.10', dst: '1.1.1.1', proto: 'udp', sport: 53, dport: 53, state: null }, 'tcp'),
+    false,
+  );
+});
+
+test('connections sort by bytes, packets, proto or source', () => {
+  const rows = [
+    { src: 'b', proto: 'udp', bytes: 10, packets: 100 },
+    { src: 'a', proto: 'tcp', bytes: 50, packets: 5 },
+  ];
+  assert.equal(sortConnections(rows, 'bytes')[0]?.src, 'a');
+  assert.equal(sortConnections(rows, 'packets')[0]?.src, 'b');
+  assert.equal(sortConnections(rows, 'proto')[0]?.proto, 'tcp');
+  assert.equal(sortConnections(rows, 'src')[0]?.src, 'a');
 });

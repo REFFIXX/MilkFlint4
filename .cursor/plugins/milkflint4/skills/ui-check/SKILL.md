@@ -18,3 +18,6 @@ pnpm check
 - Prefer Vitest browser / Playwright for dashboard regressions over BrowserStack (router UI is LAN-bound).
 - For API/docs questions about Vitest browser mode or React 19, use Context7 (`/vitest-dev/vitest`, `/vitest-community/vitest-browser-react`).
 - Keep Monokai milk theme tokens and existing feature folder layout under `src/features`.
+- LCD work: dedicated **LCD Setup** menu; slideshow + ON/OFF/Idle scheduling; require help tips (`explain` / hints) on hardware UX pages.
+- Preserve config-safe upgrade paths; prefer OddBlueDog `milkflint-0.91a` feature shapes when porting.
+- Polish bar: smooth motion/UX (“AMAZING”), not bare functional chrome.
