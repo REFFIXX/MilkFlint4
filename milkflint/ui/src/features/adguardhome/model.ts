@@ -4,7 +4,10 @@
 // turns it on and off and keeps the DNS chain around it (the router's
 // adguardhome feature).
 import { intToIp, ipToInt } from '@/lib/api/network';
+import { compareVersions } from '@/lib/apk-version';
 import type { AdGuardStatus, Network, Setting, State, UpdateInfo } from './api';
+
+export { compareVersions, versionLabel } from '@/lib/apk-version';
 
 /** MilkFlint's own account in AdGuard Home (for its figures); not for people. */
 export const API_USER = 'milkflint';
@@ -85,14 +88,6 @@ export function needsAttention(s: AdGuardStatus | undefined): { fallback: boolea
   };
 }
 
-/** "v0.107.80" from the package's 0.107.80-r1 (its release number is MilkFlint's). */
-export function versionLabel(v: string | null | undefined): string {
-  if (v === null || v === undefined || v === '') return 'unknown';
-  const m = /^([0-9][0-9a-z.]*)-r([0-9]+)$/.exec(v);
-  if (m === null) return v;
-  return m[2] === '1' ? `v${m[1] ?? ''}` : `v${m[1] ?? ''} (build ${m[2] ?? ''})`;
-}
-
 /** The share of lookups it blocked, e.g. "12.4%"; undefined before any. */
 export function blockedShare(stats: AdGuardStatus['stats']): string | undefined {
   return stats === null || stats === undefined ? undefined : shareOf(stats.blocked, stats.queries);
@@ -105,18 +100,10 @@ export function shareOf(blocked: number, queries: number): string | undefined {
   return `${p < 10 ? p.toFixed(1) : p.toFixed(0)}%`;
 }
 
-/** apk's order of two versions (0.107.80-r1 after 0.107.79-r3), numbers as numbers. */
-export function compareVersions(a: string, b: string): number {
-  const pa = a.replace(/-r/, '.').split('.');
-  const pb = b.replace(/-r/, '.').split('.');
-  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
-    const x = Number(pa[i] ?? 0);
-    const y = Number(pb[i] ?? 0);
-    if (x !== y) return x < y ? -1 : 1;
-  }
-  return 0;
-}
-
+/**
+ * Feed update/rollback choice (safe stub). Used when a MilkFlint4 package
+ * feed exists; the UI card stays release-based while PACKAGE_FEED_READY is false.
+ */
 export interface UpdateChoice {
   installed: string | undefined;
   latest: string | undefined;

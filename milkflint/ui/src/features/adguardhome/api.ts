@@ -195,6 +195,11 @@ export async function repairAdGuard(): Promise<string[]> {
   return (await act('repair', {})).left ?? [];
 }
 
+/**
+ * Feed check/install stubs (rpcd `update_check` / `update`). Kept for when
+ * MilkFlint4 publishes its own @milkflint index (`PACKAGE_FEED_READY`); the
+ * Updates card does not call these until then — no foreign/empty feed upgrades.
+ */
 export async function checkUpdates(): Promise<void> {
   await act('update_check', {});
 }

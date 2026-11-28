@@ -684,7 +684,15 @@ function milkflintStub(object, method, params = {}) {
     case 'milkflint.startup set_rc_local':
       return { saved: true };
     case 'milkflint.adguardhome status':
-      return { installed: true, enabled: false, configured: false, mode: 'router', running: false, state: 'off' };
+      return {
+        installed: true,
+        enabled: false,
+        configured: false,
+        mode: 'router',
+        running: false,
+        state: 'off',
+        version: '0.107.80-r1',
+      };
     case 'milkflint.adguardhome insights':
       return { queries: [], top: [] };
     case 'milkflint.banip status':
@@ -695,6 +703,7 @@ function milkflintStub(object, method, params = {}) {
         state: 'off',
         table: false,
         elements: 0,
+        version: '1.9.1-r2',
         drops: { step: 300, end: NOW(), counted: [], logged: [], flood: [], hour: 0, day: 0, source: 'counters' },
         now: NOW(),
       };

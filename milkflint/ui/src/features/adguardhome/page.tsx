@@ -1,37 +1,37 @@
 // AdGuard Home: ad and tracker blocking for every device, set up in its own
 // web interface. MilkFlint turns it on and off, keeps the DNS chain around it
-// (the router side's monitor sends devices' lookups to it while it answers)
-// and installs its updates from MilkFlint's feed. The page opens on the
-// answer (on or off, what it's doing now: lookups and the share blocked),
-// then what's wrong if anything, its sign-in and updates, and how it fits
-// with the rest of the router.
+// (the router side's monitor sends devices' lookups to it while it answers).
+// Package bumps ship with MilkFlint4 firmware releases until this tree has
+// its own apk feed. The page opens on the answer (on or off, what it's doing
+// now: lookups and the share blocked), then what's wrong if anything, its
+// sign-in and updates, and how it fits with the rest of the router.
 import {
   ChevronRightIcon,
   ExternalLinkIcon,
   InfoIcon,
   LoaderCircleIcon,
   PackageIcon,
-  RotateCcwIcon,
   TriangleAlertIcon,
   WrenchIcon,
 } from 'lucide-react';
 import { type ReactElement, type ReactNode, useState } from 'react';
 import { ApplyStatus } from '@/components/apply-status';
-import { CardHeading, InfoRow } from '@/components/card-heading';
+import { CardHeading } from '@/components/card-heading';
 import { Field } from '@/components/field';
 import { PageHeader } from '@/components/layout/page-header';
 import { FormSkeleton, LoadError } from '@/components/page-states';
+import { PackageUpdatesCard } from '@/components/package-updates-card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import type { ApplyState } from '@/hooks/use-apply';
 import { useLoad } from '@/hooks/use-load';
 import { usePoll } from '@/hooks/use-poll';
+import { versionLabel } from '@/lib/apk-version';
 import { getConfig, type Section, str } from '@/lib/api/uci';
 import { formatBytes, formatNumber } from '@/lib/format';
 import { href } from '@/lib/router';
@@ -43,11 +43,9 @@ import { InsightsCard } from './insights';
 import { guestLabels, isGuestNetwork } from '../wifi-guest/guest';
 import {
   type AdGuardStatus,
-  checkUpdates,
   enableAdGuard,
   enableRouterLogin,
   getAdGuardStatus,
-  installVersion,
   openAdGuard,
   repairAdGuard,
   setCredentials,
@@ -61,9 +59,7 @@ import {
   describeState,
   networkRows,
   type Tone,
-  updateChoice,
   validateCredentials,
-  versionLabel,
 } from './model';
 
 interface Around {
@@ -208,136 +204,6 @@ function CredentialsForm({
         </Button>
       </div>
     </form>
-  );
-}
-
-function UpdatesCard({
-  s,
-  busy,
-  run,
-}: {
-  s: AdGuardStatus;
-  busy: Busy;
-  run: (what: string, fn: () => Promise<unknown>) => void;
-}): ReactElement {
-  const u = s.update ?? undefined;
-  const choice = updateChoice(s.version, u);
-  const [back, setBack] = useState<string>();
-  const working = u?.busy === true;
-  const checked = u?.checked === null || u?.checked === undefined ? undefined : new Date(u.checked * 1000);
-  return (
-    <Card>
-      <CardHeading
-        title="Updates"
-        description="From MilkFlint’s package feed, packaging AdGuard Home’s official releases. Its own updater is off."
-        action={
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={working || busy !== undefined}
-            onClick={() => {
-              run('check', checkUpdates);
-            }}
-          >
-            {working && u.action === 'check' && <LoaderCircleIcon className="animate-spin" />}
-            Check
-          </Button>
-        }
-      />
-      <CardContent className="flex flex-col gap-3">
-        <div className="divide-y">
-          <InfoRow label="Installed">
-            {versionLabel(choice.installed)}
-            {choice.pinned && ' (kept back)'}
-          </InfoRow>
-          <InfoRow label="Newest in the feed">
-            {choice.latest === undefined
-              ? u?.error === 'feed'
-                ? 'couldn’t reach the feed'
-                : 'not checked yet'
-              : versionLabel(choice.latest)}
-          </InfoRow>
-          {checked !== undefined && <InfoRow label="Checked">{checked.toLocaleString()}</InfoRow>}
-        </div>
-        {working && u.action === 'install' && (
-          <p className="flex items-center gap-2 text-sm text-muted-foreground">
-            <LoaderCircleIcon className="size-4 animate-spin" /> Installing; the router answers DNS itself meanwhile.
-          </p>
-        )}
-        {!working && u?.action === 'install' && u.ok === false && u.error === 'settings' && (
-          <p className="text-sm text-destructive">
-            That version can’t read AdGuard Home’s settings, which a newer version changed, so {versionLabel(u.installed)} is back
-            on.
-          </p>
-        )}
-        {!working && u?.action === 'install' && u.ok === false && u.error !== 'settings' && (
-          <p className="text-sm text-destructive">
-            The last install didn’t work
-            {u.log !== null && u.log !== undefined && u.log !== '' ? `: ${u.log.split('\n').slice(-2).join(' ')}` : '.'}
-          </p>
-        )}
-        {!working && u?.action === 'install' && u.ok === true && (
-          <p className="text-sm text-success">Installed {versionLabel(u.installed)}.</p>
-        )}
-        <div className="flex flex-wrap items-center gap-2">
-          {choice.newer && (
-            <Button
-              size="sm"
-              disabled={working || busy !== undefined}
-              onClick={() => {
-                run('install', () => installVersion(''));
-              }}
-            >
-              Update to {versionLabel(choice.latest)}
-            </Button>
-          )}
-          {choice.pinned && !choice.newer && choice.latest !== undefined && choice.latest !== choice.installed && (
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={working || busy !== undefined}
-              onClick={() => {
-                run('install', () => installVersion(''));
-              }}
-            >
-              Back to the newest
-            </Button>
-          )}
-        </div>
-        {choice.earlier.length > 0 && (
-          <Field
-            id="agh-back"
-            label="Go back"
-            hint="If an update misbehaves: an earlier version from the feed, kept until you update again."
-            className="pb-0"
-          >
-            <div className="flex gap-2">
-              <Select value={back ?? ''} onValueChange={setBack}>
-                <SelectTrigger id="agh-back" className="min-w-0 flex-1">
-                  <SelectValue placeholder="An earlier version" />
-                </SelectTrigger>
-                <SelectContent>
-                  {choice.earlier.map((v) => (
-                    <SelectItem key={v} value={v}>
-                      {versionLabel(v)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Button
-                variant="outline"
-                disabled={back === undefined || working || busy !== undefined}
-                onClick={() => {
-                  if (back !== undefined) run('install', () => installVersion(back));
-                }}
-              >
-                <RotateCcwIcon /> Install
-              </Button>
-            </div>
-          </Field>
-        )}
-      </CardContent>
-    </Card>
   );
 }
 
@@ -871,8 +737,11 @@ export function AdGuardHomePage(): ReactElement {
         {s.configured === true && (
           <div className="grid items-start gap-4 xl:grid-cols-2">
             <SignInCard s={s} busy={busy} run={run} />
-            <UpdatesCard s={s} busy={busy} run={run} />
+            <PackageUpdatesCard packageLabel="AdGuard Home" apkName="adguardhome" version={s.version} />
           </div>
+        )}
+        {s.configured !== true && !ap && (
+          <PackageUpdatesCard packageLabel="AdGuard Home" apkName="adguardhome" version={s.version} />
         )}
 
         <Card>
