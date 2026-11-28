@@ -20,8 +20,8 @@ Cursor picks up plugins under `~/.cursor/plugins/local/` automatically (reload w
 | Kind | What it gives you |
 |------|-------------------|
 | **Rules** | Always-on project conventions (version tags, UI check gate, research sources) |
-| **Skills** | `firmware-release`, `ui-check`, `openwrt-research` |
-| **Commands** | `/milkflint-status` — CI + release snapshot |
+| **Skills** | `firmware-release`, `ui-check`, `openwrt-research`, `sim-vm` |
+| **Commands** | `/milkflint-status` — CI + release + sim snapshot |
 
 Supermemory / Context.dev / Context7 come from your Cursor MCP / marketplace plugins — not duplicated here.
 
@@ -30,3 +30,4 @@ Supermemory / Context.dev / Context7 come from your Cursor MCP / marketplace plu
 - Firmware tag/release work → skill `firmware-release`
 - Dashboard / React UI changes → skill `ui-check`
 - mt76 / OpenWrt / GL.iNet questions → skill `openwrt-research`
+- QEMU UI appliance (no Wi‑Fi) → skill `sim-vm` / `docs/SIM-VM.md` / `./scripts/milkflint-sim`

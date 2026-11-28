@@ -10,3 +10,4 @@ alwaysApply: true
 - Do not add CI on every main docs push; firmware workflow is tag/dispatch only.
 - UI changes: run `pnpm check` in `milkflint/ui` when feasible; install Playwright Chromium first.
 - Prefer Context.dev + Context7 + Supermemory over guessing OpenWrt or frontend APIs.
+- MilkFlint Sim (x86 QEMU UI/appliance tests): `docs/SIM-VM.md`, `./scripts/milkflint-sim`.

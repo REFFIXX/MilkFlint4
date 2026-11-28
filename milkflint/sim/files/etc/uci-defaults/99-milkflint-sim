@@ -1,0 +1,20 @@
+#!/bin/sh
+# First-boot branding for the MilkFlint Sim QEMU appliance.
+# Root password: milkflint  (change after first login if exposed beyond localhost)
+
+uci -q batch <<-EOF
+	set system.@system[0].hostname='MilkFlint-Sim'
+	set system.@system[0].timezone='UTC'
+	commit system
+EOF
+
+if command -v chpasswd >/dev/null 2>&1; then
+	echo 'root:milkflint' | chpasswd
+elif command -v passwd >/dev/null 2>&1; then
+	printf '%s\n%s\n' milkflint milkflint | passwd root >/dev/null 2>&1 || true
+fi
+
+# Mark guest so UI/scripts can detect sim vs Flint 4 hardware.
+touch /etc/milkflint-sim
+
+exit 0

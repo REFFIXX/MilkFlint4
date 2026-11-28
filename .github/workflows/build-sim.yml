@@ -1,0 +1,119 @@
+name: Build MilkFlint Sim (x86_64)
+
+# Parallel to firmware: publishes a QEMU appliance for UI / non-Wi-Fi tests.
+# Tag builds upload onto the same GitHub release as the Flint 4 images.
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: milkflint-sim-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-sim:
+    name: Build MilkFlint Sim x86_64
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential clang-18 llvm-18 lld-18 flex bison g++ gawk \
+            gcc-multilib g++-multilib gettext git libncurses-dev libssl-dev \
+            python3 python3-setuptools rsync unzip zlib1g-dev file wget cpio \
+            nodejs npm qemu-utils
+
+      - name: Cache ccache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ccache
+          key: ccache-sim-${{ github.sha }}
+          restore-keys: ccache-sim-
+
+      - name: Node 24 + pnpm (UI htdocs)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24.11"
+      - run: |
+          corepack enable
+          corepack prepare pnpm@12 --activate
+          cd milkflint/ui
+          pnpm install
+          pnpm exec vite build
+          node scripts/package.ts
+
+      - name: Feeds
+        run: |
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
+
+      - name: Configure (x86_64 sim)
+        run: |
+          cp milkflint/sim/diffconfig .config
+          make defconfig
+
+      - name: Build
+        run: |
+          make FILES="$PWD/milkflint/sim/files" -j"$(nproc)" world V=s IGNORE_ERRORS='n m'
+
+      - name: Collect sim image
+        run: |
+          mkdir -p milkflint/sim/out
+          shopt -s nullglob
+          imgs=(bin/targets/x86/64/*x86-64-generic-ext4-combined.img.gz)
+          if [ ${#imgs[@]} -eq 0 ]; then
+            echo "::error::No x86-64 ext4-combined image under bin/targets/x86/64/"
+            ls -la bin/targets/x86/64/ || true
+            exit 1
+          fi
+          cp -v "${imgs[0]}" milkflint/sim/out/milkflint-sim-x86_64-ext4-combined.img.gz
+          ls -lh milkflint/sim/out/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: milkflint-sim-x86_64
+          path: milkflint/sim/out/milkflint-sim-x86_64-ext4-combined.img.gz
+          if-no-files-found: error
+
+      - name: Attach to GitHub release (tags only)
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Firmware workflow may still be creating the release; retry briefly.
+          for i in 1 2 3 4 5 6 7 8 9 10; do
+            if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+              break
+            fi
+            echo "Waiting for release $GITHUB_REF_NAME … ($i)"
+            sleep 30
+          done
+          if ! gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            # Create a minimal release if firmware job has not yet.
+            ver="${GITHUB_REF_NAME#v}"
+            notes="docs/RELEASE-${ver}.md"
+            if [ -f "$notes" ]; then
+              gh release create "$GITHUB_REF_NAME" \
+                --title "MilkFlint4 ${ver}" \
+                --notes-file "$notes" || true
+            else
+              gh release create "$GITHUB_REF_NAME" \
+                --title "MilkFlint4 ${ver}" \
+                --generate-notes || true
+            fi
+          fi
+          gh release upload "$GITHUB_REF_NAME" \
+            milkflint/sim/out/milkflint-sim-x86_64-ext4-combined.img.gz \
+            --clobber

@@ -1,0 +1,273 @@
+#!/usr/bin/env bash
+# MilkFlint Sim — run (or build) the x86_64 OpenWrt + MilkFlint UI appliance.
+#
+# Usage:
+#   ./scripts/milkflint-sim              # fetch latest release image + boot
+#   ./scripts/milkflint-sim start
+#   ./scripts/milkflint-sim stop
+#   ./scripts/milkflint-sim status
+#   ./scripts/milkflint-sim build         # world-build from milkflint/sim/diffconfig
+#   ./scripts/milkflint-sim start --local path/to/img.gz
+#   ./scripts/milkflint-sim start --port 8080
+#
+# Browser: http://127.0.0.1:<port>/milkflint/   (login root / milkflint)
+# Vite against guest: MILKFLINT_VM=http://127.0.0.1:<port> pnpm exec vite
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+CACHE="${MILKFLINT_SIM_CACHE:-$HOME/.cache/milkflint-sim}"
+RUN_DIR="${MILKFLINT_SIM_RUN:-$CACHE/run}"
+IMG_GZ="${CACHE}/milkflint-sim-x86_64-ext4-combined.img.gz"
+IMG_RAW="${RUN_DIR}/disk.img"
+PID_FILE="${RUN_DIR}/qemu.pid"
+LOG_FILE="${RUN_DIR}/qemu.log"
+PORT="${MILKFLINT_SIM_PORT:-8080}"
+SSH_PORT="${MILKFLINT_SIM_SSH_PORT:-2222}"
+REPO="${MILKFLINT_SIM_REPO:-REFFIXX/MilkFlint4}"
+MEM="${MILKFLINT_SIM_MEM:-512M}"
+LOCAL_IMG=""
+
+mkdir -p "$CACHE" "$RUN_DIR"
+
+die() { echo "milkflint-sim: $*" >&2; exit 1; }
+have() { command -v "$1" >/dev/null 2>&1; }
+
+qemu_bin() {
+  if have qemu-system-x86_64; then
+    echo qemu-system-x86_64
+  else
+    die "qemu-system-x86_64 not found (apt install qemu-system-x86)"
+  fi
+}
+
+parse_start_args() {
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --local)
+        LOCAL_IMG="${2:-}"
+        [[ -n "$LOCAL_IMG" ]] || die "--local needs a path"
+        shift 2
+        ;;
+      --port)
+        PORT="${2:-}"
+        [[ -n "$PORT" ]] || die "--port needs a number"
+        shift 2
+        ;;
+      *)
+        die "unknown start option: $1"
+        ;;
+    esac
+  done
+}
+
+fetch_latest() {
+  if [[ -n "$LOCAL_IMG" ]]; then
+    [[ -f "$LOCAL_IMG" ]] || die "local image not found: $LOCAL_IMG"
+    cp -f "$LOCAL_IMG" "$IMG_GZ"
+    echo "Using local image → $IMG_GZ"
+    return
+  fi
+
+  echo "Fetching latest MilkFlint Sim image from GitHub releases ($REPO)…"
+  local tmp url tag
+  tmp="$(mktemp "${CACHE}/dl.XXXXXX")"
+
+  if have gh; then
+    # Prefer the dedicated sim asset name; fall back to any *sim*x86* img.gz.
+    if gh release download -R "$REPO" -p 'milkflint-sim-x86_64-ext4-combined.img.gz' -D "$CACHE" --clobber 2>/dev/null; then
+      :
+    else
+      tag="$(gh release view -R "$REPO" --json tagName -q .tagName 2>/dev/null || true)"
+      [[ -n "$tag" ]] || die "no GitHub release found for $REPO (build one with: ./scripts/milkflint-sim build)"
+      if ! gh release download -R "$REPO" "$tag" -p '*sim*x86*.img.gz' -D "$CACHE" --clobber 2>/dev/null; then
+        die "release $tag has no sim image yet. Build with: ./scripts/milkflint-sim build"
+      fi
+      # Normalize name if the asset used a versioned filename.
+      if [[ ! -f "$IMG_GZ" ]]; then
+        local found
+        found="$(ls -1 "$CACHE"/*sim*x86*.img.gz 2>/dev/null | head -n1 || true)"
+        [[ -n "$found" ]] || die "downloaded asset missing"
+        mv -f "$found" "$IMG_GZ"
+      fi
+    fi
+  else
+    # curl fallback via API
+    have curl || die "need gh or curl to download releases"
+    have jq || die "need jq for curl download path (or install gh)"
+    url="$(curl -fsSL "https://api.github.com/repos/${REPO}/releases/latest" \
+      | jq -r '.assets[] | select(.name|test("milkflint-sim.*\\.img\\.gz$")) | .browser_download_url' \
+      | head -n1)"
+    [[ -n "$url" && "$url" != null ]] || die "no sim image on latest release (build with: ./scripts/milkflint-sim build)"
+    curl -fL --progress-bar -o "$tmp" "$url"
+    mv -f "$tmp" "$IMG_GZ"
+  fi
+
+  [[ -f "$IMG_GZ" ]] || die "image missing after download: $IMG_GZ"
+  echo "Image ready: $IMG_GZ ($(du -h "$IMG_GZ" | awk '{print $1}'))"
+}
+
+prepare_disk() {
+  mkdir -p "$RUN_DIR"
+  echo "Unpacking image to $IMG_RAW …"
+  # Always refresh from gz so "latest" wins after a new download.
+  gzip -dc "$IMG_GZ" >"$IMG_RAW"
+}
+
+kvm_args() {
+  if [[ -r /dev/kvm ]] && [[ -w /dev/kvm ]]; then
+    echo "-enable-kvm -cpu host"
+  else
+    echo "-accel tcg -cpu max"
+  fi
+}
+
+is_running() {
+  [[ -f "$PID_FILE" ]] || return 1
+  local pid
+  pid="$(cat "$PID_FILE" 2>/dev/null || true)"
+  [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null
+}
+
+cmd_stop() {
+  if ! is_running; then
+    echo "MilkFlint Sim is not running."
+    rm -f "$PID_FILE"
+    return 0
+  fi
+  local pid
+  pid="$(cat "$PID_FILE")"
+  echo "Stopping QEMU pid $pid …"
+  kill "$pid" 2>/dev/null || true
+  for _ in 1 2 3 4 5; do
+    kill -0 "$pid" 2>/dev/null || break
+    sleep 1
+  done
+  if kill -0 "$pid" 2>/dev/null; then
+    kill -9 "$pid" 2>/dev/null || true
+  fi
+  rm -f "$PID_FILE"
+  echo "Stopped."
+}
+
+cmd_status() {
+  if is_running; then
+    echo "running  pid=$(cat "$PID_FILE")  ui=http://127.0.0.1:${PORT}/milkflint/  log=$LOG_FILE"
+  else
+    echo "stopped"
+    return 1
+  fi
+}
+
+cmd_start() {
+  parse_start_args "$@"
+  if is_running; then
+    echo "Already running (pid $(cat "$PID_FILE"))."
+    echo "UI: http://127.0.0.1:${PORT}/milkflint/  (root / milkflint)"
+    return 0
+  fi
+
+  fetch_latest
+  prepare_disk
+
+  local qbin accel
+  qbin="$(qemu_bin)"
+  # shellcheck disable=SC2046
+  accel="$(kvm_args)"
+
+  echo "Booting MilkFlint Sim (QEMU) — host port ${PORT} → guest :80 …"
+  # shellcheck disable=SC2086
+  "$qbin" \
+    $accel \
+    -machine q35 \
+    -m "$MEM" \
+    -smp 2 \
+    -drive "file=${IMG_RAW},format=raw,if=virtio,cache=writeback" \
+    -netdev "user,id=net0,hostfwd=tcp:127.0.0.1:${PORT}-:80,hostfwd=tcp:127.0.0.1:${SSH_PORT}-:22" \
+    -device virtio-net-pci,netdev=net0 \
+    -display none \
+    -serial file:"$LOG_FILE" \
+    -monitor none \
+    -daemonize \
+    -pidfile "$PID_FILE"
+
+  echo
+  echo "MilkFlint Sim is up."
+  echo "  UI:   http://127.0.0.1:${PORT}/milkflint/"
+  echo "  Login root / milkflint"
+  echo "  SSH:  ssh -p ${SSH_PORT} root@127.0.0.1"
+  echo "  Log:  $LOG_FILE"
+  echo "  Stop: ./scripts/milkflint-sim stop"
+  echo
+  echo "Optional Vite proxy:"
+  echo "  MILKFLINT_VM=http://127.0.0.1:${PORT} pnpm exec vite"
+}
+
+cmd_build() {
+  cd "$ROOT"
+  [[ -f milkflint/sim/diffconfig ]] || die "missing milkflint/sim/diffconfig"
+  have make || die "make not found"
+
+  echo "Configuring MilkFlint Sim (x86_64)…"
+  ./scripts/feeds update -a
+  ./scripts/feeds install -a
+  cp milkflint/sim/diffconfig .config
+  make defconfig
+
+  # Ensure UI htdocs are packaged (same path as firmware builds).
+  if [[ -d milkflint/ui ]]; then
+    if have pnpm; then
+      (cd milkflint/ui && pnpm install && pnpm exec vite build && node scripts/package.ts) || \
+        echo "warning: UI package step failed — milkflint-ui may use stale htdocs" >&2
+    else
+      echo "warning: pnpm missing — using existing package/milkflint/milkflint-ui/htdocs if present" >&2
+    fi
+  fi
+
+  echo "Building world (this takes a while)…"
+  make FILES="$ROOT/milkflint/sim/files" -j"$(nproc)" world V=s IGNORE_ERRORS='n m'
+
+  local built
+  built="$(ls -1 bin/targets/x86/64/*x86-64-generic-ext4-combined.img.gz 2>/dev/null | head -n1 || true)"
+  [[ -n "$built" ]] || die "no ext4-combined image under bin/targets/x86/64/"
+  mkdir -p "$CACHE"
+  cp -f "$built" "$IMG_GZ"
+  # Also drop a copy under milkflint/sim/out for CI to pick up.
+  mkdir -p "$ROOT/milkflint/sim/out"
+  cp -f "$built" "$ROOT/milkflint/sim/out/milkflint-sim-x86_64-ext4-combined.img.gz"
+  echo "Built → $IMG_GZ"
+  echo "CI copy → milkflint/sim/out/milkflint-sim-x86_64-ext4-combined.img.gz"
+  echo "Start with: ./scripts/milkflint-sim start --local $IMG_GZ"
+}
+
+usage() {
+  cat <<'EOF'
+MilkFlint Sim — run (or build) the x86_64 OpenWrt + MilkFlint UI appliance.
+
+Usage:
+  ./scripts/milkflint-sim              # fetch latest release image + boot
+  ./scripts/milkflint-sim start
+  ./scripts/milkflint-sim stop
+  ./scripts/milkflint-sim status
+  ./scripts/milkflint-sim build         # world-build from milkflint/sim/diffconfig
+  ./scripts/milkflint-sim start --local path/to/img.gz
+  ./scripts/milkflint-sim start --port 8080
+
+Browser: http://127.0.0.1:<port>/milkflint/   (login root / milkflint)
+Vite against guest: MILKFLINT_VM=http://127.0.0.1:<port> pnpm exec vite
+EOF
+}
+
+main() {
+  local cmd="${1:-start}"
+  shift || true
+  case "$cmd" in
+    start)  cmd_start "$@" ;;
+    stop)   cmd_stop ;;
+    status) cmd_status ;;
+    build)  cmd_build "$@" ;;
+    -h|--help|help) usage ;;
+    *) die "unknown command: $cmd (try: start|stop|status|build)" ;;
+  esac
+}
+
+main "$@"

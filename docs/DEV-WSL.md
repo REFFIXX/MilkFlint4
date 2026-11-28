@@ -107,3 +107,13 @@ MILKFLINT_VM=http://127.0.0.1:8088 pnpm exec vite   # :5288 MilkFlint UI
 ```
 
 Open `http://127.0.0.1:5288/milkflint/` — password any. Seeded tri-band APs, usteer neighbors, mesh peers, and stubs so every sidebar page loads.
+
+## MilkFlint Sim VM (real OpenWrt, no Wi‑Fi)
+
+For apply/UCI/package testing in a browser (QEMU x86_64). Full guide: [`docs/SIM-VM.md`](SIM-VM.md).
+
+```bash
+sudo apt-get install -y qemu-system-x86
+./scripts/milkflint-sim          # pulls latest release sim image + boots
+# http://127.0.0.1:8080/milkflint/   root / milkflint
+```

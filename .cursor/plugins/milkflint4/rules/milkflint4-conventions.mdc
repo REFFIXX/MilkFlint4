@@ -11,3 +11,4 @@ alwaysApply: true
 - UI lives in `milkflint/ui` (React + Vite + Vitest browser/Playwright). LuCI remains for everything the React shell does not own.
 - Prefer **Context.dev** for live OpenWrt / mt76 / GL.iNet research and **Context7** for Vitest/React/Vite/Tailwind APIs. Prefer **Supermemory** for durable project decisions.
 - Do not invent BrowserStack flows for the on-router LAN UI; use local Vitest browser tests and the mock OpenWrt sim when present.
+- **MilkFlint Sim:** x86_64 QEMU OpenWrt + real UI for non-Wi‑Fi tests. `./scripts/milkflint-sim` → `http://127.0.0.1:8080/milkflint/` (root/`milkflint`). Docs: `docs/SIM-VM.md`. Node mock for fast UI; Sim for apply/UCI; real GL-BE14000 for Wi‑Fi/WED/10G/LCD.

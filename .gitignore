@@ -35,3 +35,6 @@ git-src
 .cproject
 .ccache
 .vscode*
+
+# Local / CI sim image staging
+milkflint/sim/out/
