@@ -397,6 +397,20 @@ export function answer(s: Scenario, object: string, method: string, params: Reco
     case 'milkflint.themes set':
       themeSettings = { theme: typeof params['theme'] === 'string' ? params['theme'] : '', custom: [] };
       return { saved: true };
+    case 'milkflint.startup list':
+      return {
+        services: [
+          { name: 'firewall', start: 19, stop: 90, enabled: true, running: true },
+          { name: 'network', start: 20, stop: 90, enabled: true, running: true },
+          { name: 'cron', start: 50, stop: 90, enabled: true, running: false },
+        ],
+      };
+    case 'milkflint.startup action':
+      return { ok: true, code: 0, running: true, enabled: true };
+    case 'milkflint.startup rc_local':
+      return { data: '#!/bin/sh\n\nexit 0\n' };
+    case 'milkflint.startup set_rc_local':
+      return { saved: true };
     case 'uci get': {
       const config = params['config'];
       if (config === 'milkflint') return milkflint(s);

@@ -37,4 +37,7 @@ export const sections: readonly Section[] = [
     keywords: 'debug counters snapshot kfence memory error checker crash dropout',
   },
   { page: 'admin-password', id: 'https', title: 'HTTPS', keywords: 'https certificate tls ssl redirect secure' },
+  // Startup's tabs (startup/page.tsx)
+  { page: 'startup', id: 'services', title: 'Services', keywords: 'init.d enable disable start stop restart reload boot' },
+  { page: 'startup', id: 'local', title: 'Local startup', keywords: 'rc.local boot script commands shell' },
 ];

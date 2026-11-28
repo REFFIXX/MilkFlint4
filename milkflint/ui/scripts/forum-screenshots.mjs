@@ -82,6 +82,16 @@ function handle(object, method, params) {
   if (key === 'milkflint.adminpassword status') return ok({ set: true });
   if (key === 'milkflint.themes get') return ok({ theme: 'monokai-milk', custom: [] });
   if (key === 'milkflint.themes set') return ok({ saved: true });
+  if (key === 'milkflint.startup list')
+    return ok({
+      services: [
+        { name: 'network', start: 20, stop: 90, enabled: true, running: true },
+        { name: 'cron', start: 50, stop: 90, enabled: true, running: true },
+      ],
+    });
+  if (key === 'milkflint.startup action') return ok({ ok: true, code: 0, running: true, enabled: true });
+  if (key === 'milkflint.startup rc_local') return ok({ data: '#!/bin/sh\n\nexit 0\n' });
+  if (key === 'milkflint.startup set_rc_local') return ok({ saved: true });
   if (key === 'milkflint.home get') return ok({});
   if (key === 'milkflint.home set') return ok({ saved: true });
 

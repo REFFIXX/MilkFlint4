@@ -631,6 +631,25 @@ function milkflintStub(object, method, params = {}) {
         custom: Array.isArray(params.custom) ? params.custom : themeSettings.custom,
       };
       return { saved: true };
+    case 'milkflint.startup list':
+      return {
+        services: [
+          { name: 'firewall', start: 19, stop: 90, enabled: true, running: true },
+          { name: 'network', start: 20, stop: 90, enabled: true, running: true },
+          { name: 'dnsmasq', start: 19, stop: 110, enabled: true, running: true },
+          { name: 'odhcpd', start: 35, stop: 85, enabled: true, running: true },
+          { name: 'dropbear', start: 50, stop: 10, enabled: true, running: true },
+          { name: 'uhttpd', start: 50, stop: 10, enabled: true, running: true },
+          { name: 'rpcd', start: 12, stop: 89, enabled: true, running: true },
+          { name: 'cron', start: 50, stop: 90, enabled: true, running: true },
+        ],
+      };
+    case 'milkflint.startup action':
+      return { ok: true, code: 0, running: params.action !== 'stop', enabled: params.action !== 'disable' };
+    case 'milkflint.startup rc_local':
+      return { data: '#!/bin/sh\n# Put your custom commands here that should be executed once\n# the system init finished. By default this file does nothing.\n\nexit 0\n' };
+    case 'milkflint.startup set_rc_local':
+      return { saved: true };
     case 'milkflint.adguardhome status':
       return { installed: true, enabled: false, configured: false, mode: 'router', running: false, state: 'off' };
     case 'milkflint.adguardhome insights':

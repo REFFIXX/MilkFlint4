@@ -29,6 +29,7 @@ export const featureIds = [
   'banip',
   'upnp',
   'system-overview',
+  'startup',
   'admin-password',
   'https',
   'upgrade',

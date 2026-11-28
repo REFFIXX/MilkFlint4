@@ -31,6 +31,7 @@ export const keywords: Partial<Readonly<Record<FeatureId, string>>> = {
   'wifi-driver':
     'airtime fairness twt target wake time spatial reuse bss colour mu edca mu-mimo mimo ofdma muru downlink uplink multicast dscp qos map beamforming driver',
   'system-overview': 'hardware model firmware memory storage about',
+  startup: 'init services init.d rc.local boot enable disable start stop restart reload daemon',
   'admin-password': 'root login password ssh luci https certificate tls ssl router access',
   upgrade: 'firmware update sysupgrade flash image',
   time: 'hostname name time zone ntp clock',
