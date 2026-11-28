@@ -123,7 +123,7 @@ const configs = {
     defaults: { '.type': 'defaults', '.name': 'defaults', '.index': 0 },
     mesh: { '.type': 'mesh', '.name': 'mesh', '.index': 1, role: 'main-auto' },
     mode: { '.type': 'mode', '.name': 'mode', '.index': 2, mode: 'router' },
-    datastats: { '.type': 'datastats', '.name': 'datastats', '.index': 3, enabled: '1' },
+    datastats: { '.type': 'datastats', '.name': 'datastats', '.index': 3, enabled: '1', history: '0' },
     roaming: { '.type': 'roaming', '.name': 'roaming', '.index': 4, apply_all: '1' },
     steering: { '.type': 'steering', '.name': 'steering', '.index': 5, layout: 'auto', rss: '1' },
     wifi: { '.type': 'wifi', '.name': 'wifi', '.index': 6 },
@@ -737,6 +737,12 @@ function milkflintStub(object, method, params = {}) {
       return { installed: true, enabled: true, periods: [] };
     case 'milkflint.traffic usage':
       return { columns: ['mac', 'ip', 'conns', 'rx_bytes', 'rx_pkts', 'tx_bytes', 'tx_pkts'], data: [] };
+    case 'milkflint.traffic history': {
+      const hours = Number(params.hours ?? 24);
+      const span = hours === 1 || hours === 4 || hours === 8 || hours === 24 ? hours * 3600 : 24 * 3600;
+      const now = NOW();
+      return { enabled: false, now, interval: 300, since: now - span, samples: [] };
+    }
     case 'milkflint.devicecontrol status':
       return {
         now: NOW(),
