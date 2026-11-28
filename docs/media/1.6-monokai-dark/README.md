@@ -12,6 +12,7 @@ Safe to embed or link from forum posts.
 
 | File | Page |
 |---|---|
+| [`monokai-dark-login.png`](monokai-dark-login.png) | Sign in (login) |
 | [`monokai-dark-home.png`](monokai-dark-home.png) | Home |
 | [`monokai-dark-lcd-setup.png`](monokai-dark-lcd-setup.png) | LCD Setup |
 | [`monokai-dark-startup.png`](monokai-dark-startup.png) | Startup |
@@ -24,6 +25,7 @@ Safe to embed or link from forum posts.
 
 ```text
 https://raw.githubusercontent.com/REFFIXX/MilkFlint4/main/docs/media/1.6-monokai-dark/monokai-dark-demo.mp4
+https://raw.githubusercontent.com/REFFIXX/MilkFlint4/main/docs/media/1.6-monokai-dark/monokai-dark-login.png
 https://raw.githubusercontent.com/REFFIXX/MilkFlint4/main/docs/media/1.6-monokai-dark/monokai-dark-home.png
 https://raw.githubusercontent.com/REFFIXX/MilkFlint4/main/docs/media/1.6-monokai-dark/monokai-dark-lcd-setup.png
 https://raw.githubusercontent.com/REFFIXX/MilkFlint4/main/docs/media/1.6-monokai-dark/monokai-dark-startup.png
@@ -32,5 +34,6 @@ https://raw.githubusercontent.com/REFFIXX/MilkFlint4/main/docs/media/1.6-monokai
 https://raw.githubusercontent.com/REFFIXX/MilkFlint4/main/docs/media/1.6-monokai-dark/monokai-dark-vpn.png
 https://raw.githubusercontent.com/REFFIXX/MilkFlint4/main/docs/media/1.6-monokai-dark/monokai-dark-agh.png
 ```
+
 
 Browse folder: https://github.com/REFFIXX/MilkFlint4/tree/main/docs/media/1.6-monokai-dark
