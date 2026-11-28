@@ -1,0 +1,22 @@
+#!/bin/sh
+# Create milkflint.lcd only when missing so keep-settings upgrades stay safe.
+[ -f /etc/config/milkflint ] || touch /etc/config/milkflint
+if ! uci -q get milkflint.lcd > /dev/null; then
+	uci -q batch <<-UCI
+		set milkflint.lcd=lcd
+		set milkflint.lcd.enabled='1'
+		set milkflint.lcd.mode='on'
+		set milkflint.lcd.idle_minutes='10'
+		set milkflint.lcd.slideshow='1'
+		set milkflint.lcd.dwell_seconds='8'
+		add_list milkflint.lcd.slides='splash'
+		add_list milkflint.lcd.slides='wan'
+		add_list milkflint.lcd.slides='wifi'
+		add_list milkflint.lcd.slides='clients'
+		add_list milkflint.lcd.slides='vpn'
+		add_list milkflint.lcd.slides='system'
+		commit milkflint
+	UCI
+fi
+[ -x /etc/init.d/milkflint4-lcd-splash ] && /etc/init.d/milkflint4-lcd-splash enable
+exit 0

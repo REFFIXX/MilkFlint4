@@ -1,0 +1,92 @@
+#!/bin/sh
+# Control the Flint 4 front-panel LCD: on, off, idle, reload, or status.
+# Writes milkflint.lcd.mode for on|off|idle, blanks/unblanks fb0, and
+# starts or reloads the lcd-loop service as needed.
+
+BLANK=/sys/class/graphics/fb0/blank
+INIT=/etc/init.d/milkflint4-lcd-splash
+SPLASH=/usr/libexec/milkflint/lcd-splash
+
+usage() {
+	echo "usage: lcd-ctl on|off|idle|reload|status" >&2
+	exit 1
+}
+
+[ -n "$1" ] || usage
+
+ensure_section() {
+	[ -f /etc/config/milkflint ] || touch /etc/config/milkflint
+	uci -q get milkflint.lcd > /dev/null 2>&1 || {
+		uci -q batch <<-EOF
+			set milkflint.lcd=lcd
+			set milkflint.lcd.enabled='1'
+			set milkflint.lcd.mode='on'
+			set milkflint.lcd.idle_minutes='10'
+			set milkflint.lcd.slideshow='1'
+			set milkflint.lcd.dwell_seconds='8'
+			add_list milkflint.lcd.slides='splash'
+			add_list milkflint.lcd.slides='wan'
+			add_list milkflint.lcd.slides='wifi'
+			add_list milkflint.lcd.slides='clients'
+			add_list milkflint.lcd.slides='vpn'
+			add_list milkflint.lcd.slides='system'
+		EOF
+		uci -q commit milkflint
+	}
+}
+
+blank_panel() {
+	[ -e "$BLANK" ] && echo 1 > "$BLANK" 2>/dev/null
+}
+
+unblank_panel() {
+	[ -e "$BLANK" ] && echo 0 > "$BLANK" 2>/dev/null
+}
+
+set_mode() {
+	local mode="$1"
+	ensure_section
+	uci -q set milkflint.lcd.mode="$mode"
+	uci -q set milkflint.lcd.enabled='1'
+	uci -q commit milkflint
+}
+
+reload_loop() {
+	if [ -x "$INIT" ]; then
+		"$INIT" reload 2>/dev/null || "$INIT" restart 2>/dev/null || "$INIT" start 2>/dev/null
+	fi
+}
+
+case "$1" in
+	on)
+		set_mode on
+		unblank_panel
+		[ -x "$SPLASH" ] && "$SPLASH" 2>/dev/null
+		reload_loop
+		;;
+	off)
+		set_mode off
+		blank_panel
+		reload_loop
+		;;
+	idle)
+		set_mode idle
+		unblank_panel
+		[ -x "$SPLASH" ] && "$SPLASH" 2>/dev/null
+		reload_loop
+		;;
+	reload)
+		reload_loop
+		;;
+	status)
+		ensure_section
+		mode=$(uci -q get milkflint.lcd.mode 2>/dev/null || echo on)
+		enabled=$(uci -q get milkflint.lcd.enabled 2>/dev/null || echo 1)
+		echo "enabled=$enabled mode=$mode"
+		;;
+	*)
+		usage
+		;;
+esac
+
+exit 0

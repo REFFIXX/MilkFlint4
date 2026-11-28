@@ -1,0 +1,133 @@
+#!/bin/sh
+# procd-friendly front-panel loop: reads milkflint.lcd and paints slides.
+# mode=off blanks; idle shows then blanks after idle_minutes; on cycles slides.
+
+BLANK=/sys/class/graphics/fb0/blank
+SPLASH=/usr/libexec/milkflint/lcd-splash
+STATUS=/usr/libexec/milkflint/lcd-status
+
+blank_panel() {
+	[ -e "$BLANK" ] && echo 1 > "$BLANK" 2>/dev/null
+}
+
+unblank_panel() {
+	[ -e "$BLANK" ] && echo 0 > "$BLANK" 2>/dev/null
+}
+
+wait_fb() {
+	local i
+	for i in $(seq 1 40); do
+		[ -e /dev/fb0 ] && return 0
+		sleep 1
+	done
+	return 1
+}
+
+read_cfg() {
+	ENABLED=$(uci -q get milkflint.lcd.enabled 2>/dev/null || echo 1)
+	MODE=$(uci -q get milkflint.lcd.mode 2>/dev/null || echo on)
+	SLIDESHOW=$(uci -q get milkflint.lcd.slideshow 2>/dev/null || echo 1)
+	DWELL=$(uci -q get milkflint.lcd.dwell_seconds 2>/dev/null || echo 8)
+	IDLE_MIN=$(uci -q get milkflint.lcd.idle_minutes 2>/dev/null || echo 10)
+	# shellcheck disable=SC2034
+	SLIDES=$(uci -q get milkflint.lcd.slides 2>/dev/null)
+	case "$DWELL" in ''|*[!0-9]*) DWELL=8 ;; esac
+	[ "$DWELL" -ge 2 ] || DWELL=2
+	[ "$DWELL" -le 120 ] || DWELL=120
+	case "$IDLE_MIN" in ''|*[!0-9]*) IDLE_MIN=10 ;; esac
+	[ "$IDLE_MIN" -ge 1 ] || IDLE_MIN=1
+	[ "$IDLE_MIN" -le 1440 ] || IDLE_MIN=1440
+}
+
+# Paint one slide; splash uses lcd-splash, others lcd-status.
+paint_slide() {
+	local slide="$1"
+	case "$slide" in
+		splash)
+			[ -x "$SPLASH" ] && "$SPLASH" 2>/dev/null
+			;;
+		wan|wifi|clients|vpn|system)
+			[ -x "$STATUS" ] && "$STATUS" "$slide" 2>/dev/null
+			;;
+		*)
+			[ -x "$STATUS" ] && "$STATUS" system 2>/dev/null
+			;;
+	esac
+}
+
+slide_list() {
+	# UCI list may be space-separated from `uci get`.
+	local raw s
+	raw=$(uci -q get milkflint.lcd.slides 2>/dev/null)
+	if [ -z "$raw" ]; then
+		echo "splash wan wifi clients vpn system"
+		return
+	fi
+	for s in $raw; do
+		case "$s" in
+			splash|wan|wifi|clients|vpn|system) echo "$s" ;;
+		esac
+	done
+}
+
+show_cycle_once() {
+	local slide count=0
+	if [ "$SLIDESHOW" = 0 ] || [ "$SLIDESHOW" = false ] || [ "$SLIDESHOW" = no ]; then
+		paint_slide splash
+		return
+	fi
+	for slide in $(slide_list); do
+		paint_slide "$slide"
+		count=$((count + 1))
+		sleep "$DWELL"
+	done
+	[ "$count" -gt 0 ] || paint_slide splash
+}
+
+wait_fb || {
+	logger -t milkflint4-lcd "no /dev/fb0; exiting"
+	exit 1
+}
+
+# Idle blank deadline (epoch seconds); 0 means not yet armed.
+IDLE_UNTIL=0
+
+while true; do
+	read_cfg
+
+	if [ "$ENABLED" = 0 ] || [ "$ENABLED" = false ] || [ "$ENABLED" = no ]; then
+		blank_panel
+		sleep 5
+		continue
+	fi
+
+	case "$MODE" in
+		off)
+			blank_panel
+			sleep 5
+			;;
+		idle)
+			now=$(date +%s 2>/dev/null || echo 0)
+			if [ "$IDLE_UNTIL" = 0 ]; then
+				unblank_panel
+				show_cycle_once
+				IDLE_UNTIL=$((now + IDLE_MIN * 60))
+			elif [ "$now" -ge "$IDLE_UNTIL" ] 2>/dev/null; then
+				blank_panel
+				# Stay blank until mode or enabled changes (re-read each few seconds).
+				sleep 5
+			else
+				# Still in the active window: keep cycling while awake.
+				unblank_panel
+				show_cycle_once
+			fi
+			;;
+		on|*)
+			IDLE_UNTIL=0
+			unblank_panel
+			show_cycle_once
+			# If slideshow is off, dwell on splash then re-check config.
+			[ "$SLIDESHOW" = 1 ] || [ "$SLIDESHOW" = true ] || [ "$SLIDESHOW" = yes ] || sleep "$DWELL"
+			;;
+	esac
+done

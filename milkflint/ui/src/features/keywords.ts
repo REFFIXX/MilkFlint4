@@ -34,6 +34,7 @@ export const keywords: Partial<Readonly<Record<FeatureId, string>>> = {
   'admin-password': 'root login password ssh luci https certificate tls ssl router access',
   upgrade: 'firmware update sysupgrade flash image',
   time: 'hostname name time zone ntp clock',
+  'lcd-setup': 'lcd panel display splash slideshow screen front',
   schedules: 'cron crontab reboot restart schedule wifi off command job timer',
   themes: 'theme appearance look colour color colours colors palette dark light mode honey plain custom accent contrast',
   logs: 'syslog kernel log crash kfence debug',

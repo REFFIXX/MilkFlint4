@@ -158,6 +158,10 @@ test('what each job does: the page’s actions by any spelling, banIP’s update
   assert.equal(kindOf('/sbin/reboot'), 'reboot');
   assert.equal(kindOf('wifi  down'), 'wifi_off');
   assert.equal(kindOf('/sbin/wifi up'), 'wifi_on');
+  assert.equal(kindOf('/usr/libexec/milkflint/lcd-ctl on'), 'lcd_on');
+  assert.equal(kindOf('/usr/libexec/milkflint/lcd-ctl off'), 'lcd_off');
+  assert.equal(kindOf('/usr/libexec/milkflint/lcd-ctl idle'), 'lcd_idle');
+  assert.equal(kindOf('lcd-ctl on'), 'lcd_on');
   assert.equal(kindOf('/usr/libexec/milkflint/banip-action reload'), 'banip');
   assert.equal(kindOf('reboot now'), 'command');
   assert.equal(kindOf('/etc/init.d/banip reload'), 'command');
@@ -177,6 +181,9 @@ test('what each job does: the page’s actions by any spelling, banIP’s update
     'Runs /root/check.sh > /dev/null 2>&1 every 5 minutes',
     'Updates banIP’s lists at 03:34 and 15:34 every day',
   ]);
+  assert.equal(label(tasksFrom('0 22 * * * /usr/libexec/milkflint/lcd-ctl off\n')[0]!), 'Turn LCD off');
+  assert.equal(sentence(tasksFrom('0 7 * * * /usr/libexec/milkflint/lcd-ctl on\n')[0]!), 'Turns the LCD on at 07:00 every day');
+  assert.equal(addTask('', 'lcd_idle', '23:00'), '0 23 * * * /usr/libexec/milkflint/lcd-ctl idle\n');
 });
 
 test('an edit rewrites its own line only; the rest of the file stays as it was', () => {

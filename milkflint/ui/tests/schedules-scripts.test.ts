@@ -90,9 +90,23 @@ test('each section a plain line: minute and hour as cron reads them, its days as
     { action: 'reboot', time: '08:05' },
     { action: 'wifi_off', time: '23:30', days: '1 2 3 4 5' },
     { action: 'wifi_on', time: '00:00', days: '0' },
+    { action: 'lcd_on', time: '07:00' },
+    { action: 'lcd_off', time: '23:00' },
+    { action: 'lcd_idle', time: '22:00' },
   ]);
-  assert.equal(r.crontab, '5 8 * * * /sbin/reboot\n30 23 * * 1,2,3,4,5 /sbin/wifi down\n0 0 * * 0 /sbin/wifi up\n');
-  assert.deepEqual(r.uci, ['-q delete milkflint.s0', '-q delete milkflint.s1', '-q delete milkflint.s2', 'commit milkflint']);
+  assert.equal(
+    r.crontab,
+    '5 8 * * * /sbin/reboot\n30 23 * * 1,2,3,4,5 /sbin/wifi down\n0 0 * * 0 /sbin/wifi up\n0 7 * * * /usr/libexec/milkflint/lcd-ctl on\n0 23 * * * /usr/libexec/milkflint/lcd-ctl off\n0 22 * * * /usr/libexec/milkflint/lcd-ctl idle\n',
+  );
+  assert.deepEqual(r.uci, [
+    '-q delete milkflint.s0',
+    '-q delete milkflint.s1',
+    '-q delete milkflint.s2',
+    '-q delete milkflint.s3',
+    '-q delete milkflint.s4',
+    '-q delete milkflint.s5',
+    'commit milkflint',
+  ]);
   assert.deepEqual(r.cron, ['enable']);
 });
 

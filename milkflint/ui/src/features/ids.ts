@@ -33,6 +33,7 @@ export const featureIds = [
   'https',
   'upgrade',
   'time',
+  'lcd-setup',
   'schedules',
   'logs',
   'backup-reset',

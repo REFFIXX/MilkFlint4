@@ -26,6 +26,9 @@ add_task() {
 		reboot) command=/sbin/reboot ;;
 		wifi_off) command='/sbin/wifi down' ;;
 		wifi_on) command='/sbin/wifi up' ;;
+		lcd_on) command='/usr/libexec/milkflint/lcd-ctl on' ;;
+		lcd_off) command='/usr/libexec/milkflint/lcd-ctl off' ;;
+		lcd_idle) command='/usr/libexec/milkflint/lcd-ctl idle' ;;
 		*) return 0 ;;
 	esac
 	case "$time" in [01][0-9]:[0-5][0-9]|2[0-3]:[0-5][0-9]) ;; *) return 0 ;; esac

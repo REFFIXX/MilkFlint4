@@ -16,6 +16,7 @@ import type { FeatureId } from './ids';
 import { feature as internet } from './internet/feature';
 import { feature as ipv6 } from './ipv6/feature';
 import { feature as lan } from './lan/feature';
+import { feature as lcdSetup } from './lcd-setup/feature';
 import { feature as logs } from './logs/feature';
 import { feature as mesh } from './mesh/feature';
 import { feature as mode } from './mode/feature';
@@ -74,6 +75,7 @@ const byId: { readonly [K in FeatureId]: Feature & { id: K } } = {
   https,
   upgrade,
   time,
+  'lcd-setup': lcdSetup,
   schedules,
   logs,
   'backup-reset': backupReset,

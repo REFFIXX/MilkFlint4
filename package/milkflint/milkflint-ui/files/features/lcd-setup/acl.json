@@ -1,0 +1,21 @@
+{
+	"milkflint-lcd-setup": {
+		"description": "MilkFlint web interface: LCD Setup (front-panel control and reload)",
+		"read": {
+			"uci": [ "milkflint" ]
+		},
+		"write": {
+			"uci": [ "milkflint" ],
+			"ubus": { "file": [ "exec" ] },
+			"file": {
+				"/etc/init.d/milkflint4-lcd-splash reload": [ "exec" ],
+				"/etc/init.d/milkflint4-lcd-splash restart": [ "exec" ],
+				"/usr/libexec/milkflint/lcd-ctl on": [ "exec" ],
+				"/usr/libexec/milkflint/lcd-ctl off": [ "exec" ],
+				"/usr/libexec/milkflint/lcd-ctl idle": [ "exec" ],
+				"/usr/libexec/milkflint/lcd-ctl reload": [ "exec" ],
+				"/usr/libexec/milkflint/lcd-ctl status": [ "exec" ]
+			}
+		}
+	}
+}

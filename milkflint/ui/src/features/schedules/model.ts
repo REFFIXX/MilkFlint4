@@ -1,9 +1,9 @@
 // Scheduled tasks as the Scheduled tasks page and Home's widget show them:
 // the jobs in root's crontab (cron.ts), each with what it does in words
-// (restart the router, Wi-Fi off or on, banIP's update, or a command of your
-// own) and when; the edits the Tasks view makes, each to its own line of the
-// file, leaving every other line as it was; and the next one to run. Plain
-// data, so the tests check it.
+// (restart the router, Wi-Fi off or on, LCD on/off/idle, banIP's update, or a
+// command of your own) and when; the edits the Tasks view makes, each to its
+// own line of the file, leaving every other line as it was; and the next one
+// to run. Plain data, so the tests check it.
 import {
   clock,
   crontabText,
@@ -27,6 +27,9 @@ export const actions = {
   reboot: { label: 'Restart the router', done: 'restarts the router', command: '/sbin/reboot' },
   wifi_off: { label: 'Turn Wi-Fi off', done: 'turns Wi-Fi off', command: '/sbin/wifi down' },
   wifi_on: { label: 'Turn Wi-Fi on', done: 'turns Wi-Fi on', command: '/sbin/wifi up' },
+  lcd_on: { label: 'Turn LCD on', done: 'turns the LCD on', command: '/usr/libexec/milkflint/lcd-ctl on' },
+  lcd_off: { label: 'Turn LCD off', done: 'turns the LCD off', command: '/usr/libexec/milkflint/lcd-ctl off' },
+  lcd_idle: { label: 'Set LCD to idle', done: 'sets the LCD to idle', command: '/usr/libexec/milkflint/lcd-ctl idle' },
 } as const;
 export type Action = keyof typeof actions;
 
@@ -46,6 +49,9 @@ export function kindOf(command: string): Kind {
   if (/^(\/sbin\/)?reboot$/.test(c)) return 'reboot';
   if (/^(\/sbin\/)?wifi down$/.test(c)) return 'wifi_off';
   if (/^(\/sbin\/)?wifi up$/.test(c)) return 'wifi_on';
+  if (c === '/usr/libexec/milkflint/lcd-ctl on' || c === 'lcd-ctl on') return 'lcd_on';
+  if (c === '/usr/libexec/milkflint/lcd-ctl off' || c === 'lcd-ctl off') return 'lcd_off';
+  if (c === '/usr/libexec/milkflint/lcd-ctl idle' || c === 'lcd-ctl idle') return 'lcd_idle';
   if (c.startsWith(`${BANIP_COMMAND} `)) return 'banip';
   return 'command';
 }
