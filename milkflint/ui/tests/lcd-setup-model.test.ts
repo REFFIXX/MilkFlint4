@@ -14,18 +14,17 @@ import {
   withSlide,
 } from '@/features/lcd-setup/model';
 
-const section = (over: Record<string, string | string[]> = {}): Section =>
-  ({
-    '.type': 'lcd',
-    '.name': 'lcd',
-    enabled: '1',
-    mode: 'on',
-    idle_minutes: '10',
-    slideshow: '1',
-    dwell_seconds: '8',
-    slides: [...ALL_SLIDES],
-    ...over,
-  }) as Section;
+const section = (over: Record<string, string | string[]> = {}): Section => ({
+  '.type': 'lcd',
+  '.name': 'lcd',
+  enabled: '1',
+  mode: 'on',
+  idle_minutes: '10',
+  slideshow: '1',
+  dwell_seconds: '8',
+  slides: [...ALL_SLIDES],
+  ...over,
+});
 
 test('defaults match the uci-defaults sketch', () => {
   assert.equal(defaults.enabled, true);

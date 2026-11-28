@@ -181,8 +181,12 @@ test('what each job does: the page’s actions by any spelling, banIP’s update
     'Runs /root/check.sh > /dev/null 2>&1 every 5 minutes',
     'Updates banIP’s lists at 03:34 and 15:34 every day',
   ]);
-  assert.equal(label(tasksFrom('0 22 * * * /usr/libexec/milkflint/lcd-ctl off\n')[0]!), 'Turn LCD off');
-  assert.equal(sentence(tasksFrom('0 7 * * * /usr/libexec/milkflint/lcd-ctl on\n')[0]!), 'Turns the LCD on at 07:00 every day');
+  const lcdOff = tasksFrom('0 22 * * * /usr/libexec/milkflint/lcd-ctl off\n')[0];
+  const lcdOn = tasksFrom('0 7 * * * /usr/libexec/milkflint/lcd-ctl on\n')[0];
+  assert.ok(lcdOff);
+  assert.ok(lcdOn);
+  assert.equal(label(lcdOff), 'Turn LCD off');
+  assert.equal(sentence(lcdOn), 'Turns the LCD on at 07:00 every day');
   assert.equal(addTask('', 'lcd_idle', '23:00'), '0 23 * * * /usr/libexec/milkflint/lcd-ctl idle\n');
 });
 

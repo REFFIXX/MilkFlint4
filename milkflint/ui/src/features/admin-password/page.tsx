@@ -186,10 +186,7 @@ export function RouterAccessPage(): ReactElement {
 
   return (
     <>
-      <PageHeader
-        title="Router access"
-        description="Who can sign in to these pages, LuCI and SSH, HTTPS, and Dropbear’s keys."
-      />
+      <PageHeader title="Router access" description="Who can sign in to these pages, LuCI and SSH, HTTPS, and Dropbear’s keys." />
       <div className="flex flex-col gap-4">
         {h.state.phase === 'moved' ? (
           <Moved url={h.state.url} fingerprint={h.fingerprint} />

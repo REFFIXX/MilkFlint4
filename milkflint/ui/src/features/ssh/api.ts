@@ -4,14 +4,7 @@
 import { z } from 'zod';
 import { getConfig, type Section } from '@/lib/api/uci';
 import { call } from '@/lib/ubus';
-import {
-  dropbearSection,
-  formOf,
-  keysFile,
-  parseAuthorizedKeys,
-  type SshForm,
-  type SshKey,
-} from './model';
+import { dropbearSection, formOf, keysFile, parseAuthorizedKeys, type SshForm, type SshKey } from './model';
 
 const execResult = z.object({ code: z.number(), stdout: z.string().optional(), stderr: z.string().optional() }).loose();
 

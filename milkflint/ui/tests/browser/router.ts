@@ -459,7 +459,13 @@ export function answer(s: Scenario, object: string, method: string, params: Reco
       return {
         count: s === 'busy' ? 42 : 0,
         max: 65_536,
-        by_proto: s === 'busy' ? [{ proto: 'tcp', count: 30 }, { proto: 'udp', count: 12 }] : [],
+        by_proto:
+          s === 'busy'
+            ? [
+                { proto: 'tcp', count: 30 },
+                { proto: 'udp', count: 12 },
+              ]
+            : [],
         hosts: s === 'busy' ? [{ ip: '192.168.1.50', connections: 8, bytes: 12_000 }] : [],
         connections:
           s === 'busy'

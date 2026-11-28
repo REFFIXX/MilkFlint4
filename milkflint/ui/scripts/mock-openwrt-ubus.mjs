@@ -437,7 +437,14 @@ function deviceStatus() {
       'bridge-members': ['eth0', 'phy0-ap0', 'phy1-ap0', 'phy2-ap0'],
       statistics: { rx_bytes: 3e9, tx_bytes: 6e9 },
     },
-    lan1: { type: 'Network device', devtype: 'dsa', up: true, carrier: true, speed: '1000F', statistics: { rx_bytes: 1e8, tx_bytes: 2e7 } },
+    lan1: {
+      type: 'Network device',
+      devtype: 'dsa',
+      up: true,
+      carrier: true,
+      speed: '1000F',
+      statistics: { rx_bytes: 1e8, tx_bytes: 2e7 },
+    },
     lan2: { type: 'Network device', devtype: 'dsa', up: true, carrier: false, statistics: { rx_bytes: 0, tx_bytes: 0 } },
     lan3: { type: 'Network device', devtype: 'dsa', up: true, carrier: false, statistics: { rx_bytes: 0, tx_bytes: 0 } },
     lan4: { type: 'Network device', devtype: 'dsa', up: true, carrier: false, statistics: { rx_bytes: 0, tx_bytes: 0 } },
@@ -572,9 +579,7 @@ function milkflintStub(object, method, params = {}) {
         },
         eth_threads: [],
         wifi: {
-          irqs: [
-            { name: 'mt7996', irq: 200, cpus: [2], count: 50_000 + cpuTick * 30 },
-          ],
+          irqs: [{ name: 'mt7996', irq: 200, cpus: [2], count: 50_000 + cpuTick * 30 }],
           threads: [
             { name: 'napi/phy0-0', cpus: [1], time: 3_000 + cpuTick * 6, wait: 800, runs: 150 },
             { name: 'napi/phy1-0', cpus: [2], time: 4_000 + cpuTick * 8, wait: 900, runs: 180 },
@@ -673,7 +678,9 @@ function milkflintStub(object, method, params = {}) {
     case 'milkflint.startup action':
       return { ok: true, code: 0, running: params.action !== 'stop', enabled: params.action !== 'disable' };
     case 'milkflint.startup rc_local':
-      return { data: '#!/bin/sh\n# Put your custom commands here that should be executed once\n# the system init finished. By default this file does nothing.\n\nexit 0\n' };
+      return {
+        data: '#!/bin/sh\n# Put your custom commands here that should be executed once\n# the system init finished. By default this file does nothing.\n\nexit 0\n',
+      };
     case 'milkflint.startup set_rc_local':
       return { saved: true };
     case 'milkflint.adguardhome status':
@@ -935,7 +942,7 @@ function handleCall(session, object, method, params = {}) {
     const c = params.config;
     staged[c] ??= {};
     staged[c][params.section] ??= { values: {} };
-    Object.assign(staged[c][params.section].values ??= {}, params.values ?? {});
+    Object.assign((staged[c][params.section].values ??= {}), params.values ?? {});
     return ok({});
   }
 
@@ -1049,7 +1056,8 @@ function handleCall(session, object, method, params = {}) {
     return ok({ data: '' });
   }
   if (object === 'file' && method === 'exec') return ok({ code: 0, stdout: '', stderr: '' });
-  if (object === 'file' && method === 'stat') return ok({ type: 'file', size: 0, mode: 420, atime: NOW(), mtime: NOW(), ctime: NOW() });
+  if (object === 'file' && method === 'stat')
+    return ok({ type: 'file', size: 0, mode: 420, atime: NOW(), mtime: NOW(), ctime: NOW() });
   if (object === 'file' && method === 'list') return ok({ entries: [] });
   if (object === 'file' && method === 'write') return ok({});
 
@@ -1122,7 +1130,13 @@ function handleCall(session, object, method, params = {}) {
   const stub = milkflintStub(object, method, params);
   if (stub !== undefined) return ok(stub);
 
-  if (object.startsWith('milkflint.') || object === 'luci' || object === 'luci-rpc' || object === 'iwinfo' || object.startsWith('network')) {
+  if (
+    object.startsWith('milkflint.') ||
+    object === 'luci' ||
+    object === 'luci-rpc' ||
+    object === 'iwinfo' ||
+    object.startsWith('network')
+  ) {
     return ok({});
   }
 

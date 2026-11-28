@@ -28,14 +28,7 @@ export function Logo({ className, ...props }: ComponentProps<'svg'>): ReactEleme
       </clipPath>
       <path d={STONE} strokeWidth="3" strokeLinejoin="round" className="fill-brand-stone stroke-brand-stone" />
       <path d={MILK} className="fill-brand-milk" clipPath={`url(#${clip})`} />
-      <path
-        d={FOUR}
-        fill="none"
-        strokeWidth="3.4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="stroke-primary"
-      />
+      <path d={FOUR} fill="none" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round" className="stroke-primary" />
     </svg>
   );
 }

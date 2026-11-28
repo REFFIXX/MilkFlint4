@@ -17,14 +17,7 @@ import type { ApplyState } from '@/hooks/use-apply';
 import { useLoad } from '@/hooks/use-load';
 import { cn, errorMessage } from '@/lib/utils';
 import { loadSsh, saveAuthorizedKeys } from './api';
-import {
-  canRemoveKey,
-  fingerprintOf,
-  keyBits,
-  looksLikePrivateKey,
-  parsePublicKeyLine,
-  type SshKey,
-} from './model';
+import { canRemoveKey, fingerprintOf, keyBits, looksLikePrivateKey, parsePublicKeyLine, type SshKey } from './model';
 
 async function keyFromPaste(raw: string): Promise<{ key?: SshKey; error?: string }> {
   if (looksLikePrivateKey(raw))
@@ -194,7 +187,7 @@ export function SshKeysPanel(): ReactElement {
                     {shown.map((k) => (
                       <TableRow key={k.id}>
                         <TableCell className="font-mono text-xs">{k.type}</TableCell>
-                        <TableCell className="tabular text-muted-foreground">
+                        <TableCell className="text-muted-foreground tabular">
                           {k.bits === undefined ? '—' : String(k.bits)}
                         </TableCell>
                         <TableCell className="max-w-[14rem] truncate font-mono text-xs" title={k.fingerprint}>

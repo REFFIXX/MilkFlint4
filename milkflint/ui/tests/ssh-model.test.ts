@@ -54,10 +54,13 @@ test('key bits: ed25519 is 256, rsa is 2048', () => {
 test('parseAuthorizedKeys matches OpenSSH SHA256 fingerprint and round-trips', async () => {
   const keys = await parseAuthorizedKeys(`${ED25519}\n# skip\n\n${RSA}\n`);
   assert.equal(keys.length, 2);
-  assert.equal(keys[0]?.fingerprint, ED25519_FP);
-  assert.equal(keys[0]?.bits, 256);
-  assert.equal(keys[1]?.type, 'ssh-rsa');
-  assert.equal(keys[1]?.bits, 2048);
+  const [edKey, rsaKey] = keys;
+  assert.ok(edKey);
+  assert.ok(rsaKey);
+  assert.equal(edKey.fingerprint, ED25519_FP);
+  assert.equal(edKey.bits, 256);
+  assert.equal(rsaKey.type, 'ssh-rsa');
+  assert.equal(rsaKey.bits, 2048);
   const text = keysFile(keys);
   assert.ok(text.includes('milkflint-test'));
   assert.ok(text.includes('rsa-test'));
