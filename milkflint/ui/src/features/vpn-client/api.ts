@@ -9,6 +9,19 @@ import { lanZone, parseFirewall, wanZone } from '../firewall/model';
 import { GUEST_IDS, type GuestId, guestLabels, isGuestShaper } from '../wifi-guest/guest';
 import { type AdGuardStatus, getAdGuardStatus } from '../adguardhome/api';
 import { blankForm, type ClientData, DEFAULT_KEEPALIVE, DEFAULT_PORT, homeDevices } from './model';
+import { ensureMigrated } from './profiles-api';
+import type { ProfileStore } from './profiles';
+import {
+  CLIENT,
+  CLIENT_BYPASS_DHCP,
+  CLIENT_META,
+  CLIENT_PEER,
+  CLIENT_PEER_TYPE,
+  CLIENT_QUEUE,
+  CLIENT_SKIP,
+  isVpnShaper,
+  markSection,
+} from './sections';
 
 /** Which way the VPN's devices' lookups go with AdGuard Home on (its monitor sends them through the tunnel when the DNS page has servers of its own). */
 function aghPath(agh: AdGuardStatus | undefined, milkflint: readonly Section[]): ClientData['adguard'] {
@@ -19,25 +32,20 @@ function aghPath(agh: AdGuardStatus | undefined, milkflint: readonly Section[]):
   );
   return mode === 'static' || mode === 'encrypted' ? 'tunnel' : 'automatic';
 }
-import {
-  CLIENT,
-  CLIENT_META,
-  CLIENT_PEER,
-  CLIENT_PEER_TYPE,
-  CLIENT_QUEUE,
-  CLIENT_SKIP,
-  isVpnShaper,
-  markSection,
-} from './sections';
 
-export async function loadClient(): Promise<ClientData> {
-  const [network, firewall, sqm, milkflint, interfaces, status, leases, hints, agh] = await Promise.all([
+export interface ClientPageData extends ClientData {
+  profiles: ProfileStore;
+}
+
+export async function loadClient(): Promise<ClientPageData> {
+  const [network, firewall, sqm, milkflint, dhcp, interfaces, status, leases, hints, agh] = await Promise.all([
     getConfig('network'),
     getConfig('firewall'),
     getConfig('sqm').catch(() => undefined),
     getConfig('milkflint').catch((): Section[] => []),
+    getConfig('dhcp').catch((): Section[] => []),
     getInterfaces().catch((): NetworkInterface[] => []),
-    getWgStatus().catch(() => ({ installed: false, now: 0, interfaces: [] })),
+    getWgStatus().catch(() => ({ installed: false, now: 0, interfaces: [], client: undefined })),
     getLeases().catch(() => []),
     getHostHints().catch(() => ({})),
     getAdGuardStatus().catch(() => undefined),
@@ -98,6 +106,7 @@ export async function loadClient(): Promise<ClientData> {
     form: blankForm({ wanRates, sqm: sqm !== undefined }),
     peerSection: peer?.['.name'] ?? CLIENT_PEER,
     present: { network, firewall, sqm, milkflint },
+    presentDhcp: dhcp,
     wanZone: wanZone(cfg)?.name ?? 'wan',
     lanZone: lanZone(cfg)?.name ?? 'lan',
     guestZones,
@@ -112,8 +121,11 @@ export async function loadClient(): Promise<ClientData> {
     const markLan = firewall.find((s) => s['.name'] === markSection('lan'));
     const skip = firewall.find((s) => s['.name'] === CLIENT_SKIP);
     const meta = milkflint.find((s) => s['.name'] === CLIENT_META);
+    const dhcpBypass = dhcp.find((s) => s['.name'] === CLIENT_BYPASS_DHCP);
     const onlyMacs = list(markLan, 'src_mac').map((m) => m.toLowerCase());
     const who = !hasFw(markSection('lan')) ? 'none' : onlyMacs.length > 0 ? 'only' : hasFw(CLIENT_SKIP) ? 'except' : 'all';
+    const bypassFromMeta = list(meta, 'bypass_domain').map((d) => d.toLowerCase());
+    const bypassFromDhcp = list(dhcpBypass, 'domain').map((d) => d.toLowerCase());
     data.form = {
       ...data.form,
       enabled: on,
@@ -135,7 +147,9 @@ export async function loadClient(): Promise<ClientData> {
       shaper: queue !== undefined && (!on || bool(queue, 'enabled')),
       downMbit: queue === undefined ? data.form.downMbit : String(mbit(queue, 'download')),
       upMbit: queue === undefined ? data.form.upMbit : String(mbit(queue, 'upload')),
+      bypassDomains: bypassFromMeta.length > 0 ? bypassFromMeta : bypassFromDhcp,
     };
   }
-  return data;
+  const profiles = await ensureMigrated(data.form).catch((): ProfileStore => ({ active: undefined, profiles: [] }));
+  return { ...data, profiles };
 }

@@ -6,9 +6,10 @@ import type { ReactElement } from 'react';
 import { useLoad } from '@/hooks/use-load';
 import { usePoll } from '@/hooks/use-poll';
 import { getConfig, str } from '@/lib/api/uci';
-import { getWgStatus, isConnected, splitEndpoint, type WgInterface } from '@/lib/api/wireguard';
+import { getWgStatus, isConnected, splitEndpoint, type VpnClientStatus, type WgInterface } from '@/lib/api/wireguard';
 import { formatBytes, formatDurationShort, formatNumber } from '@/lib/format';
 import { href } from '@/lib/router';
+import { deadTunnelCopy, isHandshakeStale } from '../vpn-client/handshake';
 import { SERVER } from '../remote-access/sections';
 import { CLIENT } from '../vpn-client/sections';
 import { sharedCall } from '@/lib/shared-call';
@@ -21,13 +22,20 @@ const WG_MS = 10_000;
 // one call for the VPN and Remote access widgets (and any repeat of either): they read the same status
 const readTunnels = sharedCall(getWgStatus);
 
-function useTunnel(name: string): { iface: WgInterface | undefined; now: number; ready: boolean; failed: boolean } {
+function useTunnel(name: string): {
+  iface: WgInterface | undefined;
+  now: number;
+  ready: boolean;
+  failed: boolean;
+  client: VpnClientStatus | undefined;
+} {
   const { data, error } = usePoll(readTunnels, WG_MS);
   return {
     iface: data?.interfaces.find((i) => i.name === name),
     now: data?.now ?? 0,
     ready: data !== undefined,
     failed: data === undefined && error !== undefined,
+    client: data?.client ?? undefined,
   };
 }
 
@@ -43,7 +51,7 @@ function Row({ label, children }: { label: string; children: ReactElement | stri
 }
 
 export function VpnCard(): ReactElement {
-  const { iface, now, ready, failed } = useTunnel(CLIENT);
+  const { iface, now, ready, failed, client } = useTunnel(CLIENT);
   const link = <WidgetLink href={href('vpn-client')}>VPN</WidgetLink>;
   if (!ready) {
     return (
@@ -63,6 +71,10 @@ export function VpnCard(): ReactElement {
     );
   }
   const up = isConnected(peer, now);
+  const stale = isHandshakeStale(peer, now);
+  const killSwitch = client?.kill_switch ?? true;
+  const profile = client?.profile;
+  const dead = stale ? deadTunnelCopy(killSwitch) : undefined;
   return (
     <Widget
       aside={
@@ -73,8 +85,14 @@ export function VpnCard(): ReactElement {
       }
     >
       <dl className="flex flex-1 flex-col gap-1.5 px-5 text-sm">
+        {profile !== undefined && profile !== null && profile !== '' && <Row label="Profile">{profile}</Row>}
         <Row label="Server">{peer.endpoint === null ? 'Not known yet' : splitEndpoint(peer.endpoint).host}</Row>
         <Row label="Last answer">{ago(now, peer.latest_handshake)}</Row>
+        {dead !== undefined && (
+          <p data-fit className="text-xs text-muted-foreground">
+            {dead.text}
+          </p>
+        )}
         {/* what went through it since it came up, at the widget's foot */}
         <div data-fit className="mt-auto flex flex-wrap items-baseline justify-between gap-x-3 border-t pt-2">
           <dt className="text-muted-foreground">Through it</dt>

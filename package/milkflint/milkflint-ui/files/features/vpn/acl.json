@@ -1,12 +1,12 @@
 {
 	"milkflint-vpn": {
-		"description": "MilkFlint web interface: the VPN pages (WireGuard state and keys)",
+		"description": "MilkFlint web interface: the VPN pages (WireGuard state, keys, and profiles)",
 		"read": {
-			"ubus": { "milkflint.vpn": [ "status", "pubkey", "udp_ports" ] }
+			"ubus": { "milkflint.vpn": [ "status", "pubkey", "udp_ports", "profiles" ] }
 		},
 		"write": {
 			"ubus": {
-				"milkflint.vpn": [ "keys" ],
+				"milkflint.vpn": [ "keys", "set_profiles" ],
 				"network.interface.wg_in": [ "renew" ],
 				"network.interface.wg_out": [ "renew" ]
 			}

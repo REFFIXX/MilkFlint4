@@ -72,6 +72,10 @@ CONFIG_PACKAGE_nlbwmon=y
 CONFIG_PACKAGE_kmod-wireguard=y
 CONFIG_PACKAGE_wireguard-tools=y
 CONFIG_PACKAGE_luci-proto-wireguard=y
+# Domain bypass (sites that go direct) needs dnsmasq nftset support.
+# CONFIG_PACKAGE_dnsmasq is not set
+CONFIG_PACKAGE_dnsmasq-full=y
+CONFIG_PACKAGE_dnsmasq_full_nftset=y
 CONFIG_PACKAGE_kmod-nft-bridge-offload=y
 CONFIG_PACKAGE_kmod-usb-net-qmi-wwan=y
 CONFIG_PACKAGE_kmod-usb-serial-option=y

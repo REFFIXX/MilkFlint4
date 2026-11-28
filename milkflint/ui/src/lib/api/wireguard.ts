@@ -2,6 +2,7 @@
 // (milkflint.vpn, source/feed/milkflint-ui/files/features/vpn/), and the
 // .conf format (wg-quick's) that the phone apps and VPN providers use.
 import { z } from 'zod';
+import { HANDSHAKE_STALE_SECONDS, isHandshakeFresh } from '@/features/vpn-client/handshake';
 import { call, exec, UbusError, UbusStatus } from '@/lib/ubus';
 
 const peerSchema = z.object({
@@ -25,8 +26,24 @@ const ifaceSchema = z.object({
 });
 export type WgInterface = z.output<typeof ifaceSchema>;
 
-const statusSchema = z.object({ installed: z.boolean(), now: z.number(), interfaces: z.array(ifaceSchema) });
+const clientSchema = z.object({
+  enabled: z.boolean(),
+  kill_switch: z.boolean(),
+  connected: z.boolean(),
+  stale: z.boolean(),
+  handshake_age: z.number().nullable(),
+  profile: z.string().nullable(),
+  fallthrough: z.boolean().optional(),
+});
+
+const statusSchema = z.object({
+  installed: z.boolean(),
+  now: z.number(),
+  interfaces: z.array(ifaceSchema),
+  client: clientSchema.nullish(),
+});
 export type WgStatus = z.output<typeof statusSchema>;
+export type VpnClientStatus = z.output<typeof clientSchema>;
 
 /** Every WireGuard interface that's up and its peers; installed is false without WireGuard (or the plugin). */
 export async function getWgStatus(): Promise<WgStatus> {
@@ -35,7 +52,7 @@ export async function getWgStatus(): Promise<WgStatus> {
   } catch (err) {
     // an image without the VPN pages' plugin
     if (err instanceof UbusError && err.code === UbusStatus.notFound)
-      return { installed: false, now: Date.now() / 1000, interfaces: [] };
+      return { installed: false, now: Date.now() / 1000, interfaces: [], client: undefined };
     throw err;
   }
 }
@@ -92,13 +109,15 @@ export function isKey(s: string): boolean {
 }
 
 /**
- * Connected: a handshake in the last 3 minutes. WireGuard renews it every
- * 2 minutes while there's traffic, so an older one means the device went
- * quiet or away.
+ * Connected: a handshake in the last {@link HANDSHAKE_STALE_SECONDS} seconds.
+ * WireGuard renews it every 2 minutes while there's traffic, so an older one
+ * means the peer stopped answering (or the device went quiet).
  */
 export function isConnected(peer: WgPeer | undefined, now: number): boolean {
-  return peer !== undefined && peer.latest_handshake > 0 && now - peer.latest_handshake < 180;
+  return isHandshakeFresh(peer, now);
 }
+
+export { HANDSHAKE_STALE_SECONDS };
 
 // ---- wg-quick's .conf ----
 

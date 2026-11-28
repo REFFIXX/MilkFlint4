@@ -33,6 +33,7 @@ define Package/milkflint-ui/conffiles
 /etc/milkflint/devices.json
 /etc/milkflint/home.json
 /etc/milkflint/themes.json
+/etc/milkflint/vpn-profiles.json
 endef
 
 define Build/Compile
