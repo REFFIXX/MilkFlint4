@@ -683,6 +683,10 @@ function milkflintStub(object, method, params = {}) {
       };
     case 'milkflint.startup set_rc_local':
       return { saved: true };
+    case 'milkflint.ssh keys':
+      return { text: '', tcp_ports: [22, 80, 443] };
+    case 'milkflint.ssh set_keys':
+      return { saved: true };
     case 'milkflint.adguardhome status':
       return {
         installed: true,
