@@ -741,7 +741,24 @@ function milkflintStub(object, method, params = {}) {
     case 'milkflint.banip mail_get':
       return { enabled: false };
     case 'milkflint.vpn status':
-      return { installed: true, now: NOW(), interfaces: [] };
+      return {
+        installed: true,
+        now: NOW(),
+        interfaces: [],
+        client: {
+          enabled: false,
+          kill_switch: true,
+          connected: false,
+          stale: false,
+          handshake_age: null,
+          profile: null,
+          fallthrough: false,
+        },
+      };
+    case 'milkflint.vpn profiles':
+      return { active: null, profiles: [] };
+    case 'milkflint.vpn set_profiles':
+      return { active: params.active ?? null, profiles: params.profiles ?? [] };
     case 'milkflint.traffic periods':
       return { installed: true, enabled: true, periods: [] };
     case 'milkflint.traffic usage':
