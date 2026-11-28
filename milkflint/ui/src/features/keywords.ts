@@ -20,7 +20,7 @@ export const keywords: Partial<Readonly<Record<FeatureId, string>>> = {
   'vpn-client': 'wireguard vpn client provider privacy',
   'network-quality': 'ping jitter loss latency monitor quality',
   'test-bench': 'test speed devices together benchmark',
-  'data-statistics': 'bandwidth usage traffic data totals nlbwmon',
+  'data-statistics': 'bandwidth usage traffic data totals nlbwmon history 24 hours',
   sqm: 'qos sqm cake bufferbloat shaping latency speed limit',
   tuning: 'performance rss rps gro offload steering irq cores',
   firewall: 'rules ports zones nat block forward allow drop reject',

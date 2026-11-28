@@ -3,11 +3,15 @@
 // the period, then the devices, busiest first: a table on a wide screen, a
 // card each on a phone. #/data-statistics/<mac> shows one device (All
 // devices links here). Counting can be turned off; while it's off the page
-// says so and how to turn it on.
+// says so and how to turn it on. Optional Last 24 hours (off by default)
+// samples every 5 minutes into /tmp and shows 1/4/8/24 h windows with a chart.
 import { ArrowDownIcon, ArrowUpIcon, ChartColumnIcon, PackageXIcon } from 'lucide-react';
 import { type ReactElement, type ReactNode, useCallback, useState } from 'react';
 import { ApplyStatus } from '@/components/apply-status';
 import { CardHeading } from '@/components/card-heading';
+import { ThroughputChart } from '@/components/charts/throughput-chart';
+import { SeriesSwatch } from '@/components/charts/series-swatch';
+import { seriesDash } from '@/components/charts/series';
 import { Field } from '@/components/field';
 import { PageHeader } from '@/components/layout/page-header';
 import { Note } from '@/components/note';
@@ -21,15 +25,22 @@ import { useApply } from '@/hooks/use-apply';
 import { useLoad } from '@/hooks/use-load';
 import { usePoll } from '@/hooks/use-poll';
 import { bool, type Change, getConfig, type Section, str } from '@/lib/api/uci';
-import { formatBytes, formatNumber } from '@/lib/format';
+import { formatBitrate, formatBytes, formatNumber } from '@/lib/format';
 import { href, useSubPath } from '@/lib/router';
 import { Segmented } from '../firewall/parts';
 import { HeadRow } from '../firewall/table-parts';
 import { Answer, AnswerCell, Figure, GoLink } from '@/components/page-kit';
 import { explain } from '@/components/explain';
 import { deviceLabel, UNNAMED_DEVICE } from '../clients/model';
-import { getPeriods, getUsage, loadNames, loadRouterIps, periodStart, type UsageRow } from './api';
+import { getPeriods, getUsage, getUsageHistory, loadNames, loadRouterIps, periodStart, type UsageRow } from './api';
+import { deviceUsage, HISTORY_INTERVAL, HISTORY_WINDOWS, type HistoryHours, rateSeries, slotValues, spanLabel } from './history';
 import { macFromPath, shownRows, totals, type View } from './model';
+
+const DOWN = 'var(--chart-2)';
+const UP = 'var(--chart-1)';
+/** Segmented only accepts string values; map HistoryHours through these keys. */
+type WindowKey = `${HistoryHours}`;
+const WINDOW_KEYS = HISTORY_WINDOWS.map(String) as WindowKey[];
 
 function periodLabel(start: string, index: number): string {
   return index === 0 ? `This period (since ${periodStart(start)})` : `Since ${periodStart(start)}`;
@@ -72,7 +83,18 @@ const columns = [
 ] as const;
 
 /** The busiest rows: a table on a wide screen, a card each on a phone. */
-function UsageList({ rows, view, names }: { rows: readonly UsageRow[]; view: View; names: Map<string, string> }): ReactElement {
+function UsageList({
+  rows,
+  view,
+  names,
+  connections = true,
+}: {
+  rows: readonly UsageRow[];
+  view: View;
+  names: Map<string, string>;
+  /** nlbwmon connection counts; off for Last 24 hours diffs. */
+  connections?: boolean;
+}): ReactElement {
   const top = Math.max(1, ...rows.map((r) => r.rx + r.tx));
   const shown = rows.slice(0, 50);
   const title = (r: UsageRow): ReactElement =>
@@ -86,7 +108,8 @@ function UsageList({ rows, view, names }: { rows: readonly UsageRow[]; view: Vie
     ) : (
       <span className="truncate font-medium">{r.key === 'other' || r.key === '' ? 'Other' : r.key}</span>
     );
-  const cols = view === 'devices' ? columns : [{ label: 'Application', className: 'pl-5' }, ...columns.slice(1)];
+  const baseCols = view === 'devices' ? columns : [{ label: 'Application', className: 'pl-5' }, ...columns.slice(1)];
+  const cols = connections ? baseCols : baseCols.filter((c) => c.label !== 'Connections');
   return (
     <>
       <div className="hidden lg:block">
@@ -100,10 +123,12 @@ function UsageList({ rows, view, names }: { rows: readonly UsageRow[]; view: Vie
                 <td className="w-1/3 max-w-0 py-2.5 pr-3 pl-5">{title(r)}</td>
                 <td className="px-3 py-2.5 text-right tabular">{formatBytes(r.rx)}</td>
                 <td className="px-3 py-2.5 text-right tabular">{formatBytes(r.tx)}</td>
-                <td className="px-3 py-2.5">
+                <td className={connections ? 'px-3 py-2.5' : 'py-2.5 pr-5 pl-3'}>
                   <ShareBar row={r} top={top} />
                 </td>
-                <td className="py-2.5 pr-5 pl-3 text-right text-muted-foreground tabular">{formatNumber(r.conns)}</td>
+                {connections && (
+                  <td className="py-2.5 pr-5 pl-3 text-right text-muted-foreground tabular">{formatNumber(r.conns)}</td>
+                )}
               </tr>
             ))}
           </tbody>
@@ -122,9 +147,11 @@ function UsageList({ rows, view, names }: { rows: readonly UsageRow[]; view: Vie
               </span>
             </span>
             <ShareBar row={r} top={top} />
-            <span className="text-xs text-muted-foreground tabular">
-              {formatNumber(r.conns)} {r.conns === 1 ? 'connection' : 'connections'}
-            </span>
+            {connections && (
+              <span className="text-xs text-muted-foreground tabular">
+                {formatNumber(r.conns)} {r.conns === 1 ? 'connection' : 'connections'}
+              </span>
+            )}
           </li>
         ))}
       </ul>
@@ -134,6 +161,8 @@ function UsageList({ rows, view, names }: { rows: readonly UsageRow[]; view: Vie
 
 interface Form {
   enabled: boolean;
+  /** Last 24 hours samples; off by default (flash-safe /tmp). */
+  history: boolean;
   day: string;
 }
 
@@ -155,6 +184,7 @@ async function loadSettings(): Promise<Settings> {
   return {
     toggle: ds !== undefined,
     enabled: bool(ds, 'enabled', true),
+    history: bool(ds, 'history', false),
     section: s?.['.name'],
     day: /^\d+$/.test(interval) ? interval : 'custom',
   };
@@ -162,13 +192,116 @@ async function loadSettings(): Promise<Settings> {
 
 function toChanges(f: Form, data: Settings): Change[] {
   const changes: Change[] = [];
+  // History only runs while counting is on; turning counting off clears samples.
+  const history = f.enabled && f.history;
   if (f.enabled !== data.enabled) {
     changes.push({ op: 'set', config: 'milkflint', section: 'datastats', values: { enabled: f.enabled ? '1' : '0' } });
+  }
+  if (history !== data.history) {
+    changes.push({ op: 'set', config: 'milkflint', section: 'datastats', values: { history: history ? '1' : '0' } });
   }
   if (f.day !== data.day && data.section !== undefined) {
     changes.push({ op: 'set', config: 'nlbwmon', section: data.section, values: { database_interval: f.day } });
   }
   return changes;
+}
+
+/** Chart + per-device totals for a recent window of 5‑minute samples. */
+function HistoryCard({
+  hours,
+  onHours,
+  names,
+  mac,
+}: {
+  hours: HistoryHours;
+  onHours: (h: HistoryHours) => void;
+  names: Map<string, string>;
+  mac: string | undefined;
+}): ReactElement {
+  const hist = usePoll(() => getUsageHistory(hours), 60_000, String(hours));
+  const data = hist.data;
+  const interval = data?.interval ?? HISTORY_INTERVAL;
+  const now = data?.now ?? 0;
+  const since = data?.since ?? now - hours * 3600;
+  const series = rateSeries(data?.samples ?? [], since, interval);
+  const slots = Math.max(2, Math.round((hours * 3600) / interval));
+  const chart = {
+    slots,
+    down: slotValues(series, slots, now, interval, 'down'),
+    up: slotValues(series, slots, now, interval, 'up'),
+    timeOf: (slot: number): number | undefined => now - (slots - 1 - slot) * interval,
+  };
+  const rows: UsageRow[] = deviceUsage(data?.samples ?? [], since)
+    .filter((r) => mac === undefined || r.key.toLowerCase() === mac)
+    .map((r) => ({ key: r.key, ip: undefined, conns: 0, rx: r.rx, tx: r.tx }));
+  const sum = totals(rows);
+  const span = spanLabel(hours);
+
+  return (
+    <Card className="gap-0 pb-0">
+      <CardHeading
+        title="Last 24 hours"
+        description="Per-device usage from 5‑minute samples kept in RAM (/tmp). Turning this off deletes them."
+        action={
+          <Segmented<WindowKey>
+            label="Window"
+            value={String(hours) as WindowKey}
+            options={WINDOW_KEYS.map((h) => ({ value: h, label: h === '1' ? '1 h' : `${h} h` }))}
+            onChange={(v) => {
+              onHours(Number(v) as HistoryHours);
+            }}
+          />
+        }
+      />
+      <CardContent className="flex flex-col gap-4 border-t pt-4">
+        {hist.error !== undefined && data === undefined ? (
+          <LoadError error={hist.error} retry={hist.refresh} />
+        ) : data === undefined ? (
+          <FormSkeleton />
+        ) : data.samples.length < 2 && rows.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            Waiting for samples (every 5 minutes). The chart fills in after the second snapshot.
+          </p>
+        ) : (
+          <>
+            <div className="flex flex-wrap items-center gap-4 text-sm">
+              <span className="inline-flex items-center gap-2">
+                <SeriesSwatch color={DOWN} dash={seriesDash(DOWN, 2)} />
+                <span className="text-muted-foreground">Download</span>
+                <span className="font-medium tabular">{formatBytes(sum.rx)}</span>
+              </span>
+              <span className="inline-flex items-center gap-2">
+                <SeriesSwatch color={UP} dash={seriesDash(UP, 2)} />
+                <span className="text-muted-foreground">Upload</span>
+                <span className="font-medium tabular">{formatBytes(sum.tx)}</span>
+              </span>
+              <span className="text-muted-foreground">over the last {span}</span>
+            </div>
+            <ThroughputChart
+              series={[
+                { label: 'Download', color: DOWN, values: chart.down },
+                { label: 'Upload', color: UP, values: chart.up },
+              ]}
+              slots={chart.slots}
+              spanLabel={span}
+              format={formatBitrate}
+              label={`Download and upload over the last ${span}`}
+              timeOf={chart.timeOf}
+            />
+            {rows.length === 0 ? (
+              <p className="border-t px-1 py-3 text-sm text-muted-foreground">
+                {mac === undefined ? 'No device traffic in this window yet.' : 'Nothing for this device in this window.'}
+              </p>
+            ) : (
+              <div className="-mx-6">
+                <UsageList rows={rows} view="devices" names={names} connections={false} />
+              </div>
+            )}
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
 }
 
 const resetText = (day: string): string =>
@@ -246,6 +379,7 @@ export function DataStatisticsPage(): ReactElement {
   const routerIps = usePoll(loadRouterIps, 300_000).data;
   const [period, setPeriod] = useState('');
   const [view, setView] = useState<View>('devices');
+  const [hours, setHours] = useState<HistoryHours>(24);
   const usage = usePoll(() => getUsage(period, view === 'devices' ? 'mac' : 'layer7'), 30_000, `${period}/${view}`);
   const settings = useLoad(loadSettings);
   const [edit, setEdit] = useState<Form>();
@@ -266,10 +400,14 @@ export function DataStatisticsPage(): ReactElement {
   const set = <K extends keyof Form>(key: K, value: Form[K]): void => {
     setEdit((current) => {
       const base = current ?? saved;
-      return base === undefined ? undefined : { enabled: base.enabled, day: base.day, [key]: value };
+      return base === undefined ? undefined : { enabled: base.enabled, history: base.history, day: base.day, [key]: value };
     });
   };
-  const dirty = edit !== undefined && saved !== undefined && (edit.enabled !== saved.enabled || edit.day !== saved.day);
+  const dirty =
+    edit !== undefined &&
+    saved !== undefined &&
+    (edit.enabled !== saved.enabled || edit.history !== saved.history || edit.day !== saved.day);
+  const historyOn = (edit?.history ?? saved?.history) === true;
 
   const one = view === 'devices' ? macFromPath(sub) : undefined;
   const rows = shownRows(usage.data ?? [], view, routerIps, one);
@@ -369,6 +507,7 @@ export function DataStatisticsPage(): ReactElement {
                 )}
               </div>
             </Card>
+            {historyOn && <HistoryCard hours={hours} onHours={setHours} names={names} mac={one} />}
           </>
         )}
         {installed && form !== undefined && saved !== undefined && (saved.toggle || saved.section !== undefined) && (
@@ -389,7 +528,33 @@ export function DataStatisticsPage(): ReactElement {
                     id="ds-on"
                     checked={form.enabled}
                     onCheckedChange={(v) => {
-                      set('enabled', v);
+                      setEdit((current) => {
+                        const base = current ?? saved;
+                        return { enabled: v, history: v ? base.history : false, day: base.day };
+                      });
+                    }}
+                  />
+                </Field>
+              )}
+              {saved.toggle && (
+                <Field
+                  id="ds-history"
+                  label="Last 24 hours"
+                  {...explain(
+                    'Keeps a 5‑minute sample of each device’s usage for the last day, so you can see 1 / 4 / 8 / 24 hour windows. Off by default. Samples live in /tmp (RAM) only — not flash — and are deleted when you turn this off or reboot.',
+                    ['milkflint.datastats.history'],
+                    <p>
+                      Needs counting on. The sampler writes <code className="text-xs">/tmp/milkflint/usage-history.json</code>;
+                      nothing is stored under <code className="text-xs">/etc</code>.
+                    </p>,
+                  )}
+                >
+                  <Switch
+                    id="ds-history"
+                    checked={form.history}
+                    disabled={!form.enabled}
+                    onCheckedChange={(v) => {
+                      set('history', v);
                     }}
                   />
                 </Field>

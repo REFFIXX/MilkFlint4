@@ -40,7 +40,7 @@ export const ALEX = { id: 'devctl_a1ex', devices: ['aa:00:00:00:00:03'] } as con
 function milkflint(s: Scenario): unknown {
   return uci([
     ['mode', 'mode', { mode: s === 'ap' ? 'ap' : 'router' }],
-    ['datastats', 'datastats', { enabled: s === 'quiet' ? '0' : '1' }],
+    ['datastats', 'datastats', { enabled: s === 'quiet' ? '0' : '1', history: s === 'busy' ? '1' : '0' }],
     ...(s === 'busy' ? [...GUESTS.map((g) => [g.id, 'guest_network', { label: g.label }] as const)] : []),
     ...(s === 'busy'
       ? ([
@@ -291,6 +291,24 @@ function usage(s: Scenario): unknown {
   };
 }
 
+/** Last 24 hours samples for the Data usage page (busy scenario only). */
+function usageHistory(s: Scenario, params: Record<string, unknown>): unknown {
+  const hours = typeof params['hours'] === 'number' ? params['hours'] : 24;
+  const span = hours === 1 || hours === 4 || hours === 8 || hours === 24 ? hours * 3600 : 24 * 3600;
+  if (s !== 'busy') return { enabled: false, now: NOW, interval: 300, since: NOW - span, samples: [] };
+  const interval = 300;
+  const steps = Math.min(48, Math.floor(span / interval));
+  const macs = Array.from({ length: 4 }, (_, i) => `5c:e9:1e:00:0${String(i)}:a${String(i)}`);
+  const samples = Array.from({ length: steps }, (_, i) => {
+    const t = NOW - (steps - 1 - i) * interval;
+    const d = Object.fromEntries(
+      macs.map((mac, k) => [mac, [1_000_000 * (i + 1) * (4 - k), 100_000 * (i + 1) * (4 - k)] as const]),
+    );
+    return { t, d };
+  });
+  return { enabled: true, now: NOW, interval, since: NOW - span, samples };
+}
+
 function banip(s: Scenario): unknown {
   if (s === 'ap') return { installed: true, enabled: false, mode: 'ap', state: 'ap' };
   if (s === 'quiet') return { installed: true, enabled: false, mode: 'router', state: 'off' };
@@ -332,10 +350,25 @@ function adguard(s: Scenario): unknown {
 }
 
 function vpn(s: Scenario): unknown {
-  if (s !== 'busy') return { installed: true, now: NOW, interfaces: [] };
+  if (s !== 'busy')
+    return {
+      installed: true,
+      now: NOW,
+      interfaces: [],
+      client: { enabled: false, kill_switch: true, connected: false, stale: false, handshake_age: null, profile: null },
+    };
   return {
     installed: true,
     now: NOW,
+    client: {
+      enabled: true,
+      kill_switch: true,
+      connected: true,
+      stale: false,
+      handshake_age: 38,
+      profile: 'USA',
+      fallthrough: false,
+    },
     interfaces: [
       {
         name: 'wg_out',
@@ -440,12 +473,18 @@ export function answer(s: Scenario, object: string, method: string, params: Reco
         : { installed: true, enabled: false, periods: [] };
     case 'milkflint.traffic usage':
       return usage(s);
+    case 'milkflint.traffic history':
+      return usageHistory(s, params);
     case 'milkflint.banip status':
       return banip(s);
     case 'milkflint.adguardhome status':
       return adguard(s);
     case 'milkflint.vpn status':
       return vpn(s);
+    case 'milkflint.vpn profiles':
+      return { active: null, profiles: [] };
+    case 'milkflint.vpn set_profiles':
+      return { active: params['active'] ?? null, profiles: params['profiles'] ?? [] };
     case 'milkflint.sensors history':
       return sensorHistory(s);
     case 'milkflint.devicecontrol status':

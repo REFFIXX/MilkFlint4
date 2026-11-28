@@ -3,6 +3,7 @@ import { getHostHints, getInterfaces, getLeases } from '@/lib/api/network';
 import { getConfig, list, str } from '@/lib/api/uci';
 import { call } from '@/lib/ubus';
 import { deviceName } from '../clients/model';
+import type { HistoryHours, HistorySample } from './history';
 
 const periodsSchema = z.object({
   installed: z.boolean(),
@@ -13,6 +14,28 @@ const periodsSchema = z.object({
 
 export function getPeriods(): Promise<z.output<typeof periodsSchema>> {
   return call('milkflint.traffic', 'periods', {}, periodsSchema);
+}
+
+const historySampleSchema = z.object({
+  t: z.number(),
+  d: z.record(z.string(), z.tuple([z.number(), z.number()])),
+});
+
+const historySchema = z.object({
+  enabled: z.boolean(),
+  now: z.number(),
+  interval: z.number(),
+  since: z.number(),
+  samples: z.array(historySampleSchema),
+});
+
+export type UsageHistory = Omit<z.output<typeof historySchema>, 'samples'> & {
+  samples: HistorySample[];
+};
+
+/** Optional Last 24 hours samples (absolute nlbwmon counters per MAC) for a window. */
+export function getUsageHistory(hours: HistoryHours): Promise<UsageHistory> {
+  return call('milkflint.traffic', 'history', { hours }, historySchema);
 }
 
 const tableSchema = z.object({

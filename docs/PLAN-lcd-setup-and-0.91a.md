@@ -116,7 +116,7 @@ Polish bar: smooth fade/crossfade between frames, readable type at arm’s lengt
 | **VPN profiles** + rename/switch | We have WireGuard + kill switch; multi-profile is the missing “USA / France” UX |
 | **VPN server dead** behavior | Clear Home/VPN copy when tunnel stops answering; keep kill-switch semantics honest |
 | **Sites that go direct** | Split-tunnel domains with CDN caveats explained in tips |
-| **Last 24 hours** data usage | Off by default; 5‑min samples; delete on disable — flash-safe |
+| **Last 24 hours** data usage | Done on this branch: off by default; 5‑min samples in `/tmp`; delete on disable |
 | **Sortable tables / shared charts** | Adopt table/chart patterns; **keep** our hash router (do not wholesale migrate to TanStack Router) |
 | **Ethernet port hover** detail | Home widget: link speed, likely cable limit, errors |
 
