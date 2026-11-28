@@ -80,7 +80,7 @@ Theme everywhere remains **Monokai milk**.
 
 Walkthrough and stills for forum posts and release notes:
 
-[`docs/media/1.6-monokai-dark/`](media/1.6-monokai-dark/) — video + Home / LCD Setup / Startup / SSH / LAN / VPN / AdGuard Home
+[`docs/media/1.6-monokai-dark/`](media/1.6-monokai-dark/) — 2560×1440 dark video + Home / LCD Setup / Startup / SSH / LAN / VPN / AdGuard Home
 
 ---
 

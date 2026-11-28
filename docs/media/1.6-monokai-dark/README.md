@@ -1,11 +1,12 @@
 # MilkFlint4 1.6 — dark Monokai milk UI media
 
 Dark-scheme walkthrough of the 1.6 UI (Monokai milk theme, `data-darkmode=true`).
+Captured at **2560×1440** so the layout matches a real desktop (not a cramped preview).
 Safe to embed or link from forum posts.
 
 ## Video
 
-- [`monokai-dark-demo.mp4`](monokai-dark-demo.mp4) (~87s) — Home → LCD Setup → Startup → Router access → LAN → Clients → VPN → AdGuard Home → banIP
+- [`monokai-dark-demo.mp4`](monokai-dark-demo.mp4) (~90s, 2560×1440) — Home → LCD Setup → Startup → Router access → LAN → Clients → VPN → AdGuard Home → banIP
 
 ## Screenshots
 
