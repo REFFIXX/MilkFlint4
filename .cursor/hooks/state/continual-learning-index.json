@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "workspace": "MilkFlint4",
+  "updatedAt": "2026-11-28T04:44:00.000Z",
+  "sources": [
+    {
+      "kind": "user_feedback",
+      "id": "2026-11-28-lcd-monokai-ux",
+      "summary": "LCD Setup (slideshow + ON/OFF/Idle), Monokai everywhere, help tips, config-safe flash, OddBlueDog 0.91a plans, AMAZE polish bar",
+      "encodedIn": [
+        "AGENTS.md#Learned User Preferences",
+        "AGENTS.md#Learned Workspace Facts",
+        ".cursor/rules/milkflint4-ux-prefs.mdc",
+        ".cursor/plugins/milkflint4/rules/milkflint4-ux-prefs.mdc",
+        ".cursor/plugins/milkflint4/rules/milkflint4-conventions.mdc",
+        ".cursor/plugins/milkflint4/skills/ui-check/SKILL.md"
+      ]
+    }
+  ],
+  "transcripts": {},
+  "notes": "No agent-transcripts directory present for this workspace slug at mine time; durable prefs taken from explicit user feedback + repo conventions scan."
+}
