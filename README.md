@@ -238,7 +238,8 @@ LuCI stays the escape hatch under **Advanced**.
 - **Router depth** — SSH + keys, Startup / `rc.local`, LAN leases + live connections, first-seen + live speed  
 - **VPN client** — named profiles, dead-tunnel honesty, sites that stay direct  
 - Optional last-24h usage · AGH/banIP Package updates cards (firmware path, no fake feed)  
-- Everything from **1.5** (roaming/mesh/WAN/country correctness) and **1.1** (roaming + mesh UI)
+- Everything from **1.5** (roaming/mesh/WAN/country correctness) and **1.1** (roaming + mesh UI)  
+- Dark Monokai milk UI media: [`docs/media/1.6-monokai-dark/`](docs/media/1.6-monokai-dark/)
 
 ### 1.5
 

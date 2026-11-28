@@ -76,11 +76,20 @@ Theme everywhere remains **Monokai milk**.
 
 ---
 
+## Screens / video (dark Monokai milk)
+
+Walkthrough and stills for forum posts and release notes:
+
+[`docs/media/1.6-monokai-dark/`](media/1.6-monokai-dark/) — video + Home / LCD Setup / Startup / SSH / LAN / VPN / AdGuard Home
+
+---
+
 ## Install
 
 ```text
 milkflint4-*-glinet_gl-be14000-squashfs-sysupgrade.bin
 ```
+
 
 | From | Keep settings? |
 |---|---|
