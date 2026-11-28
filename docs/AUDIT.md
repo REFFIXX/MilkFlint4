@@ -62,7 +62,7 @@ These are concrete items in this repository, not marketing claims:
 | --- | --- | --- |
 | MLD / mac80211 crash | mac80211 patch 507 corrected so NULL / `valid_links` guards apply on 6.18 backports | openwrt#26972; patch under `package/kernel/mac80211/patches/` |
 | 10G WAN flap storms | Hotplug + `milkflint4-wan-watch` mitigations (carrier / ifdown windows) | openwrt#26690 / #26691; Filogic `base-files` |
-| Firmware install | Upload checked with `sysupgrade --test` and SHA-256 before apply; optional force flag is explicit | `package/milkflint/milkflint-ui/files/features/upgrade/rpcd.uc` |
+| Firmware install | Upload runs `sysupgrade --test` (image fit for this board) and shows a SHA-256 for **manual** comparison with the release page; the router does not fetch a trusted digest itself. Optional force (`-F`) is explicit | `package/milkflint/milkflint-ui/files/features/upgrade/rpcd.uc` |
 | SSH lockout | UI refuses to clear the last authorized key while password auth is off; rejects private-key paste into `authorized_keys` | `…/features/ssh/rpcd.uc` |
 | HTTPS | Certificate management through uhttpd; redirect/listen via UCI | `…/features/https/rpcd.uc` |
 | Admin password state | UI can detect unset root password (OpenWrt factory default) and push the user to set one | `…/features/admin-password/rpcd.uc` |
@@ -100,7 +100,7 @@ Remote “zero-click from the internet” risk is dominated by **what you expose
 1. Set the **root / UI password** before putting the router into service.
 2. Keep **SSH and the web UI off the WAN** unless you know why they are there; use VPN or a jump host if you need remote admin.
 3. Turn on **HTTPS** for the UI on the LAN.
-4. Install MilkFlint4 images only from **GitHub Releases** for this repository; verify the file you flashed matches the release asset you intended.
+4. Install MilkFlint4 images only from **GitHub Releases** for this repository. Before confirming an upgrade, compare the UI’s SHA-256 with the hash on the release page (or `sha256sum` on the file you downloaded).
 5. When OpenWrt or MilkFlint4 publish a security-relevant rebuild, **upgrade**—do not stay on a months-old tag “because it still works.”
 6. For Wi‑Fi, use modern WPA3/WPA2-PSK settings and avoid open or WEP/WPA networks.
 
