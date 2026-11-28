@@ -51,16 +51,6 @@ Flash this if you are on **1.1.1 / 1.1.2** (or earlier 1.x). Keep settings is fi
 
 ---
 
-## Still deferred
-
-| Item | Notes |
-|---|---|
-| Real PHY/PCS fix for #26690 / #26691 | Upstream still open — we ship mitigations |
-| mt76 rebase past 2026-10-08 pin | Needs WED / MU regression plan |
-| Dynamic DNS on Remote access | Still “Coming soon” |
-
----
-
 ## Install
 
 ```text
