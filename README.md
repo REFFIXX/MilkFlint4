@@ -232,13 +232,25 @@ LuCI stays the escape hatch under **Advanced**.
 
 <h2><img src="https://img.shields.io/badge/%E2%97%8F-ffd866?style=flat-square" alt=""> Releases</h2>
 
+### 1.6
+
+- **LCD Setup** — front-panel slideshow, ON / OFF / Idle, schedule hooks  
+- **Router depth** — SSH + keys, Startup / `rc.local`, LAN leases + live connections, first-seen + live speed  
+- **VPN client** — named profiles, dead-tunnel honesty, sites that stay direct  
+- Optional last-24h usage · AGH/banIP Package updates cards (firmware path, no fake feed)  
+- Everything from **1.5** (roaming/mesh/WAN/country correctness) and **1.1** (roaming + mesh UI)
+
+### 1.5
+
+- Roaming / mesh correctness, Home MLO-safe rates, US country + 6 GHz PSC help, 10G WAN mitigations
+
 ### 1.1
 
 - **Wi‑Fi roaming** (802.11r/k/v + `usteer`) and **802.11s mesh** (`mesh11sd`) in the MilkFlint UI  
 - Image ships `wpad-mbedtls`, `usteer`, `mesh11sd`  
 - Everything from **1.0.1**: LCD splash · **1.0**: Flint 4 / 6.18, Monokai milk, MilkFlint userspace defaults  
 
-Notes: [`docs/RELEASE-1.1.2.md`](docs/RELEASE-1.1.2.md) · [`docs/RELEASE-1.1.1.md`](docs/RELEASE-1.1.1.md) · [`docs/RELEASE-1.1.md`](docs/RELEASE-1.1.md) · [`docs/RELEASE-1.0.1.md`](docs/RELEASE-1.0.1.md) · [`docs/RELEASE-1.0.md`](docs/RELEASE-1.0.md)
+Notes: [`docs/RELEASE-1.6.md`](docs/RELEASE-1.6.md) · [`docs/RELEASE-1.5.md`](docs/RELEASE-1.5.md) · [`docs/RELEASE-1.1.2.md`](docs/RELEASE-1.1.2.md) · [`docs/RELEASE-1.1.1.md`](docs/RELEASE-1.1.1.md) · [`docs/RELEASE-1.1.md`](docs/RELEASE-1.1.md) · [`docs/RELEASE-1.0.1.md`](docs/RELEASE-1.0.1.md) · [`docs/RELEASE-1.0.md`](docs/RELEASE-1.0.md)
 
 <h2><img src="https://img.shields.io/badge/%E2%97%8F-fc9867?style=flat-square" alt=""> Install</h2>
 
